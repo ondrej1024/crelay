@@ -1,0 +1,9 @@
+Version history
+===============
+
+0.1: 23/12/2013
+- First release, interactive (command line) mode only
+
+0.2: 18/01/2014
+- Added integrated web server which provides a Web GUI in daemon mode
+
