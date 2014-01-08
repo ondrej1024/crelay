@@ -17,7 +17,14 @@ Note:
    http://www.silabs.com/products/mcu/pages/usbtouartbridgevcpdrivers.aspx
  
 Features:
-   - Command line tool
+   - Command line mode and daemon mode with Web GUI
    - Automatic detection of USB communication port
    - Reading of current relay states
    - Setting of new relay states
+   - Single pulse generation on relay contact
+
+Not yet supported (to do):
+   - multiple card support
+   - access control for Web GUI
+   - programmable timers for relay actions
+   - other useful things
