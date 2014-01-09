@@ -440,8 +440,8 @@ int main(int argc, char *argv[])
       int i;
       
       /* Parse command line */
-      for (i=0; i<argc-2, i<NUM_RELAYS; i++)
-      {
+      for (i=0; i<argc-2 && i<NUM_RELAYS; i++)
+      {  
          strcpy(rlabels[i], argv[i+2]);
       }
 
