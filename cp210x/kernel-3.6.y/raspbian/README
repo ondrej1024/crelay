@@ -1,0 +1,21 @@
+
+Binary kernel module cp210x.ko
+==============================
+
+This directory contains the cp210x pre-built driver with GPIO patch for the Raspbian Linux distro.
+It will only work with the exact same kernel version.
+
+Applicable Kernel version: 3.6.11
+
+Installation:
+
+# check your kernel version
+uname -r
+
+# copy the cp210x.ko binary file to the kernel driver directory on the Raspberry Pi
+sudo cp cp210x.ko /lib/modules/$(uname -r)/kernel/drivers/usb/serial/
+
+# run depmod
+sudo depmod -a
+
+# done
