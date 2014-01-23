@@ -7,3 +7,6 @@ Version history
 0.2: 18/01/2014
 - Added integrated web server which provides a Web GUI in daemon mode
 
+0.3: 22/01/2014
+- Added HTTP API which can be used by external clients (e.g. Android app)
+

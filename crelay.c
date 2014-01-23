@@ -5,6 +5,10 @@
  * Description:
  *   Controls the relays on the USB 4-relay card from Conrad.
  *   http://www.conrad.de/ce/de/product/393905
+ *   There are 3 ways to control the relais:
+ *    1. via command line
+ *    2. via web interface using a browser
+ *    3. via HTTP API using a client application
  * 
  * Note:
  *   We need the cp210x driver for the Silabs CP2104 chip with GPIO support.
@@ -13,17 +17,35 @@
  *   http://www.silabs.com/products/mcu/pages/usbtouartbridgevcpdrivers.aspx
  * 
  * Author:
- *   Ondrej Wisniewski
+ *   Ondrej Wisniewski (ondrej.wisniewski *at* gmail.com)
  *
  * Build instructions:
  *   gcc -o crelay crelay.c
  * 
  * Last modified:
- *   08/01/2014
+ *   21/01/2014
  *
  *****************************************************************************/ 
 
-/*
+/******************************************************************************
+ * 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ *****************************************************************************/ 
+ 
+/******************************************************************************
  * Communication protocol description
  * ==================================
  * 
@@ -53,7 +75,7 @@
  *  0: NO contact open, NC contact closed, led is on
  *  1: NO contact closed, NC contact open, led is off
  * 
- */
+ *****************************************************************************/ 
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -66,22 +88,23 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#define VERSION "0.2"
+#define VERSION "0.3"
 
 #define SERVER "crelay/"VERSION
 #define PROTOCOL "HTTP/1.0"
 #define RFC1123FMT "%a, %d %b %Y %H:%M:%S GMT"
 #define SERVER_PORT 8000
+#define API_URL "gpio"
 
-#define RELAY_TAG "relay"
-#define STATE_TAG "state"
+#define RELAY_TAG "pin"
+#define STATE_TAG "status"
 
 #define IOCTL_GPIOGET 0x8000
 #define IOCTL_GPIOSET 0x8001
 
 #define FIRST_RELAY 1
 #define LAST_RELAY  4
-#define NUM_RELAYS  4
+#define NUM_RELAYS  (LAST_RELAY-FIRST_RELAY+1)
 #define MAX_COM_PORTS 10
 
 /* USB serial device created by cp210x driver */
@@ -92,14 +115,23 @@ typedef unsigned short uint16;
 typedef unsigned long  uint32;
 
 typedef enum {
-   OFF,
-   ON
+   OFF=0,
+   ON,
+   PULSE
 }
 relay_state_t;
 
 static char rlabels[NUM_RELAYS][32] = {"My appliance 1", "My appliance 2", "My appliance 3", "My appliance 4"};
 
 
+/**********************************************************
+ * Function detect_com_port()
+ * 
+ * Description:
+ * 
+ * Parameters:
+ * 
+ *********************************************************/
 int detect_com_port(char* portname)
 {
    uint8 found=0;
@@ -139,6 +171,14 @@ int detect_com_port(char* portname)
 }
 
 
+/**********************************************************
+ * Function get_relay()
+ * 
+ * Description:
+ * 
+ * Parameters:
+ * 
+ *********************************************************/
 int get_relay(char* portname, uint8 relay, relay_state_t* relay_state)
 {
    uint32 gpio=0;
@@ -167,8 +207,7 @@ int get_relay(char* portname, uint8 relay, relay_state_t* relay_state)
       return -3;
    }
 
-   //printf("DBG: Read GPIO bits %08lX\n", gpio);
-   
+   //printf("DBG: Read GPIO bits %08lX\n", gpio);   
    relay = relay-1;
    *relay_state = (gpio & (0x0001<<relay)) ? OFF : ON;
       
@@ -177,13 +216,19 @@ int get_relay(char* portname, uint8 relay, relay_state_t* relay_state)
 }
 
 
+/**********************************************************
+ * Function set_relay()
+ * 
+ * Description:
+ * 
+ * Parameters:
+ * 
+ *********************************************************/
 int set_relay(char* portname, int relay, relay_state_t relay_state)
 {
    uint32 gpio=0;
    int fd;
    int rc;
-   
-   //printf("DBG: Relay number is %d\n", relay);
    
    if (relay<FIRST_RELAY || relay>LAST_RELAY)
    {  
@@ -220,6 +265,14 @@ int set_relay(char* portname, int relay, relay_state_t relay_state)
 }
 
 
+/**********************************************************
+ * Function send_headers()
+ * 
+ * Description:
+ * 
+ * Parameters:
+ * 
+ *********************************************************/
 void send_headers(FILE *f, int status, char *title, char *extra, char *mime, 
                   int length, time_t date)
 {
@@ -244,23 +297,16 @@ void send_headers(FILE *f, int status, char *title, char *extra, char *mime,
 }
 
 
-int process(FILE *f)
+/**********************************************************
+ * Function web_page_header()
+ * 
+ * Description:
+ * 
+ * Parameters:
+ * 
+ *********************************************************/
+void web_page_header(FILE *f)
 {
-   char buf[256];
-   char *method;
-   char formdata[64];
-   char *datastr;
-   int data_len;
-   int relay;
-   char state[4];
-   
-   int i;
-   char serial_port[16];
-   relay_state_t rstate[NUM_RELAYS];
-   relay_state_t nstate;
-   int ispulse=0;
-   
-   
    /* Send http header */
    send_headers(f, 200, "OK", NULL, "text/html", -1, -1);
    
@@ -272,103 +318,245 @@ int process(FILE *f)
    fprintf(f, "<span style=\"vertical-align: top; font-size: 48px;\">Relay Card Control</span><br>\r\n");
    fprintf(f, "<span style=\"font-size: 16px; color: rgb(204, 255, 255);\">Conrad USB 4-channel Relay card controlling <span style=\"font-style: italic; color: white;\">made easy</span></span>\r\n");
    fprintf(f, "</td></tr></tbody></table>\r\n");  
+}
+
+
+/**********************************************************
+ * Function web_page_footer()
+ * 
+ * Description:
+ * 
+ * Parameters:
+ * 
+ *********************************************************/
+void web_page_footer(FILE *f)
+{
+   /* Display web page footer */
+   fprintf(f, "<table style=\"text-align: left; width: 600px; background-color: rgb(0, 0, 153);\" border=\"0\" cellpadding=\"2\" cellspacing=\"2\"><tbody>\r\n");
+   fprintf(f, "<tr><td style=\"vertical-align: top; text-align: center;\"><span style=\"font-family: Helvetica,Arial,sans-serif; color: white;\">crelay | version %s | 2014</span></td></tr>\r\n",
+           VERSION);
+   fprintf(f, "</tbody></table></body></html>\r\n");    
+}   
+
+
+/**********************************************************
+ * Function web_page_error()
+ * 
+ * Description:
+ * 
+ * Parameters:
+ * 
+ *********************************************************/
+void web_page_error(FILE *f)
+{    
+   /* No relay card detected, display error message on web page */
+   fprintf(f, "<br><table style=\"text-align: left; width: 600px; background-color: yellow; font-family: Helvetica,Arial,sans-serif; font-weight: bold; color: black;\" border=\"0\" cellpadding=\"2\" cellspacing=\"2\">\r\n");
+   fprintf(f, "<tbody><tr style=\"font-size: 20px; font-weight: bold;\">\r\n");
+   fprintf(f, "<td>No compatible device detected !<br>\r\n");
+   fprintf(f, "<span style=\"font-size: 14px; color: grey;  font-weight: normal;\">This can be due to the following reasons:\r\n");
+   fprintf(f, "<div>- No relay card is connected via USB cable</div>\r\n");
+   fprintf(f, "<div>- The cp210x driver (with GPIO support) is not installed</div>\r\n");
+   fprintf(f, "<div>- The relay card is broken</div>\r\n");
+   fprintf(f, "</span></td></tbody></table><br>\r\n");
+}   
+
+
+/**********************************************************
+ * Function read_httppost_data()
+ * 
+ * Description:
+ * 
+ * Parameters:
+ * 
+ *********************************************************/
+int read_httppost_data(FILE* f, char* data)
+{
+   char buf[256];
+   int data_len=0;
    
+   /* POST request: data is provided after the page header.
+    * Therefore we skip the header and then read the form
+    * data into the buffer.
+    */
+   while (fgets(buf, sizeof(buf), f) != NULL)
+   {
+      //printf("%s", buf);
+      /* Find length of form data */
+      if (strstr(buf, "Content-Length:"))
+      {
+         data_len=atoi(buf+strlen("Content-Length:"));
+         //printf("DBG: data length is %d\n", data_len);
+      }
+      
+      /* Find end of header (empty line) */
+      if (!strcmp(buf, "\r\n")) break;
+   }
+   
+   /* Get form data string */
+   if (!fgets(data, data_len+1, f)) return -1;
+   *(data+data_len) = 0;
+   
+   return data_len;
+}
+
+
+/**********************************************************
+ * Function read_httpget_data()
+ * 
+ * Description:
+ * 
+ * Parameters:
+ * 
+ *********************************************************/
+int read_httpget_data(char* buf, char* data)
+{
+   char *datastr;
+         
+   /* GET request: data (if any) is provided in the first line
+    * of the page header. Therefore we first check if there is
+    * any data. If so we read the data into a buffer.
+    */
+   *data = 0;
+   if ((datastr=strchr(buf, '?')) != NULL)
+   {
+      strcpy(data, datastr+1);
+   }
+   
+   return strlen(data);
+}
+
+
+/**********************************************************
+ * Function process_http_request()
+ * 
+ * Description:
+ * 
+ * Parameters:
+ * 
+ *********************************************************/
+int process_http_request(FILE *f)
+{
+   char buf[256];
+   char *method;
+   char *url;
+   char formdata[64];
+   char *datastr;
+   int relay;  
+   int i;
+   char serial_port[16];
+   relay_state_t rstate[NUM_RELAYS];
+   relay_state_t nstate;
+   
+   formdata[0]=0;  
+   
+   /* Read  first line of request header which contains 
+    * the request method and url seperated by a space
+    */
+   if (!fgets(buf, sizeof(buf), f)) return -1;
+   //printf("********** Raw data ***********\n");
+   //printf("%s", buf);
+   
+   method = strtok(buf, " ");
+   if (!method) return -1;
+   //printf("method: %s\n", method);
+   
+   url = strtok(NULL, " ");
+   if (!url) return -2;
+   //printf("url: %s\n", url);
+   
+   fseek(f, 0, SEEK_CUR); // Force change of stream direction
+   
+   /* Check the request method we are dealing with */
+   if (strcasecmp(method, "POST") == 0)
+   {
+      read_httppost_data(f, formdata);
+   }
+   else if (strcasecmp(method, "GET") == 0)
+   {
+      read_httpget_data(url, formdata);         
+   }
+   else
+      return -3;
+   
+   //printf("DBG: form data: %s\n", formdata);
+   
+   /* Check if a relay card is present */
    if (detect_com_port(serial_port) == -1)
    {
-      /* No relay card detected, display error message on web page */
-      fprintf(f, "<br><table style=\"text-align: left; width: 600px; background-color: yellow; font-family: Helvetica,Arial,sans-serif; font-weight: bold; color: black;\" border=\"0\" cellpadding=\"2\" cellspacing=\"2\">\r\n");
-      fprintf(f, "<tbody><tr style=\"font-size: 20px; font-weight: bold;\">\r\n");
-      fprintf(f, "<td>No compatible device detected !<br>\r\n");
-      fprintf(f, "<span style=\"font-size: 14px; color: grey;  font-weight: normal;\">This can be due to the following reasons:\r\n");
-      fprintf(f, "<div>- No relay card is connected via USB cable</div>\r\n");
-      fprintf(f, "<div>- The cp210x driver (with GPIO support) is not installed</div>\r\n");
-      fprintf(f, "<div>- The relay card is broken</div>\r\n");
-      fprintf(f, "</span></td></tbody></table><br>\r\n");
+      if (strstr(url, API_URL))
+      {
+         /* HTTP API request */
+         fprintf(f, "ERROR: No compatible device detected !\r\n");
+      }
+      else
+      {  
+         /* Web page request */
+         web_page_header(f);
+         web_page_error(f);
+         web_page_footer(f);
+      }     
+      return -1;
+   }
+   
+   /* Process form data */
+   if (strlen(formdata)>0)
+   {
+      /* Get values from form data */
+      datastr = strstr(formdata, RELAY_TAG);
+      if (datastr)
+         relay = atoi(datastr+strlen(RELAY_TAG)+1);
+      datastr = strstr(formdata, STATE_TAG);
+      if (datastr)
+         nstate = atoi(datastr+strlen(STATE_TAG)+1);
+      
+      //printf("DBG: Found data: relay=%d, state=%d\n\n", relay, nstate);
+      
+      /* Perform the requested action here */
+      if (nstate==PULSE)
+      {
+         /* Generate pulse on relay switch */
+         get_relay(serial_port, relay, &rstate[relay-1]);
+         if (rstate[relay-1] == ON)
+         {
+            set_relay(serial_port, relay, OFF);
+            sleep(1);
+            set_relay(serial_port, relay, ON);
+         }
+         else
+         {
+            set_relay(serial_port, relay, ON);
+            sleep(1);
+            set_relay(serial_port, relay, OFF);
+         }
+      }
+      else
+      {
+         /* Switch relay on/off */
+         set_relay(serial_port, relay, nstate);
+      }
+   }
+      
+   /* Read current state for all relays */
+   for (i=FIRST_RELAY; i<=LAST_RELAY; i++)
+   {
+      get_relay(serial_port, i, &rstate[i-1]);
+   }
+   
+   /* Send response to client */
+   if (strstr(url, API_URL))
+   {
+      /* HTTP API request */
+      for (i=FIRST_RELAY; i<=LAST_RELAY; i++)
+      {
+         fprintf(f, "Relay %d:%d\r\n", i, rstate[i-1]);
+      }
    }
    else
    {
-      /* Read requested method */
-      if (!fgets(buf, sizeof(buf), f)) return -1;
-      method = strtok(buf, " ");
-      if (!method) return -1;
-      //printf("method: %s\n", method);
-      
-      fseek(f, 0, SEEK_CUR); // Force change of stream direction
-      
-      /* If this is a POST request that means that the form data was
-       * sent to us. We need to extract the data and perform the 
-       * requested action. 
-       * In case of a GET request, we just send back the HTML code of
-       * the web page with the current state of the relays.
-       */
-      if (strcasecmp(method, "POST") == 0)
-      {
-         while (fgets(buf, sizeof(buf), f) != NULL)
-         {
-            /* Find length of form data */
-            if (strstr(buf, "Content-Length:"))
-            {
-               data_len=atoi(buf+strlen("Content-Length:"));
-               //printf("DBG: data length is %d\n", data_len);
-            }
-            
-            /* Find end of header */
-            if (!strcmp(buf, "\r\n"))
-            {   
-               break;
-            }
-         }
-         
-         /* Get form data string */
-         if (!fgets(formdata, data_len+1, f)) return -1;
-         formdata[data_len] = 0;
-         //printf("DBG: form data: %s\n", formdata);
-         
-         /* Get values from form data */
-         datastr = strstr(formdata, RELAY_TAG);
-         relay = atoi(datastr+strlen(RELAY_TAG)+1);
-         datastr = strstr(formdata, STATE_TAG);
-         strcpy(state, datastr+strlen(STATE_TAG)+1);
-         if (!strcasecmp(state, "on"))
-            nstate=ON;
-         else if (!strcasecmp(state, "off"))
-            nstate=OFF;
-         else
-            ispulse=1;
-         
-         //printf("DBG: Found data: relay=%d, state=%s\n\n", relay, state);
-         
-         /* Perform the requested action here */
-         if (ispulse==0)
-         {
-            /* Switch relay on/off */
-            set_relay(serial_port, relay, nstate);
-         }
-         else
-         {
-            /* Generate pulse on relay switch */
-            get_relay(serial_port, relay, &rstate[relay-1]);
-            if (rstate[relay-1] == ON)
-            {
-               set_relay(serial_port, relay, OFF);
-               sleep(1);
-               set_relay(serial_port, relay, ON);
-            }
-            else
-            {
-               set_relay(serial_port, relay, ON);
-               sleep(1);
-               set_relay(serial_port, relay, OFF);
-            }
-         }
-      } // end of POST request handling
-            
-      /* Read current state for all relays */
-      for (i=FIRST_RELAY; i<=LAST_RELAY; i++)
-      {
-         get_relay(serial_port, i, &rstate[i-1]);
-      }
-           
+      /* Web request */
+
+      web_page_header(f);
+
       /* Display relay status and controls on web page */
       fprintf(f, "<img style=\"width: 250px; height: 250px;\" alt=\"Card image\" src=\"http://www.conrad.de/medias/global/ce/1000_1999/1900/1920/1928/192846_LB_00_FB.EPS_1000.jpg\">\r\n");
       fprintf(f, "<table style=\"text-align: left; width: 600px; background-color: white; font-family: Helvetica,Arial,sans-serif; font-weight: bold; font-size: 20px;\" border=\"0\" cellpadding=\"2\" cellspacing=\"3\"><tbody>\r\n");
@@ -382,24 +570,33 @@ int process(FILE *f)
                  i, rlabels[i-1]);
          fprintf(f, "<td style=\"text-align: center; vertical-align: middle; width: 100px; background-color: %s;\">%s</td>\r\n", 
                  rstate[i-1]==ON?"red":"lightgrey", rstate[i-1]==ON?"ON":"OFF");
+         fprintf(f, "<td style=\"text-align: center; vertical-align: middle; width: 100px;\"><form action='/' method='post'><input type='hidden' name='%s' value='%d' /><input type='hidden' name='%s' value='%d' /><input type='submit' title='Toggle relay' value='%s'></form></td>\r\n", 
+                 RELAY_TAG, i, STATE_TAG, rstate[i-1]==ON?0:1, rstate[i-1]==ON?"off":"on");
+         fprintf(f, "<td style=\"text-align: center; vertical-align: middle; width: 100px;\"><form action='/' method='post'><input type='hidden' name='%s' value='%d' /><input type='hidden' name='%s' value='2' /><input type='submit' title='Generate pulse' value='pulse'></form></td></tr>\r\n", 
+                 RELAY_TAG, i, STATE_TAG);
+#if 0
          fprintf(f, "<td style=\"text-align: center; vertical-align: middle; width: 100px;\"><form action='/' method='post'><input type='hidden' name='%s' value='%d' /><input name='%s' type='submit' title='Toggle relay' value='%s'></form></td>\r\n", 
                  RELAY_TAG, i, STATE_TAG, rstate[i-1]==ON?"off":"on");
          fprintf(f, "<td style=\"text-align: center; vertical-align: middle; width: 100px;\"><form action='/' method='post'><input type='hidden' name='%s' value='%d' /><input name='%s' type='submit' title='Generate pulse' value='pulse'></form></td></tr>\r\n", 
                  RELAY_TAG, i, STATE_TAG);
+#endif
       }
       fprintf(f, "</tbody></table><br>\r\n");
+      
+      web_page_footer(f);
    }
-   
-   /* Display web page footer */
-   fprintf(f, "<table style=\"text-align: left; width: 600px; background-color: rgb(0, 0, 153);\" border=\"0\" cellpadding=\"2\" cellspacing=\"2\"><tbody>\r\n");
-   fprintf(f, "<tr><td style=\"vertical-align: top; text-align: center;\"><span style=\"font-family: Helvetica,Arial,sans-serif; color: white;\">crelay | version %s | 2014</span></td></tr>\r\n",
-           VERSION);
-   fprintf(f, "</tbody></table></body></html>\r\n");    
-   
    return 0;
 }
 
 
+/**********************************************************
+ * Function print_usage()
+ * 
+ * Description:
+ * 
+ * Parameters:
+ * 
+ *********************************************************/
 void print_usage()
 {
    printf("This is a utility to control the Conrad USB 4-relay card.\n");
@@ -415,13 +612,24 @@ void print_usage()
    printf("Daemon mode:\n");
    printf("    crelay -d [<relay1_label> [<relay2_label> [<relay3_label> [<relay4_label>]]]] \n\n");
    printf("       In daemon mode the built-in web server will be started and the relays\n");
-   printf("       can be completely controlled via a Web browser GUI. Optionally a personal\n");
-   printf("       label for each relay can be supplied which will be displayed on the web page.\n");
+   printf("       can be completely controlled via a Web browser GUI or HTTP API.\n");
+   printf("       Optionally a personal label for each relay can be supplied which will\n");
+   printf("       be displayed next to the relay name on the web page.\n\n");
    printf("       To access the web interface point your Web browser to the following address:\n");
    printf("       http://<my-ip-address>:%d\n\n", SERVER_PORT);
+   printf("       To use the HTTP API send a POST or GET request from the client to this URL:\n");
+   printf("       http://<my-ip-address>:%d/%s\n\n", SERVER_PORT, API_URL);
 }
 
 
+/**********************************************************
+ * Function main()
+ * 
+ * Description:
+ * 
+ * Parameters:
+ * 
+ *********************************************************/
 int main(int argc, char *argv[])
 {
 
@@ -466,7 +674,7 @@ int main(int argc, char *argv[])
          if (s < 0) break;
          
          f = fdopen(s, "a+");
-         process(f);
+         process_http_request(f);
          fclose(f);
          close(s);
       }
