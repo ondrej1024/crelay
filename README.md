@@ -24,7 +24,8 @@ The relay card software provided by Conrad is Windows only and uses a binary run
 ### Screenshots
 
 #### Web GUI
-![Screenshot](https://github.com/ondrej1024/crelay/screenshots/crelay-sceenshot.png)
+![Screenshot](https://raw.github.com/ondrej1024/crelay/master/screenshots/crelay-screenshot.png)
+<br><br>
 
 #### Command line interface
 
@@ -55,7 +56,7 @@ The relay card software provided by Conrad is Windows only and uses a binary run
 
            To use the HTTP API send a POST or GET request from the client to this URL:
            http://<my-ip-address>:8000/gpio                                                  
-<br>  
+<br>
 ### HTTP API:
 An HTTP API is provided to access the server from external clients. This API is compatible with the PiRelay Android app. Therefore this app can be used on your Android phone to control <i>crelay</i> remotely.
 
