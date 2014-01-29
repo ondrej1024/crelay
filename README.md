@@ -6,7 +6,7 @@ This software controls the relays on the USB 4-channel relay card (USB 4fach-Rel
 
 The relay card software provided by Conrad is Windows only and uses a binary runtime DLL which implements the communication protocol between the host computer and the card. Thanks to a raspberrypi.org forum member, the communication protocol was discovered and made public. This made it possible to develop an open source software which can run on any Linux distribution with the cp210x kernel driver installed (see note below).
 
-### Features:
+### Features
 - Command line mode and daemon mode with Web GUI
 - Automatic detection of USB communication port
 - Reading of current relay states
@@ -14,7 +14,7 @@ The relay card software provided by Conrad is Windows only and uses a binary run
 - Single pulse generation on relay contact
 - HTTP API for external clients (e.g. Smartphone/tablet apps)  
 
-### Not yet supported (to do):
+### Not yet supported (to do)
 - multiple card support
 - support for relays connected via GPIO pins
 - access control for Web GUI and HTTP API
@@ -57,7 +57,7 @@ The relay card software provided by Conrad is Windows only and uses a binary run
            To use the HTTP API send a POST or GET request from the client to this URL:
            http://<my-ip-address>:8000/gpio                                                  
 <br>
-### HTTP API:
+### HTTP API
 An HTTP API is provided to access the server from external clients. This API is compatible with the PiRelay Android app. Therefore this app can be used on your Android phone to control <i>crelay</i> remotely.
 
 - API url  <pre><i>ip_address[:port]</i>/gpio</pre>
@@ -72,6 +72,28 @@ Relay 1:[0|1]
 Relay 2:[0|1]
 Relay 3:[0|1]
 Relay 4:[0|1]
+</pre>
+<br>
+
+### Installation
+
+* Clone git repository :  
+<pre>
+    git clone https://github.com/ondrej1024/crelay
+    cd crelay
+</pre>
+
+* Alternatively get latest source code version :  
+<pre>
+    wget https://github.com/ondrej1024/crelay/archive/master.zip
+    unzip master.zip
+    cd crelay-master/
+</pre>
+
+* Build and install :  
+<pre>
+    make
+    sudo make install
 </pre>
 <br>
 
