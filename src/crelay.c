@@ -1,29 +1,23 @@
 /******************************************************************************
  * 
- * Conrad USB 4-relay card utility
+ * Relay card control utility: Main module
  * 
  * Description:
- *   Controls the relays on the USB 4-relay card from Conrad.
- *   http://www.conrad.de/ce/de/product/393905
+ *   This software is used to controls different type of relays cards.
  *   There are 3 ways to control the relais:
  *    1. via command line
  *    2. via web interface using a browser
  *    3. via HTTP API using a client application
  * 
- * Note:
- *   We need the cp210x driver for the Silabs CP2104 chip with GPIO support.
- *   The official in-kernel cp210x driver does currently not yet support
- *   GPIO operations. Therefore the Silabs driver needs to be used:
- *   http://www.silabs.com/products/mcu/pages/usbtouartbridgevcpdrivers.aspx
- * 
  * Author:
  *   Ondrej Wisniewski (ondrej.wisniewski *at* gmail.com)
  *
  * Build instructions:
- *   gcc -o crelay crelay.c
+ *   make
+ *   sudo make install
  * 
  * Last modified:
- *   21/01/2014
+ *   19/02/2014
  *
  *****************************************************************************/ 
 
@@ -45,38 +39,6 @@
  * 
  *****************************************************************************/ 
  
-/******************************************************************************
- * Communication protocol description
- * ==================================
- * 
- * The Silabs CP2104 USB to UART Bridge Controller is used in GPIO mode.
- * 
- * Get relay status:
- * -----------------
- *  15 14 13 12   11 10 9  8   7  6  5  4    3  2  1  0   bit no
- *  X  X  X  X    X  X  X  X   X  X  X  X   R4 R3 R2 R1   relay state
- * 
- * 
- * Set relay status:
- * -----------------
- *  31 30 29 28   27 26 25 24  23 22 21 20  19 18 17 16   bit no
- *  X  X  X  X    X  X  X  X   X  X  X  X   R4 R3 R2 R1   relay state to set
- * 
- *  15 14 13 12   11 10 9  8   7  6  5  4    3  2  1  0   bit no
- *  X  X  X  X    X  X  X  X   X  X  X  X   R4 R3 R2 R1   relay bit mask
- * 
- * Relay names:
- *  R1: relay 1
- *  R2: relay 2
- *  R3: relay 3
- *  R4: relay 4
- * 
- * Meaning of bit values:
- *  0: NO contact open, NC contact closed, led is on
- *  1: NO contact closed, NC contact open, led is off
- * 
- *****************************************************************************/ 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -88,181 +50,24 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#define VERSION "0.3"
+#include "data_types.h"
+#include "relay_drv.h"
 
+#define VERSION "0.4"
+
+/* HTTP server defines */
 #define SERVER "crelay/"VERSION
 #define PROTOCOL "HTTP/1.0"
 #define RFC1123FMT "%a, %d %b %Y %H:%M:%S GMT"
 #define SERVER_PORT 8000
 #define API_URL "gpio"
 
+/* HTML tag definitions */
 #define RELAY_TAG "pin"
 #define STATE_TAG "status"
 
-#define IOCTL_GPIOGET 0x8000
-#define IOCTL_GPIOSET 0x8001
-
-#define FIRST_RELAY 1
-#define LAST_RELAY  4
-#define NUM_RELAYS  (LAST_RELAY-FIRST_RELAY+1)
-#define MAX_COM_PORTS 10
-
-/* USB serial device created by cp210x driver */
-#define SERIAL_DEV_BASE "/dev/ttyUSB"
-
-typedef unsigned char  uint8;
-typedef unsigned short uint16;
-typedef unsigned long  uint32;
-
-typedef enum {
-   OFF=0,
-   ON,
-   PULSE
-}
-relay_state_t;
 
 static char rlabels[NUM_RELAYS][32] = {"My appliance 1", "My appliance 2", "My appliance 3", "My appliance 4"};
-
-
-/**********************************************************
- * Function detect_com_port()
- * 
- * Description:
- * 
- * Parameters:
- * 
- *********************************************************/
-int detect_com_port(char* portname)
-{
-   uint8 found=0;
-   uint32 gpio=0;
-   int fd;
-   int i;
-   char pname[16];
-   
-   for (i=0; i<MAX_COM_PORTS; i++)
-   { 
-      /* Try to open USB serial device */
-      sprintf(pname, "%s%d", SERIAL_DEV_BASE, i);
-      //printf("DBG: Trying serial device %s\n", pname);
-      fd = open(pname, O_RDONLY | O_NOCTTY | O_NDELAY);
-      if (fd != -1) 
-      {
-         /* Now try to read the GPIO pins, this will work only
-          * for a CP210x device with GPIO support in the driver 
-          */
-         if (ioctl(fd, IOCTL_GPIOGET, &gpio) != -1)
-         {
-            /* It works, we found a compatible device */
-            found=1;
-            break;
-         }
-      }
-   }
-   
-   if (found) 
-   {
-      strcpy(portname, pname);
-      close(fd);
-      return 0;
-   }
-   
-   return -1;
-}
-
-
-/**********************************************************
- * Function get_relay()
- * 
- * Description:
- * 
- * Parameters:
- * 
- *********************************************************/
-int get_relay(char* portname, uint8 relay, relay_state_t* relay_state)
-{
-   uint32 gpio=0;
-   int fd;
-   int rc;
-   
-   if (relay<FIRST_RELAY || relay>LAST_RELAY)
-   {  
-      fprintf(stderr, "ERROR: Relay number out of range\n");
-      return -1;      
-   }
-
-   /* Open serial device */
-   fd = open(portname, O_RDWR | O_NOCTTY | O_NDELAY);
-   if (fd == -1) 
-   {
-      fprintf(stderr, "ERROR: Failed to open %s: %s\n", portname, strerror(errno));
-      return -2;      
-   }
-  
-   /* Get relay state from the card via IOCTL */ 
-   rc = ioctl(fd, IOCTL_GPIOGET, &gpio);
-   if (rc == -1)
-   {
-      fprintf(stderr, "IOCTL_GPIOGET failed: %s\n", strerror(errno));
-      return -3;
-   }
-
-   //printf("DBG: Read GPIO bits %08lX\n", gpio);   
-   relay = relay-1;
-   *relay_state = (gpio & (0x0001<<relay)) ? OFF : ON;
-      
-   close(fd);
-   return 0;
-}
-
-
-/**********************************************************
- * Function set_relay()
- * 
- * Description:
- * 
- * Parameters:
- * 
- *********************************************************/
-int set_relay(char* portname, int relay, relay_state_t relay_state)
-{
-   uint32 gpio=0;
-   int fd;
-   int rc;
-   
-   if (relay<FIRST_RELAY || relay>LAST_RELAY)
-   {  
-      fprintf(stderr, "ERROR: Relay number out of range\n");
-      return -1;      
-   }
-   
-   /* Open serial device */
-   fd = open(portname, O_RDWR | O_NOCTTY | O_NDELAY);
-   if (fd == -1) 
-   {
-      fprintf(stderr, "ERROR: Failed to open %s: %s\n", portname, strerror(errno));
-      return -2;      
-   }
-
-   /* Set the relay state bit */
-   relay = relay-1;
-   if (relay_state == OFF) gpio = 0x0001<<(relay+16);
-   
-   /* Set the relay bit mask */
-   gpio = gpio | (0x0001<<relay);
-
-   //printf("DBG: Writing GPIO bits %08lX\n", gpio);
-   
-   /* Set relay on the card via IOCTL */
-   rc = ioctl(fd, IOCTL_GPIOSET, &gpio);
-   if (rc == -1)
-   {
-      fprintf(stderr, "IOCTL_GPIOSET failed: %s\n", strerror(errno));
-      return -3;
-   }
-   
-   return 0;
-}
 
 
 /**********************************************************
@@ -312,11 +117,11 @@ void web_page_header(FILE *f)
    
    /* Display web page heading */
    fprintf(f, "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\r\n");
-   fprintf(f, "<html><head><title>Conrad 4 Channel Relay Card</title></head><body>\r\n");
+   fprintf(f, "<html><head><title>Relay Card Control interface</title></head><body>\r\n");
    fprintf(f, "<table style=\"text-align: left; width: 600px; background-color: rgb(0, 0, 153); font-family: Helvetica,Arial,sans-serif; font-weight: bold; color: white;\" border=\"0\" cellpadding=\"2\" cellspacing=\"2\">\r\n");
    fprintf(f, "<tbody><tr><td>\r\n");
    fprintf(f, "<span style=\"vertical-align: top; font-size: 48px;\">Relay Card Control</span><br>\r\n");
-   fprintf(f, "<span style=\"font-size: 16px; color: rgb(204, 255, 255);\">Conrad USB 4-channel Relay card controlling <span style=\"font-style: italic; color: white;\">made easy</span></span>\r\n");
+   fprintf(f, "<span style=\"font-size: 16px; color: rgb(204, 255, 255);\">Remote relay card controlling <span style=\"font-style: italic; color: white;\">made easy</span></span>\r\n");
    fprintf(f, "</td></tr></tbody></table>\r\n");  
 }
 
@@ -441,11 +246,11 @@ int process_http_request(FILE *f)
    char *url;
    char formdata[64];
    char *datastr;
-   int relay;  
+   int  relay=0;
    int i;
    char serial_port[16];
    relay_state_t rstate[NUM_RELAYS];
-   relay_state_t nstate;
+   relay_state_t nstate=INVALID;
    
    formdata[0]=0;  
    
@@ -511,28 +316,31 @@ int process_http_request(FILE *f)
       
       //printf("DBG: Found data: relay=%d, state=%d\n\n", relay, nstate);
       
-      /* Perform the requested action here */
-      if (nstate==PULSE)
+      if ((relay != 0) && (nstate != INVALID))
       {
-         /* Generate pulse on relay switch */
-         get_relay(serial_port, relay, &rstate[relay-1]);
-         if (rstate[relay-1] == ON)
+         /* Perform the requested action here */
+         if (nstate==PULSE)
          {
-            set_relay(serial_port, relay, OFF);
-            sleep(1);
-            set_relay(serial_port, relay, ON);
+            /* Generate pulse on relay switch */
+            get_relay(serial_port, relay, &rstate[relay-1]);
+            if (rstate[relay-1] == ON)
+            {
+               set_relay(serial_port, relay, OFF);
+               sleep(1);
+               set_relay(serial_port, relay, ON);
+            }
+            else
+            {
+               set_relay(serial_port, relay, ON);
+               sleep(1);
+               set_relay(serial_port, relay, OFF);
+            }
          }
          else
          {
-            set_relay(serial_port, relay, ON);
-            sleep(1);
-            set_relay(serial_port, relay, OFF);
+            /* Switch relay on/off */
+            set_relay(serial_port, relay, nstate);
          }
-      }
-      else
-      {
-         /* Switch relay on/off */
-         set_relay(serial_port, relay, nstate);
       }
    }
       
@@ -599,7 +407,17 @@ int process_http_request(FILE *f)
  *********************************************************/
 void print_usage()
 {
-   printf("This is a utility to control the Conrad USB 4-relay card.\n");
+   relay_type_t rtype;
+   char cname[30];
+   
+   printf("This utility provides a unified way of controlling different types of relay cards.\n");
+   printf("Currently supported relay cards:\n");
+   for(rtype=NO_RELAY_TYPE+1; rtype<LAST_RELAY_TYPE; rtype++)
+   {
+      get_relay_card_name(rtype, cname);
+      printf("  - %s\n", cname);
+   }
+   printf("\n");
    printf("The program can be run in interactive (command line) mode or in daemon mode with\n");
    printf("built-in web server.\n\n");
    printf("Interactive mode:\n");
