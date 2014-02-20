@@ -1,0 +1,42 @@
+
+Conrad USB 4fach-Relaiskarte
+============================
+
+Product page:
+http://www.conrad.de/ce/de/product/393905/Conrad-USB-4fach-Relaiskarte-Baustein-5-VDC-Ausgangsleistung-8-A24-VDC
+
+Software page:
+http://www.raspberrypi.org/phpBB3/viewtopic.php?f=75&t=56624
+ 
+Driver page:
+http://www.silabs.com/products/mcu/pages/usbtouartbridgevcpdrivers.aspx
+
+
+Communication protocol description:
+
+The Silabs CP2104 USB to UART Bridge Controller is used in GPIO mode.
+
+Get relay status:
+-----------------
+ 15 14 13 12   11 10 9  8   7  6  5  4    3  2  1  0   bit no
+ X  X  X  X    X  X  X  X   X  X  X  X   R4 R3 R2 R1   relay state
+
+
+Set relay status:
+-----------------
+ 31 30 29 28   27 26 25 24  23 22 21 20  19 18 17 16   bit no
+ X  X  X  X    X  X  X  X   X  X  X  X   R4 R3 R2 R1   relay state to set
+
+ 15 14 13 12   11 10 9  8   7  6  5  4    3  2  1  0   bit no
+ X  X  X  X    X  X  X  X   X  X  X  X   R4 R3 R2 R1   relay bit mask
+
+Relay names:
+ R1: relay 1
+ R2: relay 2
+ R3: relay 3
+ R4: relay 4
+
+Meaning of bit values:
+ 0: NO contact open, NC contact closed, led is on
+ 1: NO contact closed, NC contact open, led is off
+
