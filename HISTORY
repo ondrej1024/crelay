@@ -10,3 +10,7 @@ Version history
 0.3: 22/01/2014
 - Added HTTP API which can be used by external clients (e.g. Android app)
 
+0.4: 20/02/2014
+- Changed code structure to allow easy inclusion of new relay card support
+
+
