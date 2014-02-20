@@ -2,6 +2,7 @@
 # Makefile:
 ###############################################################################
 #
+# crelay project makefile
 #
 ###############################################################################
 
@@ -16,21 +17,24 @@ CC	= gcc
 INCLUDE	= -I.
 DEFS	= -D_GNU_SOURCE
 CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Winline $(INCLUDE) -pipe -fPIC
-
 LIBS    =
 
-# Should not alter anything below this line
-###############################################################################
+# Main source files (don't change)
+#SRC	= crelay.c relay_drv.c relay_drv_conrad.c relay_drv_gpio.c
+SRC	= $(BIN).c
+SRC	+= relay_drv.c
 
-SRC	=	crelay.c relay_drv.c relay_drv_conrad.c relay_drv_gpio.c
+# Relay card specific driver source files (add new drivers here)
+SRC	+= relay_drv_conrad.c
+SRC	+= relay_drv_gpio.c
 
-OBJ	=	$(SRC:.c=.o)
+OBJ	= $(SRC:.c=.o)
 
-all:		$(BIN)
+all:	$(BIN)
 
 $(BIN):	$(OBJ)
 	@echo "[Link]"
-	@$(CC) -o crelay $(OBJ)
+	@$(CC) -o $(BIN) $(OBJ)
 
 .c.o:
 	@echo "[Compile]"
@@ -39,16 +43,10 @@ $(BIN):	$(OBJ)
 .PHONEY:	clean
 clean:
 	@echo "[Clean]"
-	@rm -f $(OBJ) crelay
+	@rm -f $(OBJ) $(BIN)
 
 .PHONEY:	install
 install:	$(BIN)
 	@echo "[Install binary]"
 	@install -m 0755 -d		$(DESTDIR)$(PREFIX)/bin
 	@install -m 0755 $(BIN)		$(DESTDIR)$(PREFIX)/bin/$(BIN)
-
-
-# DO NOT DELETE
-
-#dht.o: dht.h
- 
