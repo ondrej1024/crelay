@@ -174,3 +174,34 @@ int get_relay_card_name(relay_type_t rtype, char* card_name)
    }
    return rc;    
 }
+
+
+/**********************************************************
+ * Function get_last_relay_num()
+ * 
+ * Description: Get the number of the last relay for
+ *              the detected card
+ * 
+ * Parameters: none
+ * 
+ * Return: last relay number
+ *********************************************************/
+int get_last_relay_num()
+{
+   int last_relay;
+   
+   switch (relay_type)
+   {
+      case CONRAD_4CHANNEL_USB_RELAY_TYPE:
+         last_relay = FIRST_RELAY+CONRAD_4CHANNEL_USB_NUM_RELAYS-1;
+      break;
+      
+      case GENERIC_GPIO_RELAY_TYPE:
+         last_relay = FIRST_RELAY+GENERIC_GPIO_NUM_RELAYS-1;
+      break;
+
+      default:
+         last_relay = FIRST_RELAY;
+   }
+   return last_relay;
+}

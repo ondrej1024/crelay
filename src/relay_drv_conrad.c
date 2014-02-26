@@ -145,7 +145,7 @@ int get_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t* relay_sta
    int fd;
    int rc;
    
-   if (relay<FIRST_RELAY || relay>LAST_RELAY)
+   if (relay<FIRST_RELAY || relay>(FIRST_RELAY+CONRAD_4CHANNEL_USB_NUM_RELAYS-1))
    {  
       fprintf(stderr, "ERROR: Relay number out of range\n");
       return -1;      
@@ -194,7 +194,7 @@ int set_relay_conrad_4chan(char* portname, int relay, relay_state_t relay_state)
    int fd;
    int rc;
    
-   if (relay<FIRST_RELAY || relay>LAST_RELAY)
+   if (relay<FIRST_RELAY || relay>(FIRST_RELAY+CONRAD_4CHANNEL_USB_NUM_RELAYS-1))
    {  
       fprintf(stderr, "ERROR: Relay number out of range\n");
       return -1;      

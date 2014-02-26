@@ -33,11 +33,11 @@ OBJ	= $(SRC:.c=.o)
 all:	$(BIN)
 
 $(BIN):	$(OBJ)
-	@echo "[Link]"
+	@echo "[Link $(BIN)]"
 	@$(CC) -o $(BIN) $(OBJ)
 
 .c.o:
-	@echo "[Compile]"
+	@echo "[Compile $<]"
 	@$(CC) -c $(CFLAGS) $< -o $@
 
 .PHONEY:	clean

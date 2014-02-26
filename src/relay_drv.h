@@ -37,12 +37,14 @@ typedef enum {
 }
 relay_state_t;
 
-#define CONRAD_4CHANNEL_USB_NAME "Conrad USB 4-channel relay card"
-#define GENERIC_GPIO_NAME        "Generic GPIO relays"
+#define CONRAD_4CHANNEL_USB_NAME       "Conrad USB 4-channel relay card"
+#define CONRAD_4CHANNEL_USB_NUM_RELAYS 4
 
-#define FIRST_RELAY 1
-#define LAST_RELAY  4
-#define NUM_RELAYS  (LAST_RELAY-FIRST_RELAY+1)
+#define GENERIC_GPIO_NAME              "Generic GPIO relays"
+#define GENERIC_GPIO_NUM_RELAYS        8
+
+#define FIRST_RELAY    1
+#define MAX_NUM_RELAYS 8
 
 
 /**********************************************************
@@ -110,6 +112,17 @@ relay_type_t get_relay_card_type();
  *********************************************************/
 int get_relay_card_name(relay_type_t rtype, char* card_name);
 
+/**********************************************************
+ * Function get_last_relay_num()
+ * 
+ * Description: Get the number of the last relay for
+ *              the detected card
+ * 
+ * Parameters: none
+ * 
+ * Return: last relay number
+ *********************************************************/
+int get_last_relay_num();
 
 #endif
 

@@ -13,4 +13,7 @@ Version history
 0.4: 20/02/2014
 - Changed code structure to allow easy inclusion of new relay card support
 
+0.5: 26/02/2014
+- Added support for relays connected via GPIO pins
+
 

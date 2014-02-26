@@ -17,7 +17,7 @@
  *   sudo make install
  * 
  * Last modified:
- *   19/02/2014
+ *   25/02/2014
  *
  *****************************************************************************/ 
 
@@ -53,7 +53,7 @@
 #include "data_types.h"
 #include "relay_drv.h"
 
-#define VERSION "0.4"
+#define VERSION "0.5"
 
 /* HTTP server defines */
 #define SERVER "crelay/"VERSION
@@ -67,7 +67,8 @@
 #define STATE_TAG "status"
 
 
-static char rlabels[NUM_RELAYS][32] = {"My appliance 1", "My appliance 2", "My appliance 3", "My appliance 4"};
+static char rlabels[MAX_NUM_RELAYS][32] = {"My appliance 1", "My appliance 2", "My appliance 3", "My appliance 4",
+                                           "My appliance 5", "My appliance 6", "My appliance 7", "My appliance 8"};
 
 
 /**********************************************************
@@ -247,9 +248,10 @@ int process_http_request(FILE *f)
    char formdata[64];
    char *datastr;
    int  relay=0;
+   int  last_relay=FIRST_RELAY;
    int i;
    char serial_port[16];
-   relay_state_t rstate[NUM_RELAYS];
+   relay_state_t rstate[MAX_NUM_RELAYS];
    relay_state_t nstate=INVALID;
    
    formdata[0]=0;  
@@ -303,6 +305,9 @@ int process_http_request(FILE *f)
       return -1;
    }
    
+   /* How many relays are on the detected card? */
+   last_relay = get_last_relay_num();
+   
    /* Process form data */
    if (strlen(formdata)>0)
    {
@@ -345,7 +350,7 @@ int process_http_request(FILE *f)
    }
       
    /* Read current state for all relays */
-   for (i=FIRST_RELAY; i<=LAST_RELAY; i++)
+   for (i=FIRST_RELAY; i<=last_relay; i++)
    {
       get_relay(serial_port, i, &rstate[i-1]);
    }
@@ -354,7 +359,7 @@ int process_http_request(FILE *f)
    if (strstr(url, API_URL))
    {
       /* HTTP API request */
-      for (i=FIRST_RELAY; i<=LAST_RELAY; i++)
+      for (i=FIRST_RELAY; i<=last_relay; i++)
       {
          fprintf(f, "Relay %d:%d\r\n", i, rstate[i-1]);
       }
@@ -362,6 +367,8 @@ int process_http_request(FILE *f)
    else
    {
       /* Web request */
+      char cname[30];
+      get_relay_card_name(get_relay_card_type(), cname);
 
       web_page_header(f);
 
@@ -369,9 +376,10 @@ int process_http_request(FILE *f)
       fprintf(f, "<img style=\"width: 250px; height: 250px;\" alt=\"Card image\" src=\"http://www.conrad.de/medias/global/ce/1000_1999/1900/1920/1928/192846_LB_00_FB.EPS_1000.jpg\">\r\n");
       fprintf(f, "<table style=\"text-align: left; width: 600px; background-color: white; font-family: Helvetica,Arial,sans-serif; font-weight: bold; font-size: 20px;\" border=\"0\" cellpadding=\"2\" cellspacing=\"3\"><tbody>\r\n");
       fprintf(f, "<tr style=\"font-size: 14px; background-color: lightgrey\">\r\n");
-      fprintf(f, "<td style=\"width: 200px;\">Card 1<span style=\"font-style: italic; font-size: 12px; color: grey; font-weight: normal;\"> on %s</span></td>\r\n", serial_port);
+      fprintf(f, "<td style=\"width: 200px;\">%s<br><span style=\"font-style: italic; font-size: 12px; color: grey; font-weight: normal;\">on %s</span></td>\r\n", 
+              cname, serial_port);
       fprintf(f, "<td style=\"background-color: white;\"></td><td style=\"background-color: white;\"></td></tr>\r\n");
-      for (i=FIRST_RELAY; i<=LAST_RELAY; i++)
+      for (i=FIRST_RELAY; i<=last_relay; i++)
       {
          fprintf(f, "<tr style=\"vertical-align: top; background-color: rgb(230, 230, 255);\">\r\n");
          fprintf(f, "<td style=\"width: 300px;\">Relay %d<br><span style=\"font-style: italic; font-size: 16px; color: grey;\">%s</span></td>\r\n", 
@@ -382,12 +390,6 @@ int process_http_request(FILE *f)
                  RELAY_TAG, i, STATE_TAG, rstate[i-1]==ON?0:1, rstate[i-1]==ON?"off":"on");
          fprintf(f, "<td style=\"text-align: center; vertical-align: middle; width: 100px;\"><form action='/' method='post'><input type='hidden' name='%s' value='%d' /><input type='hidden' name='%s' value='2' /><input type='submit' title='Generate pulse' value='pulse'></form></td></tr>\r\n", 
                  RELAY_TAG, i, STATE_TAG);
-#if 0
-         fprintf(f, "<td style=\"text-align: center; vertical-align: middle; width: 100px;\"><form action='/' method='post'><input type='hidden' name='%s' value='%d' /><input name='%s' type='submit' title='Toggle relay' value='%s'></form></td>\r\n", 
-                 RELAY_TAG, i, STATE_TAG, rstate[i-1]==ON?"off":"on");
-         fprintf(f, "<td style=\"text-align: center; vertical-align: middle; width: 100px;\"><form action='/' method='post'><input type='hidden' name='%s' value='%d' /><input name='%s' type='submit' title='Generate pulse' value='pulse'></form></td></tr>\r\n", 
-                 RELAY_TAG, i, STATE_TAG);
-#endif
       }
       fprintf(f, "</tbody></table><br>\r\n");
       
@@ -409,7 +411,7 @@ void print_usage()
 {
    relay_type_t rtype;
    char cname[30];
-   
+   printf("crelay, version %s\n\n", VERSION);
    printf("This utility provides a unified way of controlling different types of relay cards.\n");
    printf("Currently supported relay cards:\n");
    for(rtype=NO_RELAY_TYPE+1; rtype<LAST_RELAY_TYPE; rtype++)
@@ -417,6 +419,7 @@ void print_usage()
       get_relay_card_name(rtype, cname);
       printf("  - %s\n", cname);
    }
+   printf("The card which is detected first will be used.\n");
    printf("\n");
    printf("The program can be run in interactive (command line) mode or in daemon mode with\n");
    printf("built-in web server.\n\n");
@@ -466,7 +469,7 @@ int main(int argc, char *argv[])
       int i;
       
       /* Parse command line */
-      for (i=0; i<argc-2 && i<NUM_RELAYS; i++)
+      for (i=0; i<argc-2 && i<MAX_NUM_RELAYS; i++)
       {  
          strcpy(rlabels[i], argv[i+2]);
       }
@@ -511,13 +514,21 @@ int main(int argc, char *argv[])
          printf("No compatible device detected.\n");
          return -1;
       }
-      
+
+      if (!strcmp(argv[1],"-i"))
+      {
+         char cname[30];
+         if (get_relay_card_name(get_relay_card_type(), cname) == 0)
+            printf("Detected relay card type is %s\n", cname);
+         return 0;         
+      }
+   
       switch (argc)
       {
          case 2:
             /* GET current relay state */
-            get_relay(serial_port, atoi(argv[1]), &rstate);
-            printf("Relay %d is %s\n", atoi(argv[1]), (rstate==ON)?"on":"off");
+            if (get_relay(serial_port, atoi(argv[1]), &rstate) == 0)
+               printf("Relay %d is %s\n", atoi(argv[1]), (rstate==ON)?"on":"off");
             break;
             
          case 3:

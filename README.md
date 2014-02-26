@@ -4,17 +4,17 @@
 ### About
 This software is intended to run on Linux systems to control different relay cards in a unified way. It provides several interfaces for controlling the relays locally or remotely. The software was designed with the following requirements in mind:  
 
- - simple, intuitive usage/interface
+ - simple, intuitive usage and interface
  - as little depenencies as possible
  - lightweight, can run on simple devices
  - easily expandable (adding relay card types and user interfaces)
 
-New relay cards support can be added by providing the cards driver code for reading and setting the relays.
+New relay cards support can be added by providing the cards driver code for detecting the card, reading and setting the relays.
 Currently the following relay cards are supported:  
 
 - Conrad USB 4-channel relay card (http://www.conrad.de/ce/de/product/393905), see <i>Note 1</i> below
-- Generic GPIO controlled relays
-
+- Generic GPIO controlled relays, see <i>Note 2</i> below  
+<br>
 
 ### Features
 - Command line mode and daemon mode with Web GUI
@@ -24,18 +24,24 @@ Currently the following relay cards are supported:
 - Single pulse generation on relay contact
 - HTTP API for external clients (e.g. Smartphone/tablet apps)
 - Multiple relay card type support  
+<br>
 
-### Not yet supported (to do)
-- ThinkSpeak Talkback App
+### Coming soon (to do)
+- ThingSpeak Talkback App (https://thingspeak.com/docs/talkback)
+- Support for configuration file for custom parameters  
+<br>
+
+### Nice to have (wishlist)
 - Multiple card support
 - Access control for Web GUI and HTTP API
-- Programmable timers for relay actions
-- Other useful things  
+- Programmable timers for relay actions  
+<br>
 
 ### Screenshots
 
 #### Web GUI
-![Screenshot](https://raw.github.com/ondrej1024/crelay/master/screenshots/crelay-screenshot.png)
+![Screenshot](https://raw.github.com/ondrej1024/crelay/master/screenshots/crelay-screenshot1.png)
+![Screenshot](https://raw.github.com/ondrej1024/crelay/master/screenshots/crelay-screenshot2.png)
 <br><br>
 
 #### Command line interface
@@ -109,10 +115,25 @@ Relay 4:[0|1]
 </pre>
 <br>
 
-##### Note 1:
+##### <i>Note 1 (Conrad USB 4-channel relay card)</i>:
 The relay card software provided by Conrad is Windows only and uses a binary runtime DLL which implements the communication protocol between the host computer and the card. Thanks to a raspberrypi.org forum member, the communication protocol was discovered and made public. This made it possible to develop an open source driver for the Conrad card which can run on any Linux distribution with the cp210x kernel driver installed.
 
 It needs the cp210x kernel driver for the Silabs CP2104 chip with GPIO support. The official in-kernel cp210x driver does currently not yet support GPIO operations. Therefore the Silabs driver from their home page needs to be used:
 http://www.silabs.com/products/mcu/pages/usbtouartbridgevcpdrivers.aspx
 
-Unfortunately the kernel internal interfaces are continuously changing and the Silabs drivers don't built just like that for any given kernel version. Therefore, for your convenience, the cp210x directory contains the patched driver sources and pre-built binary drivers for selected distros and kernel versions (currently only Raspberry Pi binaries are provided, contributions are welcome).
+Unfortunately the kernel internal interfaces are continuously changing and the Silabs drivers don't built just like that for any given kernel version. Therefore, for your convenience, the cp210x directory contains the patched driver sources and pre-built binary drivers for selected distros and kernel versions (currently only Raspberry Pi binaries are provided, contributions are welcome).  
+<br>
+
+##### <i>Note 2 (GPIO controlled relays)</i>:
+The following GPIO pins are defined as factory default in relay_drv_gpio.c. Change these if you want to control different pins.
+<pre>
+ #define RELAY1_GPIO_PIN 17 // GPIO 0
+ #define RELAY2_GPIO_PIN 18 // GPIO 1
+ #define RELAY3_GPIO_PIN 27 // GPIO 2 (RPi rev.2)
+ #define RELAY4_GPIO_PIN 22 // GPIO 3
+ #define RELAY5_GPIO_PIN 23 // GPIO 4
+ #define RELAY6_GPIO_PIN 24 // GPIO 5
+ #define RELAY7_GPIO_PIN 25 // GPIO 6
+ #define RELAY8_GPIO_PIN  4 // GPIO 7
+</pre>
+
