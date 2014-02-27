@@ -2,10 +2,12 @@
 #### Controlling different relay cards for home automation with a Linux software
 
 ### About
-This software is intended to run on Linux systems to control different relay cards in a unified way. It provides several interfaces for controlling the relays locally or remotely. The software was designed with the following requirements in mind:  
+This software is intended to run on Linux systems to control different relay cards in a unified way. It provides several interfaces for controlling the relays locally or remotely. The relays can be controlled by a human being via a device like smartphone or web browser, or directly by an intelligent device as used in the Internet of Things.  
+The software was designed with the following requirements in mind:  
 
  - simple, intuitive usage and interface
- - as little depenencies as possible
+ - as little dependencies as possible (libraries, external programs)
+ - runs on different Linux distributions, different hardware platforms
  - lightweight, can run on simple devices
  - easily expandable (adding relay card types and user interfaces)
 
@@ -15,6 +17,10 @@ Currently the following relay cards are supported:
 - Conrad USB 4-channel relay card (http://www.conrad.de/ce/de/product/393905), see <i>Note 1</i> below
 - Generic GPIO controlled relays, see <i>Note 2</i> below  
 <br>
+
+The following picture shows a high level view on the modular software architecture.  
+![Software architechture](https://raw.github.com/ondrej1024/crelay/master/screenshots/sw-architecture.png)
+<br><br>
 
 ### Features
 - Command line mode and daemon mode with Web GUI
@@ -41,6 +47,7 @@ Currently the following relay cards are supported:
 
 #### Web GUI
 ![Screenshot](https://raw.github.com/ondrej1024/crelay/master/screenshots/crelay-screenshot1.png)
+<br><br>
 ![Screenshot](https://raw.github.com/ondrej1024/crelay/master/screenshots/crelay-screenshot2.png)
 <br><br>
 
@@ -115,6 +122,10 @@ Relay 4:[0|1]
 </pre>
 <br>
 
+### Adding new relay card drivers
+TODO  
+<br>
+
 ##### <i>Note 1 (Conrad USB 4-channel relay card)</i>:
 The relay card software provided by Conrad is Windows only and uses a binary runtime DLL which implements the communication protocol between the host computer and the card. Thanks to a raspberrypi.org forum member, the communication protocol was discovered and made public. This made it possible to develop an open source driver for the Conrad card which can run on any Linux distribution with the cp210x kernel driver installed.
 
@@ -137,3 +148,4 @@ The following GPIO pins are defined as factory default in relay_drv_gpio.c. Chan
  #define RELAY8_GPIO_PIN  4 // GPIO 7
 </pre>
 
+In order to be able to access the GPIO pins you need to run as superuser, therefore crelay needs to be executed with the <i>sudo</i> command on a multiuser system.
