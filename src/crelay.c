@@ -17,7 +17,7 @@
  *   sudo make install
  * 
  * Last modified:
- *   25/02/2014
+ *   27/02/2014
  *
  *****************************************************************************/ 
 
@@ -158,11 +158,13 @@ void web_page_error(FILE *f)
    /* No relay card detected, display error message on web page */
    fprintf(f, "<br><table style=\"text-align: left; width: 600px; background-color: yellow; font-family: Helvetica,Arial,sans-serif; font-weight: bold; color: black;\" border=\"0\" cellpadding=\"2\" cellspacing=\"2\">\r\n");
    fprintf(f, "<tbody><tr style=\"font-size: 20px; font-weight: bold;\">\r\n");
-   fprintf(f, "<td>No compatible device detected !<br>\r\n");
+   fprintf(f, "<td>No compatible relay card detected !<br>\r\n");
    fprintf(f, "<span style=\"font-size: 14px; color: grey;  font-weight: normal;\">This can be due to the following reasons:\r\n");
-   fprintf(f, "<div>- No relay card is connected via USB cable</div>\r\n");
-   fprintf(f, "<div>- The cp210x driver (with GPIO support) is not installed</div>\r\n");
+   fprintf(f, "<div>- No supported relay card is connected via USB or serial cable</div>\r\n");
+   fprintf(f, "<div>- A specific kernel driver needed by the card is not installed</div>\r\n");
    fprintf(f, "<div>- The relay card is broken</div>\r\n");
+   fprintf(f, "<div>- There is no GPIO sysfs support available on your platform\r\n");
+   fprintf(f, "<div>- You are running on a multiuser OS and don't have root permissions\r\n");
    fprintf(f, "</span></td></tbody></table><br>\r\n");
 }   
 
