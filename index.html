@@ -4,11 +4,11 @@
   <head>
     <meta charset='utf-8' />
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Crelay : Controlling the Conrad USB 4-relay card with a Linux software" />
+    <meta name="description" content="CRELAY : Controlling relay cards for home automation with a Linux software" />
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-    <title>Crelay</title>
+    <title>CRELAY</title>
   </head>
 
   <body>
@@ -18,8 +18,8 @@
         <header class="inner">
           <a id="forkme_banner" href="https://github.com/ondrej1024/crelay">View on GitHub</a>
 
-          <h1 id="project_title">Crelay</h1>
-          <h2 id="project_tagline">Controlling the Conrad USB 4-relay card with a Linux software</h2>
+          <h1 id="project_title">CRELAY</h1>
+          <h2 id="project_tagline">Controlling relay cards for home automation with a Linux software</h2>
 
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/ondrej1024/crelay/zipball/master">Download this project as a .zip file</a>
@@ -35,35 +35,55 @@
 <a name="crelay" class="anchor" href="#crelay"><span class="octicon octicon-link"></span></a>crelay</h1>
 
 <h4>
-<a name="controlling-the-conrad-usb-4-channel-relay-card-with-a-linux-software" class="anchor" href="#controlling-the-conrad-usb-4-channel-relay-card-with-a-linux-software"><span class="octicon octicon-link"></span></a>Controlling the Conrad USB 4-channel relay card with a Linux software</h4>
+<a name="controlling-different-relay-cards-for-home-automation-with-a-linux-software" class="anchor" href="#controlling-different-relay-cards-for-home-automation-with-a-linux-software"><span class="octicon octicon-link"></span></a>Controlling different relay cards for home automation with a Linux software</h4>
 
 <h3>
 <a name="about" class="anchor" href="#about"><span class="octicon octicon-link"></span></a>About</h3>
 
-<p>This software controls the relays on the USB 4-channel relay card (USB 4fach-Relaiskarte) from Conrad. See here for product description: <a href="http://www.conrad.de/ce/de/product/393905">http://www.conrad.de/ce/de/product/393905</a></p>
+<p>This software is intended to run on Linux systems to control different relay cards in a unified way. It provides several interfaces for controlling the relays locally or remotely. The relays can be controlled by a human being via a device like smartphone or web browser, or directly by an intelligent device as used in the Internet of Things.<br>
+The software was designed with the following requirements in mind:  </p>
 
-<p>The relay card software provided by Conrad is Windows only and uses a binary runtime DLL which implements the communication protocol between the host computer and the card. Thanks to a raspberrypi.org forum member, the communication protocol was discovered and made public. This made it possible to develop an open source software which can run on any Linux distribution with the cp210x kernel driver installed (see note below).</p>
+<ul>
+<li>simple, intuitive usage and interface</li>
+<li>as little dependencies as possible (libraries, external programs)</li>
+<li>runs on different Linux distributions, different hardware platforms</li>
+<li>lightweight, can run on simple devices</li>
+<li>easily expandable (adding relay card types and user interfaces)</li>
+</ul><p>New relay cards support can be added by providing the cards driver code for detecting the card, reading and setting the relays.
+Currently the following relay cards are supported:  </p>
+
+<ul>
+<li>Conrad USB 4-channel relay card (<a href="http://www.conrad.de/ce/de/product/393905">http://www.conrad.de/ce/de/product/393905</a>), see <em>Note 1</em> below</li>
+<li>Generic GPIO controlled relays, see <em>Note 2</em> below<br><br>
+</li>
+</ul><p>The following picture shows a high level view on the modular software architecture.<br><img src="https://raw.github.com/ondrej1024/crelay/master/screenshots/sw-architecture.png" alt="Software architechture"><br><br></p>
 
 <h3>
 <a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h3>
 
 <ul>
 <li>Command line mode and daemon mode with Web GUI</li>
-<li>Automatic detection of USB communication port</li>
+<li>Automatic detection of communication port</li>
 <li>Reading of current relay states</li>
 <li>Setting of new relay states</li>
 <li>Single pulse generation on relay contact</li>
-<li>HTTP API for external clients (e.g. Smartphone/tablet apps)<br>
+<li>HTTP API for external clients (e.g. Smartphone/tablet apps)</li>
+<li>Multiple relay card type support<br><br>
 </li>
 </ul><h3>
-<a name="not-yet-supported-to-do" class="anchor" href="#not-yet-supported-to-do"><span class="octicon octicon-link"></span></a>Not yet supported (to do)</h3>
+<a name="coming-soon-to-do" class="anchor" href="#coming-soon-to-do"><span class="octicon octicon-link"></span></a>Coming soon (to do)</h3>
 
 <ul>
-<li>multiple card support</li>
-<li>support for relays connected via GPIO pins</li>
-<li>access control for Web GUI and HTTP API</li>
-<li>programmable timers for relay actions</li>
-<li>other useful things<br>
+<li>ThingSpeak Talkback App client (<a href="https://thingspeak.com/docs/talkback">https://thingspeak.com/docs/talkback</a>)</li>
+<li>Support for configuration file for custom parameters<br><br>
+</li>
+</ul><h3>
+<a name="nice-to-have-wishlist" class="anchor" href="#nice-to-have-wishlist"><span class="octicon octicon-link"></span></a>Nice to have (wishlist)</h3>
+
+<ul>
+<li>Multiple card support</li>
+<li>Access control for Web GUI and HTTP API</li>
+<li>Programmable timers for relay actions<br><br>
 </li>
 </ul><h3>
 <a name="screenshots" class="anchor" href="#screenshots"><span class="octicon octicon-link"></span></a>Screenshots</h3>
@@ -71,7 +91,7 @@
 <h4>
 <a name="web-gui" class="anchor" href="#web-gui"><span class="octicon octicon-link"></span></a>Web GUI</h4>
 
-<p><img src="https://raw.github.com/ondrej1024/crelay/master/screenshots/crelay-screenshot.png" alt="Screenshot"><br><br></p>
+<p><img src="https://raw.github.com/ondrej1024/crelay/master/screenshots/crelay-screenshot1.png" alt="Screenshot"><br><br><img src="https://raw.github.com/ondrej1024/crelay/master/screenshots/crelay-screenshot2.png" alt="Screenshot"><br><br></p>
 
 <h4>
 <a name="command-line-interface" class="anchor" href="#command-line-interface"><span class="octicon octicon-link"></span></a>Command line interface</h4>
@@ -136,7 +156,7 @@ Relay 4:[0|1]
 
 <ul>
 <li>
-<p>Clone git repository :  </p>
+<p>Clone git repository:</p>
 
 <pre>
 git clone https://github.com/ondrej1024/crelay
@@ -144,38 +164,64 @@ cd crelay
 </pre>
 </li>
 <li>
-<p>Alternatively get latest source code version :  </p>
+<p>Alternatively get latest source code version:</p>
 
 <pre>
 wget https://github.com/ondrej1024/crelay/archive/master.zip
 unzip master.zip
-cd crelay-master/
+cd crelay-master
 </pre>
 </li>
 <li>
-<p>Build and install :  </p>
+<p>Build and install:</p>
 
 <pre>
+cd src
 make
 sudo make install
 </pre>
 
 <p><br></p>
 </li>
-</ul><h4>
-<a name="note" class="anchor" href="#note"><span class="octicon octicon-link"></span></a>Note:</h4>
+</ul><h3>
+<a name="adding-new-relay-card-drivers" class="anchor" href="#adding-new-relay-card-drivers"><span class="octicon octicon-link"></span></a>Adding new relay card drivers</h3>
 
-<p>For the crelay software to run, it needs the cp210x kernel driver for the Silabs CP2104 chip with GPIO support. The official in-kernel cp210x driver does currently not yet support GPIO operations. Therefore the Silabs driver from their home page needs to be used:
+<p>TODO<br><br></p>
+
+<h5>
+<a name="note-1-conrad-usb-4-channel-relay-card" class="anchor" href="#note-1-conrad-usb-4-channel-relay-card"><span class="octicon octicon-link"></span></a><em>Note 1 (Conrad USB 4-channel relay card</em>):</h5>
+
+<p>The relay card software provided by Conrad is Windows only and uses a binary runtime DLL which implements the communication protocol between the host computer and the card. Thanks to a raspberrypi.org forum member, the communication protocol was discovered and made public. This made it possible to develop an open source driver for the Conrad card which can run on any Linux distribution with the cp210x kernel driver installed.</p>
+
+<p>It needs the cp210x kernel driver for the Silabs CP2104 chip with GPIO support. The official in-kernel cp210x driver does currently not yet support GPIO operations. Therefore the Silabs driver from their home page needs to be used:
 <a href="http://www.silabs.com/products/mcu/pages/usbtouartbridgevcpdrivers.aspx">http://www.silabs.com/products/mcu/pages/usbtouartbridgevcpdrivers.aspx</a></p>
 
-<p>Unfortunately the kernel internal interfaces are continuously changing and the Silabs drivers don't built just like that for any given kernel version. Therefore, for your convenience, the cp210x directory contains the patched driver sources and pre-built binary drivers for selected distros and kernel versions (currently only Raspberry Pi binaries are provided, contributions are welcome).</p>
+<p>Unfortunately the kernel internal interfaces are continuously changing and the Silabs drivers don't built just like that for any given kernel version. Therefore, for your convenience, the cp210x directory contains the patched driver sources and pre-built binary drivers for selected distros and kernel versions (currently only Raspberry Pi binaries are provided, contributions are welcome).<br><br></p>
+
+<h5>
+<a name="note-2-gpio-controlled-relays" class="anchor" href="#note-2-gpio-controlled-relays"><span class="octicon octicon-link"></span></a><em>Note 2 (GPIO controlled relays)</em>:</h5>
+
+<p>The following GPIO pins are defined as factory default in relay_drv_gpio.c. Change these if you want to control different pins.</p>
+
+<pre>
+ #define RELAY1_GPIO_PIN 17 // GPIO 0
+ #define RELAY2_GPIO_PIN 18 // GPIO 1
+ #define RELAY3_GPIO_PIN 27 // GPIO 2 (RPi rev.2)
+ #define RELAY4_GPIO_PIN 22 // GPIO 3
+ #define RELAY5_GPIO_PIN 23 // GPIO 4
+ #define RELAY6_GPIO_PIN 24 // GPIO 5
+ #define RELAY7_GPIO_PIN 25 // GPIO 6
+ #define RELAY8_GPIO_PIN  4 // GPIO 7
+</pre>
+
+<p>In order to be able to access the GPIO pins you need to run as superuser, therefore crelay needs to be executed with the <i>sudo</i> command on a multiuser system.</p>
       </section>
     </div>
 
     <!-- FOOTER  -->
     <div id="footer_wrap" class="outer">
       <footer class="inner">
-        <p class="copyright">Crelay maintained by <a href="https://github.com/ondrej1024">ondrej1024</a></p>
+        <p class="copyright">CRELAY maintained by <a href="https://github.com/ondrej1024">ondrej1024</a></p>
         <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
