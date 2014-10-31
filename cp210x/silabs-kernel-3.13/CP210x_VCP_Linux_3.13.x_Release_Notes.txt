@@ -1,0 +1,44 @@
+This bundle contains a modified CP210x driver for the 3.13.0 kernel (Ubuntu 14.04).
+
+It contains:
+
+- Fix for CP2104, now sets the baudrate via "SET_BAUDRATE/GET_BAUDRATE" command
+- Fix for CP2105, now stores the interface number for the device for multi interface support
+- Fix to support GPIO on all parts
+- Fix to correct control request for MHS, Line Control and Break support
+
+NOTE: This driver is an example of how to perform GPIO operations within the CP210x driver since
+the driver on kernel.org does not support GPIO at this time. This driver has only been written
+and tested on the Linux 3.13.0 kernel on Ubuntu 14.04. This driver is a modified version of the
+existing driver in the Linux 3.13.0 kernel, which is maintained at kernel.org. It is recommened
+to use the driver there that matches your specific kernel version:
+
+www.kernel.org
+
+Build instrutions:
+
+Ubuntu:
+1. make ( your cp210x driver )
+2. cp cp210x.ko to /lib/modules/<kernel-version>/kernel/drivers/usb/serial
+3. insmod /lib/modules/<kernel-version/kernel/drivers/usb/serial/usbserial.ko
+4. insmod cp210x.ko
+
+RedHat:
+1. yum update kernel*  //need to update the kernel first otherwise your header won't match
+2. yum install kernel-devel kernel-headers  //get the devel and header packages.
+3. reboot  //your build link should be fixed after your system come back
+4. make ( your cp210x driver )  // should be able to build successfully at this point
+5. cp cp210x.ko to /lib/modules/<kernel-version>/kernel/drivers/usb/serial
+6a. insmod /lib/modules/<kernel-version/kernel/drivers/usb/serial/usbserial.ko
+6. insmod cp210x.ko
+7. sudo chmod 666 /dev/ttyUSB0
+8. sudo chmod 666 /dev/ttyUSB1
+
+
+GPIO example:
+This shows how to use the two IOCTLs to toggle GPIOs. This sample application simply reads
+the GPIO settings from the device, flips it, then writes the new setting.
+
+Build instructions:
+1. g++ cp210x_gpio_example.c -o cp210x_gpio_example
+2. ./cp210x_gpio_example
