@@ -20,7 +20,7 @@
  *   gcc -c relay_drv_conrad.c
  * 
  * Last modified:
- *   19/02/2014
+ *   31/10/2014
  *
  *****************************************************************************/ 
 
@@ -29,20 +29,22 @@
  * ==================================
  * 
  * The Silabs CP2104 USB to UART Bridge Controller is used in GPIO mode.
+ * These bit assignments are valid for the driver Silabs provides for the
+ * Kernel version 3.13 and higher.
  * 
  * Get relay status:
  * -----------------
- *  15 14 13 12   11 10 9  8   7  6  5  4    3  2  1  0   bit no
- *  X  X  X  X    X  X  X  X   X  X  X  X   R4 R3 R2 R1   relay state
+ *  7  6  5  4    3  2  1  0   bit no
+ *  X  X  X  X   R4 R3 R2 R1   relay state
  * 
  * 
  * Set relay status:
  * -----------------
- *  31 30 29 28   27 26 25 24  23 22 21 20  19 18 17 16   bit no
- *  X  X  X  X    X  X  X  X   X  X  X  X   R4 R3 R2 R1   relay state to set
+ *  15 14 13 12   11 10 9  8   bit no
+ *  X  X  X  X   R4 R3 R2 R1   relay state to set
  * 
- *  15 14 13 12   11 10 9  8   7  6  5  4    3  2  1  0   bit no
- *  X  X  X  X    X  X  X  X   X  X  X  X   R4 R3 R2 R1   relay bit mask
+ *  7  6  5  4    3  2  1  0   bit no
+ *  X  X  X  X   R4 R3 R2 R1   relay bit mask
  * 
  * Relay names:
  *  R1: relay 1
@@ -51,8 +53,8 @@
  *  R4: relay 4
  * 
  * Meaning of bit values:
- *  0: NO contact open, NC contact closed, led is on
- *  1: NO contact closed, NC contact open, led is off
+ *  0: NO contact closed, NC contact open, led is on
+ *  1: NO contact open, NC contact closed, led is off
  * 
  *****************************************************************************/ 
 
@@ -69,6 +71,8 @@
 
 #define IOCTL_GPIOGET 0x8000
 #define IOCTL_GPIOSET 0x8001
+
+#define RSTATES_BITOFFSET 8
 
 /* USB serial device created by cp210x driver */
 #define SERIAL_DEV_BASE "/dev/ttyUSB"
@@ -210,7 +214,7 @@ int set_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t relay_stat
 
    /* Set the relay state bit */
    relay = relay-1;
-   if (relay_state == OFF) gpio = 0x0001<<(relay+16);
+   if (relay_state == OFF) gpio = 0x0001<<(relay+RSTATES_BITOFFSET);
    
    /* Set the relay bit mask */
    gpio = gpio | (0x0001<<relay);
