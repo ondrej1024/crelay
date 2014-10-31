@@ -10,7 +10,7 @@
  *   Ondrej Wisniewski (ondrej.wisniewski *at* gmail.com)
  *
  * Last modified:
- *   19/02/2014
+ *   31/10/2014
  *
  *****************************************************************************/ 
 
@@ -28,6 +28,37 @@
 
 static relay_type_t relay_type=NO_RELAY_TYPE;
 
+/*
+ *  Table which holds the specific relay card data:
+ *    - function to detect the communication port
+ *    - function to get the current relay state
+ *    - function to set the new relay state
+ *    - card name string
+ *    - number of relays on the card
+ * 
+ *  The index into the table is the relay card type.
+ */
+static relay_data_t relay_data[LAST_RELAY_TYPE] =
+{ 
+   {  // NO_RELAY_TYPE (dummy entry)
+      NULL, NULL, NULL, "", 0
+   },
+   {  // CONRAD_4CHANNEL_USB_RELAY_TYPE
+      detect_com_port_conrad_4chan,
+      get_relay_conrad_4chan,
+      set_relay_conrad_4chan,
+      CONRAD_4CHANNEL_USB_NAME,
+      CONRAD_4CHANNEL_USB_NUM_RELAYS
+   },
+   {  // GENERIC_GPIO_RELAY_TYPE
+      detect_com_port_generic_gpio,
+      get_relay_generic_gpio,
+      set_relay_generic_gpio,
+      GENERIC_GPIO_NAME,
+      GENERIC_GPIO_NUM_RELAYS
+   }
+};
+
 
 /**********************************************************
  * Function detect_com_port()
@@ -44,16 +75,15 @@ static relay_type_t relay_type=NO_RELAY_TYPE;
  *********************************************************/
 int detect_com_port(char* portname)
 {
-   if (detect_com_port_conrad_4chan(portname) == 0)
-   {
-     relay_type=CONRAD_4CHANNEL_USB_RELAY_TYPE;
-     return 0;
-   }
+   int i;
    
-   if (detect_com_port_generic_gpio(portname) == 0)
+   for (i=1; i<LAST_RELAY_TYPE; i++)
    {
-     relay_type=GENERIC_GPIO_RELAY_TYPE;
-     return 0;
+      if ((*relay_data[i].detect_com_port_fun)(portname) == 0)
+      {
+         relay_type=i;
+         return 0;
+      }
    }
    
    relay_type = NO_RELAY_TYPE;
@@ -75,22 +105,14 @@ int detect_com_port(char* portname)
  *********************************************************/
 int get_relay(char* portname, uint8 relay, relay_state_t* relay_state)
 {
-   int rc;
-   
-   switch (relay_type)
+   if (relay_type != NO_RELAY_TYPE)
    {
-      case CONRAD_4CHANNEL_USB_RELAY_TYPE:
-         rc = get_relay_conrad_4chan(portname, relay, relay_state);
-      break;
-      
-      case GENERIC_GPIO_RELAY_TYPE:
-         rc = get_relay_generic_gpio(portname, relay, relay_state);       
-      break;
-
-      default:
-         rc = -1;
+      return (*relay_data[relay_type].get_relay_fun)(portname, relay, relay_state);
    }
-   return rc;
+   else
+   {   
+      return -1;
+   }
 }
 
 
@@ -106,24 +128,16 @@ int get_relay(char* portname, uint8 relay, relay_state_t* relay_state)
  * Return:   o - success
  *          -1 - fail
  *********************************************************/
-int set_relay(char* portname, int relay, relay_state_t relay_state)
+int set_relay(char* portname, uint8 relay, relay_state_t relay_state)
 {
-   int rc;
-   
-   switch (relay_type)
+   if (relay_type != NO_RELAY_TYPE)
    {
-      case CONRAD_4CHANNEL_USB_RELAY_TYPE:
-         rc = set_relay_conrad_4chan(portname, relay, relay_state);
-      break;
-      
-      case GENERIC_GPIO_RELAY_TYPE:
-         rc = set_relay_generic_gpio(portname, relay, relay_state);      
-      break;
-
-      default:
-         rc = -1;
+      return (*relay_data[relay_type].set_relay_fun)(portname, relay, relay_state);
    }
-   return rc;
+   else
+   {   
+      return -1;
+   }
 }
 
 
@@ -145,7 +159,7 @@ relay_type_t get_relay_card_type()
 /**********************************************************
  * Function get_relay_card_name()
  * 
- * Description: Get the detected relay card name
+ * Description: Get the relay card name for a relay type
  * 
  * Parameters: rtype           - relay type
  *             card_name (out) - pointer to a string where
@@ -157,22 +171,15 @@ relay_type_t get_relay_card_type()
  *********************************************************/
 int get_relay_card_name(relay_type_t rtype, char* card_name)
 {
-   int rc=0;
-   
-   switch (rtype)
+   if (rtype != NO_RELAY_TYPE)
    {
-      case CONRAD_4CHANNEL_USB_RELAY_TYPE:
-         strcpy(card_name, CONRAD_4CHANNEL_USB_NAME);
-      break;
-      
-      case GENERIC_GPIO_RELAY_TYPE:
-         strcpy(card_name, GENERIC_GPIO_NAME);
-      break;
-
-      default:
-         rc = -1;
+      strcpy(card_name, relay_data[rtype].card_name);
+      return 0;
    }
-   return rc;    
+   else
+   {   
+      return -1;
+   }  
 }
 
 
@@ -188,20 +195,12 @@ int get_relay_card_name(relay_type_t rtype, char* card_name)
  *********************************************************/
 int get_last_relay_num()
 {
-   int last_relay;
-   
-   switch (relay_type)
+   if (relay_type != NO_RELAY_TYPE)
    {
-      case CONRAD_4CHANNEL_USB_RELAY_TYPE:
-         last_relay = FIRST_RELAY+CONRAD_4CHANNEL_USB_NUM_RELAYS-1;
-      break;
-      
-      case GENERIC_GPIO_RELAY_TYPE:
-         last_relay = FIRST_RELAY+GENERIC_GPIO_NUM_RELAYS-1;
-      break;
-
-      default:
-         last_relay = FIRST_RELAY;
+      return FIRST_RELAY+relay_data[relay_type].num_relays-1;
    }
-   return last_relay;
+   else
+   {
+      return FIRST_RELAY;
+   }
 }

@@ -58,6 +58,6 @@ int get_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t* relay_sta
  * Return:   o - success
  *          -1 - fail
  *********************************************************/
-int set_relay_conrad_4chan(char* portname, int relay, relay_state_t relay_state);
+int set_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t relay_state);
 
 #endif

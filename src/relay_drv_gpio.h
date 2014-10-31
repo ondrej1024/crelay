@@ -57,6 +57,6 @@ int get_relay_generic_gpio(char* portname, uint8 relay, relay_state_t* relay_sta
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int set_relay_generic_gpio(char* portname, int relay, relay_state_t relay_state);
+int set_relay_generic_gpio(char* portname, uint8 relay, relay_state_t relay_state);
 
 #endif
