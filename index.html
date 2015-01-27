@@ -2,9 +2,9 @@
 <html>
 
   <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="CRELAY : Controlling relay cards for home automation with a Linux software" />
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="CRELAY : Controlling relay cards for home automation with a Linux software">
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
@@ -32,13 +32,13 @@
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
         <h1>
-<a name="crelay" class="anchor" href="#crelay"><span class="octicon octicon-link"></span></a>crelay</h1>
+<a id="crelay" class="anchor" href="#crelay" aria-hidden="true"><span class="octicon octicon-link"></span></a>crelay</h1>
 
 <h4>
-<a name="controlling-different-relay-cards-for-home-automation-with-a-linux-software" class="anchor" href="#controlling-different-relay-cards-for-home-automation-with-a-linux-software"><span class="octicon octicon-link"></span></a>Controlling different relay cards for home automation with a Linux software</h4>
+<a id="controlling-different-relay-cards-for-home-automation-with-a-linux-software" class="anchor" href="#controlling-different-relay-cards-for-home-automation-with-a-linux-software" aria-hidden="true"><span class="octicon octicon-link"></span></a>Controlling different relay cards for home automation with a Linux software</h4>
 
 <h3>
-<a name="about" class="anchor" href="#about"><span class="octicon octicon-link"></span></a>About</h3>
+<a id="about" class="anchor" href="#about" aria-hidden="true"><span class="octicon octicon-link"></span></a>About</h3>
 
 <p>This software is intended to run on Linux systems to control different relay cards in a unified way. It provides several interfaces for controlling the relays locally or remotely. The relays can be controlled by a human being via a device like smartphone or web browser, or directly by an intelligent device as used in the Internet of Things.<br>
 The software was designed with the following requirements in mind:  </p>
@@ -49,17 +49,25 @@ The software was designed with the following requirements in mind:  </p>
 <li>runs on different Linux distributions, different hardware platforms</li>
 <li>lightweight, can run on simple devices</li>
 <li>easily expandable (adding relay card types and user interfaces)</li>
-</ul><p>New relay cards support can be added by providing the cards driver code for detecting the card, reading and setting the relays.
+</ul>
+
+<p>New relay cards support can be added by providing the cards driver code for detecting the card, reading and setting the relays.
 Currently the following relay cards are supported:  </p>
 
 <ul>
-<li>Conrad USB 4-channel relay card (<a href="http://www.conrad.de/ce/de/product/393905">http://www.conrad.de/ce/de/product/393905</a>), see <em>Note 1</em> below</li>
-<li>Generic GPIO controlled relays, see <em>Note 2</em> below<br><br>
+<li>Conrad USB 4-channel relay card (<a href="http://www.conrad.de/ce/de/product/393905">http://www.conrad.de/ce/de/product/393905</a>), see <i>Note 1</i> below</li>
+<li>Sainsmart USB 4-channel relay card (<a href="http://www.sainsmart.com/sainsmart-4-channel-5v-usb-relay-board-module-controller-for-automation-robotics.html">http://www.sainsmart.com/sainsmart-4-channel-5v-usb-relay-board-module-controller-for-automation-robotics.html</a>), see <i>Note 2</i> below</li>
+<li>Generic GPIO controlled relays, see <i>Note 3</i> below<br>
+<br>
 </li>
-</ul><p>The following picture shows a high level view on the modular software architecture.<br><img src="https://raw.github.com/ondrej1024/crelay/master/screenshots/sw-architecture.png" alt="Software architechture"><br><br></p>
+</ul>
+
+<p>The following picture shows a high level view on the modular software architecture.<br>
+<img src="https://raw.github.com/ondrej1024/crelay/master/screenshots/sw-architecture.png" alt="Software architechture">
+<br><br></p>
 
 <h3>
-<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h3>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features</h3>
 
 <ul>
 <li>Command line mode and daemon mode with Web GUI</li>
@@ -68,41 +76,61 @@ Currently the following relay cards are supported:  </p>
 <li>Setting of new relay states</li>
 <li>Single pulse generation on relay contact</li>
 <li>HTTP API for external clients (e.g. Smartphone/tablet apps)</li>
-<li>Multiple relay card type support<br><br>
+<li>Multiple relay card type support<br>
+<br>
 </li>
-</ul><h3>
-<a name="coming-soon-to-do" class="anchor" href="#coming-soon-to-do"><span class="octicon octicon-link"></span></a>Coming soon (to do)</h3>
+</ul>
+
+<h3>
+<a id="coming-soon-to-do" class="anchor" href="#coming-soon-to-do" aria-hidden="true"><span class="octicon octicon-link"></span></a>Coming soon (to do)</h3>
 
 <ul>
-<li>ThingSpeak Talkback App client (<a href="https://thingspeak.com/docs/talkback">https://thingspeak.com/docs/talkback</a>)</li>
-<li>Support for configuration file for custom parameters<br><br>
+<li>ThingSpeak Talkback App (<a href="https://thingspeak.com/docs/talkback">https://thingspeak.com/docs/talkback</a>)</li>
+<li>Support for configuration file for custom parameters<br>
+<br>
 </li>
-</ul><h3>
-<a name="nice-to-have-wishlist" class="anchor" href="#nice-to-have-wishlist"><span class="octicon octicon-link"></span></a>Nice to have (wishlist)</h3>
+</ul>
+
+<h3>
+<a id="nice-to-have-wishlist" class="anchor" href="#nice-to-have-wishlist" aria-hidden="true"><span class="octicon octicon-link"></span></a>Nice to have (wishlist)</h3>
 
 <ul>
-<li>Multiple card support</li>
+<li>Multiple cards support</li>
 <li>Access control for Web GUI and HTTP API</li>
-<li>Programmable timers for relay actions<br><br>
+<li>Programmable timers for relay actions<br>
+<br>
 </li>
-</ul><h3>
-<a name="screenshots" class="anchor" href="#screenshots"><span class="octicon octicon-link"></span></a>Screenshots</h3>
+</ul>
+
+<h3>
+<a id="screenshots" class="anchor" href="#screenshots" aria-hidden="true"><span class="octicon octicon-link"></span></a>Screenshots</h3>
 
 <h4>
-<a name="web-gui" class="anchor" href="#web-gui"><span class="octicon octicon-link"></span></a>Web GUI</h4>
+<a id="web-gui" class="anchor" href="#web-gui" aria-hidden="true"><span class="octicon octicon-link"></span></a>Web GUI</h4>
 
-<p><img src="https://raw.github.com/ondrej1024/crelay/master/screenshots/crelay-screenshot1.png" alt="Screenshot"><br><br><img src="https://raw.github.com/ondrej1024/crelay/master/screenshots/crelay-screenshot2.png" alt="Screenshot"><br><br></p>
+<p><img src="https://raw.github.com/ondrej1024/crelay/master/screenshots/crelay-screenshot1.png" alt="Screenshot">
+<br><br>
+<img src="https://raw.github.com/ondrej1024/crelay/master/screenshots/crelay-screenshot2.png" alt="Screenshot">
+<br><br></p>
 
 <h4>
-<a name="command-line-interface" class="anchor" href="#command-line-interface"><span class="octicon octicon-link"></span></a>Command line interface</h4>
+<a id="command-line-interface" class="anchor" href="#command-line-interface" aria-hidden="true"><span class="octicon octicon-link"></span></a>Command line interface</h4>
 
 <pre><code>$ crelay 
-This is a utility to control the Conrad USB 4-relay card.
+crelay, version 0.6
+
+This utility provides a unified way of controlling different types of relay cards.
+Currently supported relay cards:
+  - Conrad USB 4-channel relay card
+  - Sainsmart USB 4-channel relay card
+  - Generic GPIO relays
+The card which is detected first will be used. 
+
 The program can be run in interactive (command line) mode or in daemon mode with
 built-in web server.
 
 Interactive mode:
-    crelay [&lt;relay number&gt;] [ON|OFF]
+    crelay -i | [&lt;relay number&gt;] [ON|OFF]
 
        The state of any relay can be read or it can be changed to a new state.
        If only the relay number is provided then the current state is returned,
@@ -122,41 +150,60 @@ Daemon mode:
        http://&lt;my-ip-address&gt;:8000
 
        To use the HTTP API send a POST or GET request from the client to this URL:
-       http://&lt;my-ip-address&gt;:8000/gpio                                                  
+       http://&lt;my-ip-address&gt;:8000/gpio
 </code></pre>
 
-<p><br></p>
+<p><br>  </p>
 
 <h3>
-<a name="http-api" class="anchor" href="#http-api"><span class="octicon octicon-link"></span></a>HTTP API</h3>
+<a id="http-api" class="anchor" href="#http-api" aria-hidden="true"><span class="octicon octicon-link"></span></a>HTTP API</h3>
 
 <p>An HTTP API is provided to access the server from external clients. This API is compatible with the PiRelay Android app. Therefore this app can be used on your Android phone to control <i>crelay</i> remotely.</p>
 
 <ul>
-<li>API url  <pre><i>ip_address[:port]</i>/gpio</pre>
-</li>
-<li>Method: <pre>POST or GET</pre>
-</li>
-<li>Reading relay states<br>
-Required Parameter: none</li>
-<li>Setting relay state<br> 
-Required Parameter: <pre>pin=[1|2|3|4], status=[0|1|2] where 0=off 1=on 2=pulse</pre>
-</li>
-<li>Response from server:
+<li>
+<p>API url:  </p>
+
+<pre><i>ip_address[:port]</i>/gpio</pre>  </li>
+<li>
+<p>Method:  </p>
+
+<pre>POST or GET</pre>  </li>
+<li><p>Reading relay states<br>
+Required Parameter: none  </p></li>
+<li>
+<p>Setting relay state<br>
+Required Parameter: </p>
+<pre>pin=[1|2|3|4], status=[0|1|2] where 0=off 1=on 2=pulse</pre>  </li>
+<li>
+<p>Response from server:  </p>
+
 <pre>
 Relay 1:[0|1]
 Relay 2:[0|1]
 Relay 3:[0|1]
 Relay 4:[0|1]
-</pre>
-<br>
+</pre>  
+
+<p><br></p>
 </li>
-</ul><h3>
-<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h3>
+</ul>
+
+<h3>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h3>
+
+<p>The installation procedure is usually perfomed directly on the target system. Therefore a C compiler and friends should already be installed. Otherwise a cross compilation environment needs to be setup on a PC (this is not described here).  </p>
 
 <ul>
 <li>
-<p>Clone git repository:</p>
+<p>Install dependencies:  </p>
+
+<pre>
+apt-get install libftdi1 libftdi-dev
+</pre>
+</li>
+<li>
+<p>Clone git repository :  </p>
 
 <pre>
 git clone https://github.com/ondrej1024/crelay
@@ -164,7 +211,7 @@ cd crelay
 </pre>
 </li>
 <li>
-<p>Alternatively get latest source code version:</p>
+<p>Alternatively get latest source code version :  </p>
 
 <pre>
 wget https://github.com/ondrej1024/crelay/archive/master.zip
@@ -173,7 +220,7 @@ cd crelay-master
 </pre>
 </li>
 <li>
-<p>Build and install:</p>
+<p>Build and install :  </p>
 
 <pre>
 cd src
@@ -183,23 +230,45 @@ sudo make install
 
 <p><br></p>
 </li>
-</ul><h3>
-<a name="adding-new-relay-card-drivers" class="anchor" href="#adding-new-relay-card-drivers"><span class="octicon octicon-link"></span></a>Adding new relay card drivers</h3>
+</ul>
 
-<p>TODO<br><br></p>
+<h3>
+<a id="adding-new-relay-card-drivers" class="anchor" href="#adding-new-relay-card-drivers" aria-hidden="true"><span class="octicon octicon-link"></span></a>Adding new relay card drivers</h3>
+
+<p>TODO<br>
+<br></p>
 
 <h5>
-<a name="note-1-conrad-usb-4-channel-relay-card" class="anchor" href="#note-1-conrad-usb-4-channel-relay-card"><span class="octicon octicon-link"></span></a><em>Note 1 (Conrad USB 4-channel relay card</em>):</h5>
+<a id="note-1-conrad-usb-4-channel-relay-card" class="anchor" href="#note-1-conrad-usb-4-channel-relay-card" aria-hidden="true"><span class="octicon octicon-link"></span></a>
+<i>Note 1 (Conrad USB 4-channel relay card)</i>:</h5>
 
 <p>The relay card software provided by Conrad is Windows only and uses a binary runtime DLL which implements the communication protocol between the host computer and the card. Thanks to a raspberrypi.org forum member, the communication protocol was discovered and made public. This made it possible to develop an open source driver for the Conrad card which can run on any Linux distribution with the cp210x kernel driver installed.</p>
 
 <p>It needs the cp210x kernel driver for the Silabs CP2104 chip with GPIO support. The official in-kernel cp210x driver does currently not yet support GPIO operations. Therefore the Silabs driver from their home page needs to be used:
 <a href="http://www.silabs.com/products/mcu/pages/usbtouartbridgevcpdrivers.aspx">http://www.silabs.com/products/mcu/pages/usbtouartbridgevcpdrivers.aspx</a></p>
 
-<p>Unfortunately the kernel internal interfaces are continuously changing and the Silabs drivers don't built just like that for any given kernel version. Therefore, for your convenience, the cp210x directory contains the patched driver sources and pre-built binary drivers for selected distros and kernel versions (currently only Raspberry Pi binaries are provided, contributions are welcome).<br><br></p>
+<p>Unfortunately the kernel internal interfaces are continuously changing and the Silabs drivers don't built just like that for any given kernel version. Therefore, for your convenience, the cp210x directory contains the patched driver sources and pre-built binary drivers for selected distros and kernel versions (currently only Raspberry Pi binaries are provided, contributions are welcome).<br>
+<br></p>
 
 <h5>
-<a name="note-2-gpio-controlled-relays" class="anchor" href="#note-2-gpio-controlled-relays"><span class="octicon octicon-link"></span></a><em>Note 2 (GPIO controlled relays)</em>:</h5>
+<a id="note-2-sainsmart-usb-4-channel-relay-card" class="anchor" href="#note-2-sainsmart-usb-4-channel-relay-card" aria-hidden="true"><span class="octicon octicon-link"></span></a>
+<i>Note 2 (Sainsmart USB 4-channel relay card)</i>:</h5>
+
+<p>The Sainsmart card uses the FTDI FT245RL chip. This chip is controlled directly through the open source libFTDI library. No Kernel driver is needed. However on most Linux distributions, the <em>ftdi_sio</em> serial driver is automatically loaded when the FT245RL chip is detected. In order to grant the <i>crelay</i> software access to the card, the default driver needs to be unloaded:  </p>
+
+<pre><code>rmmod ftdi_sio
+</code></pre>
+
+<p>To prevent automatic loading of the driver, add the following line to /etc/modprobe.d/blacklist.conf:  </p>
+
+<pre><code>blacklist ftdi_sio
+</code></pre>
+
+<p><br>  </p>
+
+<h5>
+<a id="note-3-gpio-controlled-relays" class="anchor" href="#note-3-gpio-controlled-relays" aria-hidden="true"><span class="octicon octicon-link"></span></a>
+<i>Note 3 (GPIO controlled relays)</i>:</h5>
 
 <p>The following GPIO pins are defined as factory default in relay_drv_gpio.c. Change these if you want to control different pins.</p>
 
