@@ -10,7 +10,7 @@
  *   Ondrej Wisniewski (ondrej.wisniewski *at* gmail.com)
  *
  * Last modified:
- *   31/10/2014
+ *   27/01/2015
  *
  *****************************************************************************/ 
  
@@ -21,6 +21,10 @@
 #define CONRAD_4CHANNEL_USB_NAME       "Conrad USB 4-channel relay card"
 #define CONRAD_4CHANNEL_USB_NUM_RELAYS 4
 
+/* Sainsmart 4 channel USB relay card */
+#define SAINSMART_4CHANNEL_USB_NAME    "Sainsmart USB 4-channel relay card"
+#define SAINSMART_4CHANNEL_USB_NUM_RELAYS 4
+
 /* Generic GPIO connected relay cards */
 #define GENERIC_GPIO_NAME              "Generic GPIO relays"
 #define GENERIC_GPIO_NUM_RELAYS        8
@@ -28,13 +32,15 @@
 
 #define FIRST_RELAY    1
 #define MAX_NUM_RELAYS 8
-
+#define MAX_RELAY_CARD_NAME_LEN 40
+#define MAX_COM_PORT_NAME_LEN 32
 
 typedef enum
 {
    NO_RELAY_TYPE=0,
    
    CONRAD_4CHANNEL_USB_RELAY_TYPE, /* Conrad usb 4-channel relay card */
+   SAINSMART_4CHANNEL_USB_RELAY_TYPE, /* Sainsmart usb 4-channel relay card */
    
    /* Add other relay types here */
    

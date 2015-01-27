@@ -10,7 +10,7 @@
  *   Ondrej Wisniewski (ondrej.wisniewski *at* gmail.com)
  *
  * Last modified:
- *   31/10/2014
+ *   27/01/2015
  *
  *****************************************************************************/ 
 
@@ -23,6 +23,7 @@
 
 /* Card driver specific include files */
 #include "relay_drv_conrad.h"
+#include "relay_drv_sainsmart.h"
 #include "relay_drv_gpio.h"
 
 
@@ -49,6 +50,13 @@ static relay_data_t relay_data[LAST_RELAY_TYPE] =
       set_relay_conrad_4chan,
       CONRAD_4CHANNEL_USB_NAME,
       CONRAD_4CHANNEL_USB_NUM_RELAYS
+   },
+   {  // SAINSMART_4CHANNEL_USB_RELAY_TYPE
+      detect_com_port_sainsmart_4chan,
+      get_relay_sainsmart_4chan,
+      set_relay_sainsmart_4chan,
+      SAINSMART_4CHANNEL_USB_NAME,
+      SAINSMART_4CHANNEL_USB_NUM_RELAYS
    },
    {  // GENERIC_GPIO_RELAY_TYPE
       detect_com_port_generic_gpio,

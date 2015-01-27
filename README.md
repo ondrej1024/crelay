@@ -15,7 +15,8 @@ New relay cards support can be added by providing the cards driver code for dete
 Currently the following relay cards are supported:  
 
 - Conrad USB 4-channel relay card (http://www.conrad.de/ce/de/product/393905), see <i>Note 1</i> below
-- Generic GPIO controlled relays, see <i>Note 2</i> below  
+- Sainsmart USB 4-channel relay card (http://www.sainsmart.com/sainsmart-4-channel-5v-usb-relay-board-module-controller-for-automation-robotics.html), see <i>Note 2</i> below
+- Generic GPIO controlled relays, see <i>Note 3</i> below  
 <br>
 
 The following picture shows a high level view on the modular software architecture.  
@@ -38,7 +39,7 @@ The following picture shows a high level view on the modular software architectu
 <br>
 
 ### Nice to have (wishlist)
-- Multiple card support
+- Multiple cards support
 - Access control for Web GUI and HTTP API
 - Programmable timers for relay actions  
 <br>
@@ -52,14 +53,21 @@ The following picture shows a high level view on the modular software architectu
 <br><br>
 
 #### Command line interface
-
     $ crelay 
-    This is a utility to control the Conrad USB 4-relay card.
+    crelay, version 0.6
+    
+    This utility provides a unified way of controlling different types of relay cards.
+    Currently supported relay cards:
+      - Conrad USB 4-channel relay card
+      - Sainsmart USB 4-channel relay card
+      - Generic GPIO relays
+    The card which is detected first will be used. 
+    
     The program can be run in interactive (command line) mode or in daemon mode with
     built-in web server.
 
     Interactive mode:
-        crelay [<relay number>] [ON|OFF]
+        crelay -i | [<relay number>] [ON|OFF]
 
            The state of any relay can be read or it can be changed to a new state.
            If only the relay number is provided then the current state is returned,
@@ -69,37 +77,50 @@ The following picture shows a high level view on the modular software architectu
 
     Daemon mode:
         crelay -d [<relay1_label> [<relay2_label> [<relay3_label> [<relay4_label>]]]] 
-
+    
            In daemon mode the built-in web server will be started and the relays
            can be completely controlled via a Web browser GUI or HTTP API.
            Optionally a personal label for each relay can be supplied which will
            be displayed next to the relay name on the web page.
-
+    
            To access the web interface point your Web browser to the following address:
            http://<my-ip-address>:8000
-
+    
            To use the HTTP API send a POST or GET request from the client to this URL:
-           http://<my-ip-address>:8000/gpio                                                  
-<br>
+           http://<my-ip-address>:8000/gpio
+<br>  
+
 ### HTTP API
 An HTTP API is provided to access the server from external clients. This API is compatible with the PiRelay Android app. Therefore this app can be used on your Android phone to control <i>crelay</i> remotely.
 
-- API url  <pre><i>ip_address[:port]</i>/gpio</pre>
-- Method: <pre>POST or GET</pre>
-- Reading relay states<br>
-    Required Parameter: none
-- Setting relay state<br> 
-    Required Parameter: <pre>pin=[1|2|3|4], status=[0|1|2] where 0=off 1=on 2=pulse</pre>
-- Response from server:
+- API url:  
+<pre><i>ip_address[:port]</i>/gpio</pre>  
+
+- Method:  
+<pre>POST or GET</pre>  
+
+- Reading relay states  
+Required Parameter: none  
+
+- Setting relay state  
+Required Parameter: <pre>pin=[1|2|3|4], status=[0|1|2] where 0=off 1=on 2=pulse</pre>  
+
+- Response from server:  
 <pre>
 Relay 1:[0|1]
 Relay 2:[0|1]
 Relay 3:[0|1]
 Relay 4:[0|1]
-</pre>
+</pre>  
 <br>
 
 ### Installation
+The installation procedure is usually perfomed directly on the target system. Therefore a C compiler and friends should already be installed. Otherwise a cross compilation environment needs to be setup on a PC (this is not described here).  
+
+* Install dependencies:  
+<pre>
+    apt-get install libftdi1 libftdi-dev
+</pre>
 
 * Clone git repository :  
 <pre>
@@ -135,7 +156,18 @@ http://www.silabs.com/products/mcu/pages/usbtouartbridgevcpdrivers.aspx
 Unfortunately the kernel internal interfaces are continuously changing and the Silabs drivers don't built just like that for any given kernel version. Therefore, for your convenience, the cp210x directory contains the patched driver sources and pre-built binary drivers for selected distros and kernel versions (currently only Raspberry Pi binaries are provided, contributions are welcome).  
 <br>
 
-##### <i>Note 2 (GPIO controlled relays)</i>:
+##### <i>Note 2 (Sainsmart USB 4-channel relay card)</i>:
+The Sainsmart card uses the FTDI FT245RL chip. This chip is controlled directly through the open source libFTDI library. No Kernel driver is needed. However on most Linux distributions, the *ftdi_sio* serial driver is automatically loaded when the FT245RL chip is detected. In order to grant the <i>crelay</i> software access to the card, the default driver needs to be unloaded:  
+
+    rmmod ftdi_sio
+
+To prevent automatic loading of the driver, add the following line to /etc/modprobe.d/blacklist.conf:  
+
+    blacklist ftdi_sio
+    
+<br>  
+
+##### <i>Note 3 (GPIO controlled relays)</i>:
 The following GPIO pins are defined as factory default in relay_drv_gpio.c. Change these if you want to control different pins.
 <pre>
  #define RELAY1_GPIO_PIN 17 // GPIO 0

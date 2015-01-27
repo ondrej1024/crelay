@@ -17,7 +17,7 @@ CC	= gcc
 INCLUDE	= -I.
 DEFS	= -D_GNU_SOURCE
 CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Winline $(INCLUDE) -pipe -fPIC
-LIBS    =
+LIBS	= -lftdi
 
 # Main source files (don't change)
 #SRC	= crelay.c relay_drv.c relay_drv_conrad.c relay_drv_gpio.c
@@ -26,6 +26,7 @@ SRC	+= relay_drv.c
 
 # Relay card specific driver source files (add new drivers here)
 SRC	+= relay_drv_conrad.c
+SRC	+= relay_drv_sainsmart.c
 SRC	+= relay_drv_gpio.c
 
 OBJ	= $(SRC:.c=.o)
@@ -34,7 +35,7 @@ all:	$(BIN)
 
 $(BIN):	$(OBJ)
 	@echo "[Link $(BIN)]"
-	@$(CC) -o $(BIN) $(OBJ)
+	@$(CC) -o $(BIN) $(OBJ) $(LIBS)
 
 .c.o:
 	@echo "[Compile $<]"

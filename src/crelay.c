@@ -17,7 +17,7 @@
  *   sudo make install
  * 
  * Last modified:
- *   27/02/2014
+ *   27/01/2015
  *
  *****************************************************************************/ 
 
@@ -53,7 +53,8 @@
 #include "data_types.h"
 #include "relay_drv.h"
 
-#define VERSION "0.5"
+#define VERSION "0.6"
+#define DATE "2015"
 
 /* HTTP server defines */
 #define SERVER "crelay/"VERSION
@@ -139,8 +140,8 @@ void web_page_footer(FILE *f)
 {
    /* Display web page footer */
    fprintf(f, "<table style=\"text-align: left; width: 600px; background-color: rgb(0, 0, 153);\" border=\"0\" cellpadding=\"2\" cellspacing=\"2\"><tbody>\r\n");
-   fprintf(f, "<tr><td style=\"vertical-align: top; text-align: center;\"><span style=\"font-family: Helvetica,Arial,sans-serif; color: white;\">crelay | version %s | 2014</span></td></tr>\r\n",
-           VERSION);
+   fprintf(f, "<tr><td style=\"vertical-align: top; text-align: center;\"><span style=\"font-family: Helvetica,Arial,sans-serif; color: white;\">crelay | version %s | %s</span></td></tr>\r\n",
+           VERSION, DATE);
    fprintf(f, "</tbody></table></body></html>\r\n");    
 }   
 
@@ -252,7 +253,7 @@ int process_http_request(FILE *f)
    int  relay=0;
    int  last_relay=FIRST_RELAY;
    int i;
-   char serial_port[16];
+   char com_port[MAX_COM_PORT_NAME_LEN];
    relay_state_t rstate[MAX_NUM_RELAYS];
    relay_state_t nstate=INVALID;
    
@@ -290,7 +291,7 @@ int process_http_request(FILE *f)
    //printf("DBG: form data: %s\n", formdata);
    
    /* Check if a relay card is present */
-   if (detect_com_port(serial_port) == -1)
+   if (detect_com_port(com_port) == -1)
    {
       if (strstr(url, API_URL))
       {
@@ -329,24 +330,24 @@ int process_http_request(FILE *f)
          if (nstate==PULSE)
          {
             /* Generate pulse on relay switch */
-            get_relay(serial_port, relay, &rstate[relay-1]);
+            get_relay(com_port, relay, &rstate[relay-1]);
             if (rstate[relay-1] == ON)
             {
-               set_relay(serial_port, relay, OFF);
+               set_relay(com_port, relay, OFF);
                sleep(1);
-               set_relay(serial_port, relay, ON);
+               set_relay(com_port, relay, ON);
             }
             else
             {
-               set_relay(serial_port, relay, ON);
+               set_relay(com_port, relay, ON);
                sleep(1);
-               set_relay(serial_port, relay, OFF);
+               set_relay(com_port, relay, OFF);
             }
          }
          else
          {
             /* Switch relay on/off */
-            set_relay(serial_port, relay, nstate);
+            set_relay(com_port, relay, nstate);
          }
       }
    }
@@ -354,7 +355,7 @@ int process_http_request(FILE *f)
    /* Read current state for all relays */
    for (i=FIRST_RELAY; i<=last_relay; i++)
    {
-      get_relay(serial_port, i, &rstate[i-1]);
+      get_relay(com_port, i, &rstate[i-1]);
    }
    
    /* Send response to client */
@@ -369,7 +370,7 @@ int process_http_request(FILE *f)
    else
    {
       /* Web request */
-      char cname[30];
+      char cname[MAX_RELAY_CARD_NAME_LEN];
       get_relay_card_name(get_relay_card_type(), cname);
 
       web_page_header(f);
@@ -379,7 +380,7 @@ int process_http_request(FILE *f)
       fprintf(f, "<table style=\"text-align: left; width: 600px; background-color: white; font-family: Helvetica,Arial,sans-serif; font-weight: bold; font-size: 20px;\" border=\"0\" cellpadding=\"2\" cellspacing=\"3\"><tbody>\r\n");
       fprintf(f, "<tr style=\"font-size: 14px; background-color: lightgrey\">\r\n");
       fprintf(f, "<td style=\"width: 200px;\">%s<br><span style=\"font-style: italic; font-size: 12px; color: grey; font-weight: normal;\">on %s</span></td>\r\n", 
-              cname, serial_port);
+              cname, com_port);
       fprintf(f, "<td style=\"background-color: white;\"></td><td style=\"background-color: white;\"></td></tr>\r\n");
       for (i=FIRST_RELAY; i<=last_relay; i++)
       {
@@ -426,7 +427,7 @@ void print_usage()
    printf("The program can be run in interactive (command line) mode or in daemon mode with\n");
    printf("built-in web server.\n\n");
    printf("Interactive mode:\n");
-   printf("    crelay [<relay number>] [ON|OFF]\n\n");
+   printf("    crelay -i | [<relay number>] [ON|OFF]\n\n");
    printf("       The state of any relay can be read or it can be changed to a new state.\n");
    printf("       If only the relay number is provided then the current state is returned,\n");
    printf("       otherwise the relays state is set to the new value provided as second parameter.\n");
@@ -455,7 +456,6 @@ void print_usage()
  *********************************************************/
 int main(int argc, char *argv[])
 {
-
    if (argc==1)
    {
       print_usage();
@@ -509,9 +509,10 @@ int main(int argc, char *argv[])
       /*****  Command line mode *****/
       
       relay_state_t rstate;
-      char serial_port[16];
+      char com_port[MAX_COM_PORT_NAME_LEN];
+      char cname[MAX_RELAY_CARD_NAME_LEN];
       
-      if (detect_com_port(serial_port) == -1)
+      if (detect_com_port(com_port) == -1)
       {
          printf("No compatible device detected.\n");
          return -1;
@@ -519,9 +520,8 @@ int main(int argc, char *argv[])
 
       if (!strcmp(argv[1],"-i"))
       {
-         char cname[30];
          if (get_relay_card_name(get_relay_card_type(), cname) == 0)
-            printf("Detected relay card type is %s\n", cname);
+            printf("Detected relay card type is %s (on %s)\n", cname, com_port);
          return 0;         
       }
    
@@ -529,16 +529,16 @@ int main(int argc, char *argv[])
       {
          case 2:
             /* GET current relay state */
-            if (get_relay(serial_port, atoi(argv[1]), &rstate) == 0)
+            if (get_relay(com_port, atoi(argv[1]), &rstate) == 0)
                printf("Relay %d is %s\n", atoi(argv[1]), (rstate==ON)?"on":"off");
             break;
             
          case 3:
             /* SET new relay state */
             if (!strcmp(argv[2],"on") || !strcmp(argv[2],"ON")) 
-               set_relay(serial_port, atoi(argv[1]), ON);
+               set_relay(com_port, atoi(argv[1]), ON);
             else if (!strcmp(argv[2],"off") || !strcmp(argv[2],"OFF")) 
-               set_relay(serial_port, atoi(argv[1]), OFF);
+               set_relay(com_port, atoi(argv[1]), OFF);
             else
                print_usage();
             break;
