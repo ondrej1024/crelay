@@ -79,7 +79,7 @@ static struct ftdi_context *ftdi;
  *********************************************************/
 int detect_com_port_sainsmart_4chan(char* portname)
 {
-   char pname[32];
+   unsigned int chipid;
    
    if ((ftdi = ftdi_new()) == 0)
    {
@@ -87,10 +87,9 @@ int detect_com_port_sainsmart_4chan(char* portname)
       return -1;
    }
 
-   /* Open FTDI USB device */
+   /* Try to open FTDI USB device */
    if ((ftdi_usb_open(ftdi, VENDOR_ID, DEVICE_ID)) < 0)
    {
-      fprintf(stderr, "unable to open ftdi device: (%s)\n", ftdi_get_error_string(ftdi));
       ftdi_free(ftdi);
       return -1;
    }
@@ -103,15 +102,17 @@ int detect_com_port_sainsmart_4chan(char* portname)
       return -1;
    }
 
-   /* Read out FTDI Chip-ID of R type chips */
-   if (ftdi->type == TYPE_R)
+   /* Check if this is an R type chip */
+   if (ftdi->type != TYPE_R)
    {
-      unsigned int chipid;
-      ftdi_read_chipid(ftdi, &chipid);
-      sprintf(pname, "FTDI chipid %X", chipid);
-      strcpy(portname, pname);
-   }   
+      fprintf(stderr, "unable to continue, not an R-type chip\n");
+      ftdi_free(ftdi);
+      return -1;
+   }
    
+   /* Read out FTDI Chip-ID of R type chips */
+   ftdi_read_chipid(ftdi, &chipid);
+   sprintf(portname, "FTDI chipid %X", chipid);
    //printf("DBG: portname %s\n", portname);
    
    ftdi_usb_close(ftdi);   
