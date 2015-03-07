@@ -10,7 +10,7 @@
  *   Ondrej Wisniewski (ondrej.wisniewski *at* gmail.com)
  *
  * Last modified:
- *   27/01/2015
+ *   07/03/2015
  *
  *****************************************************************************/ 
 
@@ -24,6 +24,7 @@
 /* Card driver specific include files */
 #include "relay_drv_conrad.h"
 #include "relay_drv_sainsmart.h"
+#include "relay_drv_hidapi.h"
 #include "relay_drv_gpio.h"
 
 
@@ -57,6 +58,13 @@ static relay_data_t relay_data[LAST_RELAY_TYPE] =
       set_relay_sainsmart_4chan,
       SAINSMART_4CHANNEL_USB_NAME,
       SAINSMART_4CHANNEL_USB_NUM_RELAYS
+   },
+   {  // HID_API_RELAY_TYPE
+      detect_com_port_hidapi,
+      get_relay_hidapi,
+      set_relay_hidapi,
+      HID_API_RELAY_NAME,
+      HID_API_NUM_RELAYS
    },
    {  // GENERIC_GPIO_RELAY_TYPE
       detect_com_port_generic_gpio,

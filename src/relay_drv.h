@@ -10,7 +10,7 @@
  *   Ondrej Wisniewski (ondrej.wisniewski *at* gmail.com)
  *
  * Last modified:
- *   27/01/2015
+ *   07/03/2015
  *
  *****************************************************************************/ 
  
@@ -24,6 +24,10 @@
 /* Sainsmart 4 channel USB relay card */
 #define SAINSMART_4CHANNEL_USB_NAME    "Sainsmart USB 4-channel relay card"
 #define SAINSMART_4CHANNEL_USB_NUM_RELAYS 4
+
+/* HID API compatibe x channel relay card */
+#define HID_API_RELAY_NAME             "HID API compatible relay card"
+#define HID_API_NUM_RELAYS             4
 
 /* Generic GPIO connected relay cards */
 #define GENERIC_GPIO_NAME              "Generic GPIO relays"
@@ -41,6 +45,7 @@ typedef enum
    
    CONRAD_4CHANNEL_USB_RELAY_TYPE, /* Conrad usb 4-channel relay card */
    SAINSMART_4CHANNEL_USB_RELAY_TYPE, /* Sainsmart usb 4-channel relay card */
+   HID_API_RELAY_TYPE,             /* HID API compatible relay card */
    
    /* Add other relay types here */
    
