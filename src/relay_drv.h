@@ -10,7 +10,7 @@
  *   Ondrej Wisniewski (ondrej.wisniewski *at* gmail.com)
  *
  * Last modified:
- *   07/03/2015
+ *   09/03/2015
  *
  *****************************************************************************/ 
  
@@ -27,7 +27,7 @@
 
 /* HID API compatibe x channel relay card */
 #define HID_API_RELAY_NAME             "HID API compatible relay card"
-#define HID_API_NUM_RELAYS             4
+#define HID_API_NUM_RELAYS             8
 
 /* Generic GPIO connected relay cards */
 #define GENERIC_GPIO_NAME              "Generic GPIO relays"

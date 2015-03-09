@@ -24,7 +24,7 @@
  *   gcc -c relay_drv_hidapi.c
  * 
  * Last modified:
- *   07/03/2015
+ *   09/03/2015
  *
  *****************************************************************************/ 
 
@@ -110,13 +110,11 @@ int detect_com_port_hidapi(char* portname)
       return -1;  
    }
         
-   printf("DBG: card %ls found\n", devs->product_string);
+   //printf("DBG: card %ls found\n", devs->product_string);
 
    sprintf(portname, "%s", devs->path);
-   printf("DBG: portname %s\n", portname);
   
-   hid_free_enumeration(devs);
-   
+   hid_free_enumeration(devs);   
    return 0;
 }
 
@@ -158,8 +156,8 @@ int get_relay_hidapi(char* portname, uint8 relay, relay_state_t* relay_state)
       fprintf(stderr, "unable to read feature report from device %s (%ls)\n", portname, hid_error(hid_dev));
       return -3;
    }
-   printf("DBG: Relay ID: %s\n", buf);
-   printf("DBG: Read relay bits %02X\n", buf[REPORT_RDDAT_OFFSET]);
+   //printf("DBG: Relay ID: %s\n", buf);
+   //printf("DBG: Read relay bits %02X\n", buf[REPORT_RDDAT_OFFSET]);
    relay = relay-1;
    *relay_state = (buf[REPORT_RDDAT_OFFSET] & (0x01<<relay)) ? ON : OFF;
    
@@ -202,7 +200,7 @@ int set_relay_hidapi(char* portname, uint8 relay, relay_state_t relay_state)
    memset(buf, 0, sizeof(buf));
    buf[REPORT_WRCMD_OFFSET] = (relay_state==ON) ? CMD_ON : CMD_OFF;
    buf[REPORT_WRREL_OFFSET] = relay;
-   printf("DBG: Write relay data %02X %02X\n", buf[REPORT_WRCMD_OFFSET], buf[REPORT_WRREL_OFFSET]);
+   //printf("DBG: Write relay data %02X %02X\n", buf[REPORT_WRCMD_OFFSET], buf[REPORT_WRREL_OFFSET]);
    if (hid_write(hid_dev, buf, sizeof(buf)) < 0)
    {
       fprintf(stderr, "unable to write output report to device %s (%ls)\n", portname, hid_error(hid_dev));

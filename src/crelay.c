@@ -53,7 +53,7 @@
 #include "data_types.h"
 #include "relay_drv.h"
 
-#define VERSION "0.7b"
+#define VERSION "0.7"
 #define DATE "2015"
 
 /* HTTP server defines */

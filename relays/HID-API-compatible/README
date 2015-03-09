@@ -1,0 +1,53 @@
+
+These relay cards seem to be available as 1, 2, 4 and 8 channel versions. 
+Communication is based on the V-USB stack from http://www.obdev.at/products/vusb
+
+The Manufacturer is unknown (www.dcttech.com).
+
+The cards implement the "Human Interface Device" (HID) interface class. The HIDAPI 
+multi-platform library can be used to access this kind of device:
+http://www.signal11.us/oss/hidapi/
+
+Product page (examples):
+http://www.ebay.com.au/itm/Relay-1-Channel-Programmable-Computer-Control-For-Smart-Home-5V-USB-/190961489536
+http://www.ebay.com/itm/For-Smart-Home-5V-USB-Relay-2-Channel-Programmable-Computer-Control-/190950124351
+http://www.ebay.com/itm/USB-Relay-4-Channel-Programmable-Computer-Control-For-Robotics-Smart-Home-t-/291341835954?pt=UK_BOI_Electrical_Components_Supplies_ET&hash=item43d5539eb2
+
+Software page:
+https://github.com/darrylb123/usbrelay
+https://github.com/davidbuechi/UsbRelay
+
+
+Communication protocol description:
+
+Relay Status Request
+-----------------------------
+
+Send the following buffer using
+hid_get_feature_report():
+
+Byte  1 2 3 4 5 6 7 8 9
+Data  1 - - - - - - - -
+
+
+The following buffer is received
+as response:
+
+Byte  1 2 3 4 5 6 7 8 9
+Data  C C C C C 0 ? S ?
+
+C: 5 characters which form the relay cards Identity string
+S: status byte where each bit indicates the state of the corresponding relay
+
+
+Relay state setting
+-----------------------------
+
+Send the following buffer using
+hid_write()
+
+Byte  1 2 3 4 5 6 7 8 9
+Data  0 S R 0 0 0 0 0 0
+
+S: Relay state (0xff=on, 0xfe=all_on, 0xfd=off, 0xfc=all_off)
+R: Relay number (integer)

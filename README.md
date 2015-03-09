@@ -16,6 +16,7 @@ Currently the following relay cards are supported:
 
 - Conrad USB 4-channel relay card (http://www.conrad.de/ce/de/product/393905), see <i>Note 1</i> below
 - Sainsmart USB 4-channel relay card (http://www.sainsmart.com/sainsmart-4-channel-5v-usb-relay-board-module-controller-for-automation-robotics.html), see <i>Note 2</i> below
+- HID API compatible relay cards (1/2/4/8 channel)
 - Generic GPIO controlled relays, see <i>Note 3</i> below  
 <br>
 
@@ -54,13 +55,14 @@ The following picture shows a high level view on the modular software architectu
 
 #### Command line interface
     $ crelay 
-    crelay, version 0.6
+    crelay, version 0.7
     
     This utility provides a unified way of controlling different types of relay cards.
     Currently supported relay cards:
       - Conrad USB 4-channel relay card
       - Sainsmart USB 4-channel relay card
       - Generic GPIO relays
+      - HID API compatible relay card
     The card which is detected first will be used. 
     
     The program can be run in interactive (command line) mode or in daemon mode with
@@ -119,7 +121,7 @@ The installation procedure is usually perfomed directly on the target system. Th
 
 * Install dependencies:  
 <pre>
-    apt-get install libftdi1 libftdi-dev
+    apt-get install libftdi1 libftdi-dev libhidapi-libusb0 libhidapi-dev
 </pre>
 
 * Clone git repository :  
