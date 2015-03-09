@@ -43,9 +43,15 @@ typedef enum
 {
    NO_RELAY_TYPE=0,
    
+#ifdef DRV_CONRAD
    CONRAD_4CHANNEL_USB_RELAY_TYPE, /* Conrad usb 4-channel relay card */
+#endif
+#ifdef DRV_SAINSMART
    SAINSMART_4CHANNEL_USB_RELAY_TYPE, /* Sainsmart usb 4-channel relay card */
+#endif
+#ifdef DRV_HIDAPI
    HID_API_RELAY_TYPE,             /* HID API compatible relay card */
+#endif
    
    /* Add other relay types here */
    

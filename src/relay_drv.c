@@ -45,6 +45,7 @@ static relay_data_t relay_data[LAST_RELAY_TYPE] =
    {  // NO_RELAY_TYPE (dummy entry)
       NULL, NULL, NULL, "", 0
    },
+#ifdef DRV_CONRAD
    {  // CONRAD_4CHANNEL_USB_RELAY_TYPE
       detect_com_port_conrad_4chan,
       get_relay_conrad_4chan,
@@ -52,6 +53,8 @@ static relay_data_t relay_data[LAST_RELAY_TYPE] =
       CONRAD_4CHANNEL_USB_NAME,
       CONRAD_4CHANNEL_USB_NUM_RELAYS
    },
+#endif
+#ifdef DRV_SAINSMART
    {  // SAINSMART_4CHANNEL_USB_RELAY_TYPE
       detect_com_port_sainsmart_4chan,
       get_relay_sainsmart_4chan,
@@ -59,6 +62,8 @@ static relay_data_t relay_data[LAST_RELAY_TYPE] =
       SAINSMART_4CHANNEL_USB_NAME,
       SAINSMART_4CHANNEL_USB_NUM_RELAYS
    },
+#endif
+#ifdef DRV_HIDAPI
    {  // HID_API_RELAY_TYPE
       detect_com_port_hidapi,
       get_relay_hidapi,
@@ -66,6 +71,7 @@ static relay_data_t relay_data[LAST_RELAY_TYPE] =
       HID_API_RELAY_NAME,
       HID_API_NUM_RELAYS
    },
+#endif
    {  // GENERIC_GPIO_RELAY_TYPE
       detect_com_port_generic_gpio,
       get_relay_generic_gpio,
