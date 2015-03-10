@@ -116,7 +116,7 @@ Relay 4:[0|1]
 </pre>  
 <br>
 
-### Installation
+### Installation from source
 The installation procedure is usually perfomed directly on the target system. Therefore a C compiler and friends should already be installed. Otherwise a cross compilation environment needs to be setup on a PC (this is not described here).  
 
 * Install dependencies:  
@@ -124,7 +124,18 @@ The installation procedure is usually perfomed directly on the target system. Th
     apt-get install libftdi1 libftdi-dev libhidapi-libusb0 libhidapi-dev
 </pre>
 
-* Clone git repository :  
+* Build dependencies from source (optional):  
+On some not so recent Linux distributions (like Debian Weezy) the HIDAPI library is not yet packaged, so it needs to be build from the source code. Follow these instructions to do that:
+<pre>
+    apt-get install libudev-dev libusb-1.0-0-dev
+    git clone git://github.com/signal11/hidapi.git
+    ./bootstrap
+    ./configure
+    make
+    sudo make install
+</pre>
+
+* Clone crelay git repository :  
 <pre>
     git clone https://github.com/ondrej1024/crelay
     cd crelay
@@ -140,11 +151,21 @@ The installation procedure is usually perfomed directly on the target system. Th
 * Build and install :  
 <pre>
     cd src
-    make
+    make [DRV_CONRAD=n] [DRV_SAINSMART=n] [DRV_HIDAPI=n]
     sudo make install
 </pre>
+<i>Note:</i> Optionally, you can exclude specific relay card drivers (and their dependencies) from the build, if you don't need them. To do this, specify the driver name as parameter of the "make" command as shown above.
 <br>
 
+### Installation of prebuilt binaries
+To save you the hassle of building crelay from source, prebuild binaries are provided for selected architectures. Just save the binary from the bin/<arch> directory on your host system and execute it.  
+
+<i>Note:</i> The binaries use shared librabries, so you might need to install the needed libs to your system, if not already done previously:  
+<pre>
+    apt-get install libftdi1 libhidapi-libusb0
+</pre>  
+
+  
 ### Adding new relay card drivers
 TODO  
 <br>
