@@ -63,8 +63,9 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <time.h>
-#include <sys/ioctl.h>
 #include <netinet/in.h>
+#include <sys/types.h>
+#include <sys/ioctl.h>
 #include <sys/socket.h>
 
 #include "data_types.h"
@@ -532,6 +533,14 @@ int main(int argc, char *argv[])
       if (detect_com_port(com_port) == -1)
       {
          printf("No compatible device detected.\n");
+         
+         if(geteuid() != 0)
+         {
+            printf("\nWarning: this program is currently not running with root priviledges !\n");
+            printf("Therefore it might not be able to access your relay cards communication port.\n");
+            printf("Consider invoking the program from the root account or use \"sudo ...\"\n");
+         }
+         
          return -1;
       }
 
