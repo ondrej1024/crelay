@@ -19,5 +19,9 @@ Version history
 0.6: 27/01/2015
 - Added support for Sainsmart USB 4-channel relay card
 
-0.7: 09/01/2015
+0.7: 10/01/2015
 - Added support for HID API compatible relay cards
+- Added "make" parameters to exclude specific relay card drivers and their
+  dependencies from the build
+- Added copyright note and license text to source files
+- Added sample driver source files
