@@ -57,6 +57,7 @@ Currently the following relay cards are supported:  </p>
 <ul>
 <li>Conrad USB 4-channel relay card (<a href="http://www.conrad.de/ce/de/product/393905">http://www.conrad.de/ce/de/product/393905</a>), see <i>Note 1</i> below</li>
 <li>Sainsmart USB 4-channel relay card (<a href="http://www.sainsmart.com/sainsmart-4-channel-5v-usb-relay-board-module-controller-for-automation-robotics.html">http://www.sainsmart.com/sainsmart-4-channel-5v-usb-relay-board-module-controller-for-automation-robotics.html</a>), see <i>Note 2</i> below</li>
+<li>HID API compatible relay cards (1/2/4/8 channel)</li>
 <li>Generic GPIO controlled relays, see <i>Note 3</i> below<br>
 <br>
 </li>
@@ -117,13 +118,14 @@ Currently the following relay cards are supported:  </p>
 <a id="command-line-interface" class="anchor" href="#command-line-interface" aria-hidden="true"><span class="octicon octicon-link"></span></a>Command line interface</h4>
 
 <pre><code>$ crelay 
-crelay, version 0.6
+crelay, version 0.7
 
 This utility provides a unified way of controlling different types of relay cards.
 Currently supported relay cards:
   - Conrad USB 4-channel relay card
   - Sainsmart USB 4-channel relay card
   - Generic GPIO relays
+  - HID API compatible relay card
 The card which is detected first will be used. 
 
 The program can be run in interactive (command line) mode or in daemon mode with
@@ -190,7 +192,7 @@ Relay 4:[0|1]
 </ul>
 
 <h3>
-<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h3>
+<a id="installation-from-source" class="anchor" href="#installation-from-source" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation from source</h3>
 
 <p>The installation procedure is usually perfomed directly on the target system. Therefore a C compiler and friends should already be installed. Otherwise a cross compilation environment needs to be setup on a PC (this is not described here).  </p>
 
@@ -199,11 +201,24 @@ Relay 4:[0|1]
 <p>Install dependencies:  </p>
 
 <pre>
-apt-get install libftdi1 libftdi-dev
+apt-get install libftdi1 libftdi-dev libhidapi-libusb0 libhidapi-dev
 </pre>
 </li>
 <li>
-<p>Clone git repository :  </p>
+<p>Build dependencies from source (optional):<br>
+On some not so recent Linux distributions (like Debian Weezy) the HIDAPI library is not yet packaged, so it needs to be build from the source code. Follow these instructions to do that:</p>
+
+<pre>
+apt-get install libudev-dev libusb-1.0-0-dev
+git clone git://github.com/signal11/hidapi.git
+./bootstrap
+./configure
+make
+sudo make install
+</pre>
+</li>
+<li>
+<p>Clone crelay git repository :  </p>
 
 <pre>
 git clone https://github.com/ondrej1024/crelay
@@ -224,13 +239,25 @@ cd crelay-master
 
 <pre>
 cd src
-make
+make [DRV_CONRAD=n] [DRV_SAINSMART=n] [DRV_HIDAPI=n]
 sudo make install
 </pre>
 
-<p><br></p>
+<p><i>Note:</i> Optionally, you can exclude specific relay card drivers (and their dependencies) from the build, if you don't need them. To do this, specify the driver name as parameter of the "make" command as shown above.
+<br></p>
 </li>
 </ul>
+
+<h3>
+<a id="installation-of-prebuilt-binaries" class="anchor" href="#installation-of-prebuilt-binaries" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation of prebuilt binaries</h3>
+
+<p>To save you the hassle of building crelay from source, prebuild binaries are provided for selected architectures. Just save the binary from the bin/ directory on your host system and execute it.  </p>
+
+<p><i>Note:</i> The binaries use shared librabries, so you might need to install the needed libs to your system, if not already done previously:  </p>
+
+<pre>
+    apt-get install libftdi1 libhidapi-libusb0
+</pre>  
 
 <h3>
 <a id="adding-new-relay-card-drivers" class="anchor" href="#adding-new-relay-card-drivers" aria-hidden="true"><span class="octicon octicon-link"></span></a>Adding new relay card drivers</h3>
@@ -291,7 +318,7 @@ sudo make install
     <div id="footer_wrap" class="outer">
       <footer class="inner">
         <p class="copyright">CRELAY maintained by <a href="https://github.com/ondrej1024">ondrej1024</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
 
