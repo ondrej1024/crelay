@@ -1,0 +1,44 @@
+#! /bin/bash
+### BEGIN INIT INFO
+# Provides:          	crelayd
+# Required-Start:	$remote_fs $syslog
+# Required-Stop:	$remote_fs $syslog
+# Default-Start:	2 3 4 5
+# Default-Stop:		
+# Short-Description: Energy monitor daemon
+### END INIT INFO
+
+# Custom relay labels (for Web GUI)
+LABEL1=""
+LABEL2=""
+LABEL3=""
+LABEL4=""
+
+NAME=crelay
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin
+DAEMON=/usr/local/bin/$NAME
+PIDFILE=/var/run/$NAME.pid
+DESC="Relay control daemon"
+OPTS="-d $LABEL1 $LABEL2 $LABEL3 $LABEL4"
+
+. /lib/init/vars.sh
+. /lib/lsb/init-functions
+
+case "$1" in
+    start)
+	echo "Start $DESC"
+	start-stop-daemon --start --quiet --background --oknodo --make-pidfile --pidfile $PIDFILE --exec $DAEMON -- $OPTS
+        ;;
+    restart|reload|force-reload)
+        echo "Error: argument '$1' not supported" >&2
+        exit 3
+        ;;
+    stop)
+	echo "Stop $DESC"
+	start-stop-daemon --stop --quiet --oknodo --pidfile $PIDFILE
+	;;
+    *)
+        echo "Usage: $0 start|stop" >&2
+        exit 3
+        ;;
+esac
