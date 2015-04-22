@@ -25,3 +25,7 @@ Version history
   dependencies from the build
 - Added copyright note and license text to source files
 - Added sample driver source files
+
+0.7.1 22/04/2015
+- Added init script for autostarting crelay in daemon mode
+- Modified GPIO driver to adapt to new Kernel behaviour

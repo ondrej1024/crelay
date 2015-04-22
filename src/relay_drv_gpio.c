@@ -13,7 +13,7 @@
  *   gcc -c relay_drv_gpio.c
  * 
  * Last modified:
- *   25/02/2014
+ *   22/04/2015
  *
  * Copyright 2015, Ondrej Wisniewski 
  * 
@@ -40,6 +40,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <dirent.h>
 
 #include "data_types.h"
 #include "relay_drv.h"
@@ -91,48 +92,42 @@ static int do_export(uint8 pin)
 {
    int fd;
    char b[64];
-   char d[4];
-   
-   /* Export pin to user space */
-   fd = open(EXPORT_FILE, O_WRONLY);
-   if (fd < 0) 
-   {
-      perror(EXPORT_FILE);
-      return -1;
-   }  
-   snprintf(b, sizeof(b), "%d", pin);
-   if (pwrite(fd, b, strlen(b), 0) < 0) {
-      fprintf(stderr, "Unable to export pin=%d (already in use?): %s\n",
-                       pin, strerror(errno));
-      return -1;
-   }
-   close(fd);
+   DIR* dir;
 
-   /* We set the direction only if not already set to "out".
-    * Setting the direction seems to reset the value of the 
-    * pin to 0 but we want to preseve the GPIO pin state.
-    */
-   
-   /* Read the direction */    
-   snprintf(b, sizeof(b), "%s%d/direction", GPIO_BASE_FILE, pin);
-   fd = open(b, O_RDWR);
-   if (fd < 0) 
+  
+   /* Check if pin is already exported */
+   snprintf(b, sizeof(b), "%s%d/", GPIO_BASE_FILE, pin);
+   dir = opendir(b);
+   if (dir)
    {
-      fprintf(stderr, "Open %s: %s\n", b, strerror(errno));
-      return -1;
+    /* sysfs directory for pin exists, export already done */
+    closedir(dir);
    }
-   if (pread(fd, d, 2, 0) != 2)
+   else 
    {
-      fprintf(stderr, "Unable to pread from gpio direction for pin %d: %s\n",
-                       pin, strerror(errno));
+      /* sysfs directory for pin does not exist, need to export */
+      fd = open(EXPORT_FILE, O_WRONLY);
+      if (fd < 0) 
+      {
+         perror(EXPORT_FILE);
+         return -1;
+      }  
+      snprintf(b, sizeof(b), "%d", pin);
+      if (pwrite(fd, b, strlen(b), 0) < 0) {
+         fprintf(stderr, "Unable to export pin=%d (already in use?): %s\n",
+                 pin, strerror(errno));
+         return -1;
+      }
       close(fd);
-      return -1;
-   }
-   
-   /* Check of direction is "in" */
-   if(!strncmp(d, "in", 2))
-   {
+      
       /* Set gpio direction to "out" */
+      snprintf(b, sizeof(b), "%s%d/direction", GPIO_BASE_FILE, pin);
+      fd = open(b, O_WRONLY);
+      if (fd < 0) 
+      {
+         fprintf(stderr, "Open %s: %s\n", b, strerror(errno));
+         return -1;
+      }
       if (pwrite(fd, "out", 4, 0) < 0) 
       {
          fprintf(stderr, "Unable to pwrite to gpio direction for pin %d: %s\n",
@@ -140,13 +135,14 @@ static int do_export(uint8 pin)
          close(fd);
          return -1;
       }
+      
+      close(fd);
    }
-   close(fd);
    
    return 0;
 }
 
-
+#if 0
 /**********************************************************
  * Internal function do_unexport()
  * 
@@ -161,6 +157,7 @@ static int do_unexport(uint8 pin)
 {
    int fd;
    char b[64];
+   
    
    /* Free GPIO pin */
    fd = open(UNEXPORT_FILE, O_WRONLY);
@@ -177,9 +174,10 @@ static int do_unexport(uint8 pin)
       return -1;
    }  
    close(fd);
-
+   
    return 0;
 }
+#endif
 
 
 /**********************************************************
@@ -261,8 +259,12 @@ int get_relay_generic_gpio(char* portname, uint8 relay, relay_state_t* relay_sta
    close(fd);
    
    /* Free GPIO pin */
-   if (do_unexport(pin) != 0) 
-      return -1;
+   /* Note: unexport resets the GPIO pin to "0" and "input" 
+    * in Kernel 3.18.9 so we can't do this anymore because the 
+    * pin state needs to be preserved.
+    */
+   //if (do_unexport(pin) != 0) 
+   //   return -1;
 
    /* Return current relay state */
    *relay_state = (d[0] == '0') ? OFF : ON;
@@ -321,10 +323,12 @@ int set_relay_generic_gpio(char* portname, uint8 relay, relay_state_t relay_stat
    close(fd);
    
    /* Free GPIO pin */
-   if (do_unexport(pin) != 0) 
-      return -1;
+   /* Note: unexport resets the GPIO pin to "0" and "input" 
+    * in Kernel 3.18.9 so we can't do this anymore because the 
+    * pin state needs to be preserved.
+    */
+   //if (do_unexport(pin) != 0) 
+   //   return -1;
 
    return 0;
 }
-
- 
