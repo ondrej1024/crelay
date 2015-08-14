@@ -3,12 +3,6 @@
  * Relay card control utility: Driver for Conrad USB 4-relay card
  *   http://www.conrad.de/ce/de/product/393905
  * 
- * Note:
- *   We need the cp210x driver for the Silabs CP2104 chip with GPIO support.
- *   The official in-kernel cp210x driver does currently not yet support
- *   GPIO operations. Therefore the Silabs driver needs to be used:
- *   http://www.silabs.com/products/mcu/pages/usbtouartbridgevcpdrivers.aspx
- * 
  * Description:
  *   This software is used to control the Conrad USB 4-relay card.
  *   This file contains the implementation of the specific functions.
@@ -17,10 +11,10 @@
  *   Ondrej Wisniewski (ondrej.wisniewski *at* gmail.com)
  *
  * Build instructions:
- *   gcc -c relay_drv_conrad.c
+ *   gcc -c relay_drv_conrad.c -lusb-1.0
  * 
  * Last modified:
- *   31/10/2014
+ *   14/08/2015
  *
  * Copyright 2015, Ondrej Wisniewski 
  * 
@@ -48,6 +42,11 @@
  * The Silabs CP2104 USB to UART Bridge Controller is used in GPIO mode.
  * These bit assignments are valid for the driver Silabs provides for the
  * Kernel version 3.13 and higher.
+ * Communication with the controller chip is implemented through libusb 
+ * control messages and does not need the cp210x driver. However, the
+ * structure of the control messages used here is derived from the 
+ * implementation of the GPIO handling in the driver, so it does essentially
+ * the same thing, but from a user space program.
  * 
  * Get relay status:
  * -----------------
@@ -82,18 +81,30 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <libusb-1.0/libusb.h>
 
 #include "data_types.h"
 #include "relay_drv.h"
 
-#define IOCTL_GPIOGET 0x8000
-#define IOCTL_GPIOSET 0x8001
+/* USB IDs */
+#define VENDOR_ID 0x10C4
+#define DEVICE_ID 0xEA60
+
+/* Config request types */
+#define REQTYPE_HOST_TO_DEVICE  0x40
+#define REQTYPE_DEVICE_TO_HOST  0xc0
+
+/* Config request codes */
+#define CP210X_VENDOR_SPECIFIC  0xFF
+
+/* CP210X_VENDOR_SPECIFIC */
+#define CP210X_WRITE_LATCH      0x37E1
+#define CP210X_READ_LATCH       0x00C2
 
 #define RSTATES_BITOFFSET 8
 
-/* USB serial device created by cp210x driver */
-#define SERIAL_DEV_BASE "/dev/ttyUSB"
-#define MAX_COM_PORTS 10
+
+static libusb_device *device;
 
 
 /**********************************************************
@@ -111,40 +122,47 @@
  *********************************************************/
 int detect_com_port_conrad_4chan(char* portname)
 {
-   uint8 found=0;
-   uint32 gpio=0;
-   int fd;
-   int i;
-   char pname[16];
+   struct libusb_device_handle *dev = NULL; 
+   struct libusb_device_descriptor devdesc;
+   int r;
+   unsigned char sernum[64];
    
-   for (i=0; i<MAX_COM_PORTS; i++)
-   { 
-      /* Try to open USB serial device */
-      sprintf(pname, "%s%d", SERIAL_DEV_BASE, i);
-      //printf("DBG: Trying serial device %s\n", pname);
-      fd = open(pname, O_RDONLY | O_NOCTTY | O_NDELAY);
-      if (fd != -1) 
-      {
-         /* Now try to read the GPIO pins, this will work only
-          * for a CP210x device with GPIO support in the driver 
-          */
-         if (ioctl(fd, IOCTL_GPIOGET, &gpio) != -1)
-         {
-            /* It works, we found a compatible device */
-            found=1;
-            break;
-         }
-      }
-   }
+   libusb_init(NULL);
    
-   if (found) 
+   /* Try to open Conrad CP2104 USB device */
+   dev = libusb_open_device_with_vid_pid(NULL, VENDOR_ID, DEVICE_ID);
+   if (dev == NULL)
    {
-      strcpy(portname, pname);
-      close(fd);
-      return 0;
+      libusb_exit(NULL);
+      return -1;
    }
    
-   return -1;
+   /* Get device reference (can be used later for libusb_open() calls) */
+   device = libusb_get_device(dev);
+
+   /* Get device descripter */
+   r=libusb_get_device_descriptor (libusb_get_device(dev), &devdesc);
+   if (r < 0)
+   {
+      fprintf(stderr, "unable to get device descripter (%s)\n", libusb_error_name(r));
+      libusb_exit(NULL);
+      return -1;
+   }
+
+   /* Get serial number */
+   r=libusb_get_string_descriptor_ascii (dev, devdesc.iSerialNumber, sernum, 64);
+   if (r < 0)
+   {
+      fprintf(stderr, "unable to get device descripter (%s)\n", libusb_error_name(r));
+      libusb_exit(NULL);
+      return -1;
+   }
+   
+   sprintf(portname, "Serial number %s", sernum);
+   libusb_close(dev);
+   libusb_exit(NULL);
+   
+   return 0;
 }
 
 
@@ -162,9 +180,9 @@ int detect_com_port_conrad_4chan(char* portname)
  *********************************************************/
 int get_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t* relay_state)
 {
-   uint32 gpio=0;
-   int fd;
-   int rc;
+   struct libusb_device_handle *dev = NULL; 
+   int r;  
+   uint8 gpio=0;
    
    if (relay<FIRST_RELAY || relay>(FIRST_RELAY+CONRAD_4CHANNEL_USB_NUM_RELAYS-1))
    {  
@@ -172,27 +190,43 @@ int get_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t* relay_sta
       return -1;      
    }
 
-   /* Open serial device */
-   fd = open(portname, O_RDWR | O_NOCTTY | O_NDELAY);
-   if (fd == -1) 
+   libusb_init(NULL);
+   
+   /* Open USB device */
+   //r = libusb_open(device, &dev);
+   //if (r < 0)
+   dev = libusb_open_device_with_vid_pid(NULL, VENDOR_ID, DEVICE_ID);
+   if (dev == NULL)
    {
-      fprintf(stderr, "ERROR: Failed to open %s: %s\n", portname, strerror(errno));
-      return -2;      
+      fprintf(stderr, "unable to open CP2104 device\n");
+      libusb_exit(NULL);
+      return -2;
    }
-  
-   /* Get relay state from the card via IOCTL */ 
-   rc = ioctl(fd, IOCTL_GPIOGET, &gpio);
-   if (rc == -1)
+   
+   /* Get relay state from the card */ 
+   r = libusb_control_transfer (
+                dev,                    // libusb_device_handle *  dev_handle,
+                REQTYPE_DEVICE_TO_HOST, // uint8_t         bmRequestType,
+                CP210X_VENDOR_SPECIFIC, // uint8_t         bRequest,
+                CP210X_READ_LATCH,      // uint16_t        wValue,
+                0,                      // uint16_t        wIndex,
+                &gpio,                  // unsigned char * data,
+                1,                      // uint16_t        wLength,
+                0);                     // unsigned int    timeout
+
+   if (r < 0) 
    {
-      fprintf(stderr, "IOCTL_GPIOGET failed: %s\n", strerror(errno));
+      fprintf(stderr, "libusb_control_transfer error (%s)\n", libusb_error_name(r));
+      libusb_close(dev);
+      libusb_exit(NULL);
       return -3;
    }
 
-   //printf("DBG: Read GPIO bits %08lX\n", gpio);   
    relay = relay-1;
    *relay_state = (gpio & (0x0001<<relay)) ? OFF : ON;
       
-   close(fd);
+   libusb_close(dev);
+   libusb_exit(NULL);
    return 0;
 }
 
@@ -211,9 +245,9 @@ int get_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t* relay_sta
  *********************************************************/
 int set_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t relay_state)
 {
-   uint32 gpio=0;
-   int fd;
-   int rc;
+   struct libusb_device_handle *dev = NULL; 
+   int r;  
+   uint16 gpio=0;
    
    if (relay<FIRST_RELAY || relay>(FIRST_RELAY+CONRAD_4CHANNEL_USB_NUM_RELAYS-1))
    {  
@@ -221,14 +255,19 @@ int set_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t relay_stat
       return -1;      
    }
    
-   /* Open serial device */
-   fd = open(portname, O_RDWR | O_NOCTTY | O_NDELAY);
-   if (fd == -1) 
+   libusb_init(NULL);
+   
+   /* Open USB device */
+   //r = libusb_open(device, &dev);
+   //if (r < 0)
+   dev = libusb_open_device_with_vid_pid(NULL, VENDOR_ID, DEVICE_ID);
+   if (dev == NULL)
    {
-      fprintf(stderr, "ERROR: Failed to open %s: %s\n", portname, strerror(errno));
-      return -2;      
+      fprintf(stderr, "unable to open CP2104 device\n");
+      libusb_exit(NULL);
+      return -2;
    }
-
+   
    /* Set the relay state bit */
    relay = relay-1;
    if (relay_state == OFF) gpio = 0x0001<<(relay+RSTATES_BITOFFSET);
@@ -236,16 +275,26 @@ int set_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t relay_stat
    /* Set the relay bit mask */
    gpio = gpio | (0x0001<<relay);
 
-   //printf("DBG: Writing GPIO bits %08lX\n", gpio);
+   /* Set relay state on the card */ 
+   r = libusb_control_transfer (
+                dev,                    // libusb_device_handle *  dev_handle,
+                REQTYPE_HOST_TO_DEVICE, // uint8_t         bmRequestType,
+                CP210X_VENDOR_SPECIFIC, // uint8_t         bRequest,
+                CP210X_WRITE_LATCH,     // uint16_t        wValue,
+                gpio,                   // uint16_t        wIndex,
+                NULL,                   // unsigned char * data,
+                0,                      // uint16_t        wLength,
+                0);                     // unsigned int    timeout
    
-   /* Set relay on the card via IOCTL */
-   rc = ioctl(fd, IOCTL_GPIOSET, &gpio);
-   if (rc == -1)
+   if (r < 0) 
    {
-      fprintf(stderr, "IOCTL_GPIOSET failed: %s\n", strerror(errno));
+      fprintf(stderr, "libusb_control_transfer error (%s)\n", libusb_error_name(r));
+      libusb_close(dev);
+      libusb_exit(NULL);
       return -3;
    }
-   
+
+   libusb_close(dev);
+   libusb_exit(NULL);
    return 0;
 }
- 

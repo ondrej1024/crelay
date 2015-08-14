@@ -38,6 +38,7 @@ SRC	+= relay_drv_gpio.c
 #ifdef DRV_CONRAD
 ifeq ($(DRV_CONRAD), y)
 SRC	+= relay_drv_conrad.c
+LIBS	+= -lusb-1.0
 OPTS	+= -DDRV_CONRAD
 endif
 #ifdef DRV_SAINSMART

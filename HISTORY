@@ -26,6 +26,10 @@ Version history
 - Added copyright note and license text to source files
 - Added sample driver source files
 
-0.7.1 22/04/2015
+0.7.1: 22/04/2015
 - Added init script for autostarting crelay in daemon mode
 - Modified GPIO driver to adapt to new Kernel behaviour
+
+0.8: 14/08/2015
+- New implementation for the Conrad card driver, now uses libusb and
+  therefore completely removes the need for the patched cp210x kernel driver

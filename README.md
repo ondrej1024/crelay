@@ -21,7 +21,7 @@ Currently the following relay cards are supported:
 <br>
 
 The following picture shows a high level view on the modular software architecture.  
-![Software architechture](https://raw.github.com/ondrej1024/crelay/master/screenshots/sw-architecture.png)
+![Software architechture](screenshots/sw-architecture.png)
 <br><br>
 
 ### Features
@@ -48,9 +48,9 @@ The following picture shows a high level view on the modular software architectu
 ### Screenshots
 
 #### Web GUI
-![Screenshot](https://raw.github.com/ondrej1024/crelay/master/screenshots/crelay-screenshot1.png)
+![Screenshot](screenshots/crelay-screenshot1.png)
 <br><br>
-![Screenshot](https://raw.github.com/ondrej1024/crelay/master/screenshots/crelay-screenshot2.png)
+![Screenshot](screenshots/crelay-screenshot2.png)
 <br><br>
 
 #### Command line interface
@@ -119,9 +119,9 @@ Relay 4:[0|1]
 ### Installation from source
 The installation procedure is usually perfomed directly on the target system. Therefore a C compiler and friends should already be installed. Otherwise a cross compilation environment needs to be setup on a PC (this is not described here).  
 
-* Install dependencies:  
+* Install dependencies (package names may vary depending on your distribution):
 <pre>
-    apt-get install libftdi1 libftdi-dev libhidapi-libusb0 libhidapi-dev
+    apt-get install libftdi1 libftdi-dev libhidapi-libusb0 libhidapi-dev libusb-1.0-0 libusb-1.0-0-dev
 </pre>
 
 * Build dependencies from source (optional):  
@@ -162,22 +162,23 @@ To save you the hassle of building crelay from source, prebuild binaries are pro
 
 <i>Note:</i> The binaries use shared librabries, so you might need to install the needed libs to your system, if not already done previously:  
 <pre>
-    apt-get install libftdi1 libhidapi-libusb0
+    apt-get install libftdi1 libhidapi-libusb0 libusb-1.0-0
 </pre>  
-
+  
   
 ### Adding new relay card drivers
-TODO  
-<br>
+The modular architecture of *crelay* makes it possible to easily add new relay card drivers.  
+See example files `relay_drv_sample.c` and `relay_drv_sample.h` in the src directory for details on how to write your own low level driver functions.  
+<br>  
 
 ##### <i>Note 1 (Conrad USB 4-channel relay card)</i>:
-The relay card software provided by Conrad is Windows only and uses a binary runtime DLL which implements the communication protocol between the host computer and the card. Thanks to a raspberrypi.org forum member, the communication protocol was discovered and made public. This made it possible to develop an open source driver for the Conrad card which can run on any Linux distribution with the cp210x kernel driver installed.
+The relay card software provided by Conrad is Windows only and uses a binary runtime DLL which implements the communication protocol between the host computer and the card. Thanks to a raspberrypi.org forum member, the communication protocol was discovered and made public. This made it possible to develop an open source driver for the Conrad card which can run on any Linux distribution.
 
-It needs the cp210x kernel driver for the Silabs CP2104 chip with GPIO support. The official in-kernel cp210x driver does currently not yet support GPIO operations. Therefore the Silabs driver from their home page needs to be used:
+Earlier versions of this program needed the cp210x kernel driver for the Silabs CP2104 chip with GPIO support. The official in-kernel cp210x driver does not  support GPIO operations. Therefore the Silabs driver from their home page needed to be used:
 http://www.silabs.com/products/mcu/pages/usbtouartbridgevcpdrivers.aspx
 
-Unfortunately the kernel internal interfaces are continuously changing and the Silabs drivers don't built just like that for any given kernel version. Therefore, for your convenience, the cp210x directory contains the patched driver sources and pre-built binary drivers for selected distros and kernel versions (currently only Raspberry Pi binaries are provided, contributions are welcome).  
-<br>
+The current version of *crelay* uses libusb to talk directly to the CP2104 on the Conrad card, therefore the cp210x kernel driver is **not needed** anymore.
+<br>  
 
 ##### <i>Note 2 (Sainsmart USB 4-channel relay card)</i>:
 The Sainsmart card uses the FTDI FT245RL chip. This chip is controlled directly through the open source libFTDI library. No Kernel driver is needed. However on most Linux distributions, the *ftdi_sio* serial driver is automatically loaded when the FT245RL chip is detected. In order to grant the <i>crelay</i> software access to the card, the default driver needs to be unloaded:  
