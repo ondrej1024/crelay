@@ -1,37 +1,25 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en-us">
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="CRELAY : Controlling relay cards for home automation with a Linux software">
-
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>CRELAY</title>
+    <meta charset="UTF-8">
+    <title>CRELAY by ondrej1024</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
-
   <body>
+    <section class="page-header">
+      <h1 class="project-name">CRELAY</h1>
+      <h2 class="project-tagline">Controlling relay cards for home automation with a Linux software</h2>
+      <a href="https://github.com/ondrej1024/crelay" class="btn">View on GitHub</a>
+      <a href="https://github.com/ondrej1024/crelay/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/ondrej1024/crelay/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/ondrej1024/crelay">View on GitHub</a>
-
-          <h1 id="project_title">CRELAY</h1>
-          <h2 id="project_tagline">Controlling relay cards for home automation with a Linux software</h2>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/ondrej1024/crelay/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/ondrej1024/crelay/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h1>
+    <section class="main-content">
+      <h1>
 <a id="crelay" class="anchor" href="#crelay" aria-hidden="true"><span class="octicon octicon-link"></span></a>crelay</h1>
 
 <h4>
@@ -64,7 +52,7 @@ Currently the following relay cards are supported:  </p>
 </ul>
 
 <p>The following picture shows a high level view on the modular software architecture.<br>
-<img src="https://raw.github.com/ondrej1024/crelay/master/screenshots/sw-architecture.png" alt="Software architechture">
+<img src="screenshots/sw-architecture.png" alt="Software architechture">
 <br><br></p>
 
 <h3>
@@ -109,9 +97,9 @@ Currently the following relay cards are supported:  </p>
 <h4>
 <a id="web-gui" class="anchor" href="#web-gui" aria-hidden="true"><span class="octicon octicon-link"></span></a>Web GUI</h4>
 
-<p><img src="https://raw.github.com/ondrej1024/crelay/master/screenshots/crelay-screenshot1.png" alt="Screenshot">
+<p><img src="screenshots/crelay-screenshot1.png" alt="Screenshot">
 <br><br>
-<img src="https://raw.github.com/ondrej1024/crelay/master/screenshots/crelay-screenshot2.png" alt="Screenshot">
+<img src="screenshots/crelay-screenshot2.png" alt="Screenshot">
 <br><br></p>
 
 <h4>
@@ -198,10 +186,10 @@ Relay 4:[0|1]
 
 <ul>
 <li>
-<p>Install dependencies:  </p>
+<p>Install dependencies (package names may vary depending on your distribution):</p>
 
 <pre>
-apt-get install libftdi1 libftdi-dev libhidapi-libusb0 libhidapi-dev
+apt-get install libftdi1 libftdi-dev libhidapi-libusb0 libhidapi-dev libusb-1.0-0 libusb-1.0-0-dev
 </pre>
 </li>
 <li>
@@ -256,30 +244,30 @@ sudo make install
 <p><i>Note:</i> The binaries use shared librabries, so you might need to install the needed libs to your system, if not already done previously:  </p>
 
 <pre>
-    apt-get install libftdi1 libhidapi-libusb0
+    apt-get install libftdi1 libhidapi-libusb0 libusb-1.0-0
 </pre>  
+  
 
 <h3>
 <a id="adding-new-relay-card-drivers" class="anchor" href="#adding-new-relay-card-drivers" aria-hidden="true"><span class="octicon octicon-link"></span></a>Adding new relay card drivers</h3>
 
-<p>TODO<br>
-<br></p>
+<p>The modular architecture of <em>crelay</em> makes it possible to easily add new relay card drivers.<br>
+See example files <code>relay_drv_sample.c</code> and <code>relay_drv_sample.h</code> in the src directory for details on how to write your own low level driver functions.<br>
+<br>  </p>
 
 <h5>
-<a id="note-1-conrad-usb-4-channel-relay-card" class="anchor" href="#note-1-conrad-usb-4-channel-relay-card" aria-hidden="true"><span class="octicon octicon-link"></span></a>
-<i>Note 1 (Conrad USB 4-channel relay card)</i>:</h5>
+<a id="note-1-conrad-usb-4-channel-relay-card" class="anchor" href="#note-1-conrad-usb-4-channel-relay-card" aria-hidden="true"><span class="octicon octicon-link"></span></a><i>Note 1 (Conrad USB 4-channel relay card)</i>:</h5>
 
-<p>The relay card software provided by Conrad is Windows only and uses a binary runtime DLL which implements the communication protocol between the host computer and the card. Thanks to a raspberrypi.org forum member, the communication protocol was discovered and made public. This made it possible to develop an open source driver for the Conrad card which can run on any Linux distribution with the cp210x kernel driver installed.</p>
+<p>The relay card software provided by Conrad is Windows only and uses a binary runtime DLL which implements the communication protocol between the host computer and the card. Thanks to a raspberrypi.org forum member, the communication protocol was discovered and made public. This made it possible to develop an open source driver for the Conrad card which can run on any Linux distribution.</p>
 
-<p>It needs the cp210x kernel driver for the Silabs CP2104 chip with GPIO support. The official in-kernel cp210x driver does currently not yet support GPIO operations. Therefore the Silabs driver from their home page needs to be used:
+<p>Earlier versions of this program needed the cp210x kernel driver for the Silabs CP2104 chip with GPIO support. The official in-kernel cp210x driver does not  support GPIO operations. Therefore the Silabs driver from their home page needed to be used:
 <a href="http://www.silabs.com/products/mcu/pages/usbtouartbridgevcpdrivers.aspx">http://www.silabs.com/products/mcu/pages/usbtouartbridgevcpdrivers.aspx</a></p>
 
-<p>Unfortunately the kernel internal interfaces are continuously changing and the Silabs drivers don't built just like that for any given kernel version. Therefore, for your convenience, the cp210x directory contains the patched driver sources and pre-built binary drivers for selected distros and kernel versions (currently only Raspberry Pi binaries are provided, contributions are welcome).<br>
-<br></p>
+<p>The current version of <em>crelay</em> uses libusb to talk directly to the CP2104 on the Conrad card, therefore the cp210x kernel driver is <strong>not needed</strong> anymore.
+<br>  </p>
 
 <h5>
-<a id="note-2-sainsmart-usb-4-channel-relay-card" class="anchor" href="#note-2-sainsmart-usb-4-channel-relay-card" aria-hidden="true"><span class="octicon octicon-link"></span></a>
-<i>Note 2 (Sainsmart USB 4-channel relay card)</i>:</h5>
+<a id="note-2-sainsmart-usb-4-channel-relay-card" class="anchor" href="#note-2-sainsmart-usb-4-channel-relay-card" aria-hidden="true"><span class="octicon octicon-link"></span></a><i>Note 2 (Sainsmart USB 4-channel relay card)</i>:</h5>
 
 <p>The Sainsmart card uses the FTDI FT245RL chip. This chip is controlled directly through the open source libFTDI library. No Kernel driver is needed. However on most Linux distributions, the <em>ftdi_sio</em> serial driver is automatically loaded when the FT245RL chip is detected. In order to grant the <i>crelay</i> software access to the card, the default driver needs to be unloaded:  </p>
 
@@ -294,8 +282,7 @@ sudo make install
 <p><br>  </p>
 
 <h5>
-<a id="note-3-gpio-controlled-relays" class="anchor" href="#note-3-gpio-controlled-relays" aria-hidden="true"><span class="octicon octicon-link"></span></a>
-<i>Note 3 (GPIO controlled relays)</i>:</h5>
+<a id="note-3-gpio-controlled-relays" class="anchor" href="#note-3-gpio-controlled-relays" aria-hidden="true"><span class="octicon octicon-link"></span></a><i>Note 3 (GPIO controlled relays)</i>:</h5>
 
 <p>The following GPIO pins are defined as factory default in relay_drv_gpio.c. Change these if you want to control different pins.</p>
 
@@ -311,18 +298,16 @@ sudo make install
 </pre>
 
 <p>In order to be able to access the GPIO pins you need to run as superuser, therefore crelay needs to be executed with the <i>sudo</i> command on a multiuser system.</p>
-      </section>
-    </div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">CRELAY maintained by <a href="https://github.com/ondrej1024">ondrej1024</a></p>
-        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/ondrej1024/crelay">CRELAY</a> is maintained by <a href="https://github.com/ondrej1024">ondrej1024</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
-    </div>
 
-              <script type="text/javascript">
+    </section>
+
+            <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
           </script>
@@ -332,7 +317,6 @@ sudo make install
             pageTracker._trackPageview();
             } catch(err) {}
           </script>
-
 
   </body>
 </html>
