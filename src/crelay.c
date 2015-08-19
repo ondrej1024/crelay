@@ -17,7 +17,7 @@
  *   sudo make install
  * 
  * Last modified:
- *   27/01/2015
+ *   19/08/2015
  *
  * Copyright 2015, Ondrej Wisniewski 
  * 
@@ -45,33 +45,160 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <time.h>
+#include <signal.h>
+#include <syslog.h>
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 
 #include "data_types.h"
+#include "config.h"
 #include "relay_drv.h"
 
-#define VERSION "0.8"
+#define VERSION "0.9"
 #define DATE "2015"
 
 /* HTTP server defines */
 #define SERVER "crelay/"VERSION
 #define PROTOCOL "HTTP/1.0"
 #define RFC1123FMT "%a, %d %b %Y %H:%M:%S GMT"
-#define SERVER_PORT 8000
 #define API_URL "gpio"
+#define DEFAULT_SERVER_PORT 8000
 
 /* HTML tag definitions */
 #define RELAY_TAG "pin"
 #define STATE_TAG "status"
 
+#define CONFIG_FILE "/etc/crelay.conf"
+
+/* Global variables */
+config_t config;
 
 static char rlabels[MAX_NUM_RELAYS][32] = {"My appliance 1", "My appliance 2", "My appliance 3", "My appliance 4",
-                                           "My appliance 5", "My appliance 6", "My appliance 7", "My appliance 8"};
+                                           "My appliance 5", "My appliance 6", "My appliance 7", "My appliance 8"};                                       
 
 
+/**********************************************************
+ * Function: config_cb()
+ * 
+ * Description:
+ *           Callback function for handling the name=value
+ *           pairs returned by the conf_parse() function
+ * 
+ * Returns:  0 on success, <0 otherwise
+ *********************************************************/
+static int config_cb(void* user, const char* section, const char* name, const char* value)
+{
+   config_t* pconfig = (config_t*)user;
+   
+   #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
+   if (MATCH("HTTP server", "server_iface")) 
+   {
+      pconfig->server_iface = strdup(value);
+   } 
+   else if (MATCH("HTTP server", "server_port")) 
+   {
+      pconfig->server_port = atoi(value);
+   } 
+   else if (MATCH("HTTP server", "relay1_label")) 
+   {
+      pconfig->relay1_label = strdup(value);
+   } 
+   else if (MATCH("HTTP server", "relay2_label")) 
+   {
+      pconfig->relay2_label = strdup(value);
+   } 
+   else if (MATCH("HTTP server", "relay3_label")) 
+   {
+      pconfig->relay3_label = strdup(value);
+   } 
+   else if (MATCH("HTTP server", "relay4_label")) 
+   {
+      pconfig->relay4_label = strdup(value);
+   } 
+   else if (MATCH("HTTP server", "relay5_label")) 
+   {
+      pconfig->relay5_label = strdup(value);
+   } 
+   else if (MATCH("HTTP server", "relay6_label")) 
+   {
+      pconfig->relay6_label = strdup(value);
+   } 
+   else if (MATCH("HTTP server", "relay7_label")) 
+   {
+      pconfig->relay7_label = strdup(value);
+   } 
+   else if (MATCH("HTTP server", "relay8_label")) 
+   {
+      pconfig->relay8_label = strdup(value);
+   } 
+   else if (MATCH("GPIO drv", "num_relays")) 
+   {
+      pconfig->gpio_num_relays = atoi(value);
+   } 
+   else if (MATCH("GPIO drv", "relay1_gpio_pin")) 
+   {
+      pconfig->relay1_gpio_pin = atoi(value);
+   } 
+   else if (MATCH("GPIO drv", "relay2_gpio_pin")) 
+   {
+      pconfig->relay2_gpio_pin = atoi(value);
+   } 
+   else if (MATCH("GPIO drv", "relay3_gpio_pin")) 
+   {
+      pconfig->relay3_gpio_pin = atoi(value);
+   } 
+   else if (MATCH("GPIO drv", "relay4_gpio_pin")) 
+   {
+      pconfig->relay4_gpio_pin = atoi(value);
+   } 
+   else if (MATCH("GPIO drv", "relay5_gpio_pin")) 
+   {
+      pconfig->relay5_gpio_pin = atoi(value);
+   } 
+   else if (MATCH("GPIO drv", "relay6_gpio_pin")) 
+   {
+      pconfig->relay6_gpio_pin = atoi(value);
+   } 
+   else if (MATCH("GPIO drv", "relay7_gpio_pin")) 
+   {
+      pconfig->relay7_gpio_pin = atoi(value);
+   } 
+   else if (MATCH("GPIO drv", "relay8_gpio_pin")) 
+   {
+      pconfig->relay8_gpio_pin = atoi(value);
+   } 
+   else if (MATCH("Sainsmart drv", "num_relays")) 
+   {
+      pconfig->sainsmart_num_relays = atoi(value);
+   } 
+   else 
+   {
+      syslog(LOG_DAEMON | LOG_WARNING, "unknown config parameter %s/%s\n", section, name);
+      return -1;  /* unknown section/name, error */
+   }
+   return 0;
+}
+
+
+/**********************************************************
+ * Function: exit_handler()
+ * 
+ * Description:
+ *           Handles the cleanup at reception of the 
+ *           TERM signal.
+ * 
+ * Returns:  -
+ *********************************************************/
+static void exit_handler(int signum)
+{
+   syslog(LOG_DAEMON | LOG_NOTICE, "Exit crelay daemon\n");
+   exit(0);
+}
+
+                                           
 /**********************************************************
  * Function send_headers()
  * 
@@ -162,7 +289,6 @@ void web_page_error(FILE *f)
    fprintf(f, "<td>No compatible relay card detected !<br>\r\n");
    fprintf(f, "<span style=\"font-size: 14px; color: grey;  font-weight: normal;\">This can be due to the following reasons:\r\n");
    fprintf(f, "<div>- No supported relay card is connected via USB or serial cable</div>\r\n");
-   fprintf(f, "<div>- A specific kernel driver needed by the card is not installed</div>\r\n");
    fprintf(f, "<div>- The relay card is broken</div>\r\n");
    fprintf(f, "<div>- There is no GPIO sysfs support available on your platform\r\n");
    fprintf(f, "<div>- You are running on a multiuser OS and don't have root permissions\r\n");
@@ -251,9 +377,9 @@ int process_http_request(FILE *f)
    char formdata[64];
    char *datastr;
    int  relay=0;
-   int  last_relay=FIRST_RELAY;
-   int i;
+   int  i;
    char com_port[MAX_COM_PORT_NAME_LEN];
+   uint8 last_relay=FIRST_RELAY;
    relay_state_t rstate[MAX_NUM_RELAYS];
    relay_state_t nstate=INVALID;
    
@@ -291,7 +417,7 @@ int process_http_request(FILE *f)
    //printf("DBG: form data: %s\n", formdata);
    
    /* Check if a relay card is present */
-   if (detect_com_port(com_port) == -1)
+   if (detect_relay_card(com_port, &last_relay) == -1)
    {
       if (strstr(url, API_URL))
       {
@@ -307,9 +433,6 @@ int process_http_request(FILE *f)
       }     
       return -1;
    }
-   
-   /* How many relays are on the detected card? */
-   last_relay = get_last_relay_num();
    
    /* Process form data */
    if (strlen(formdata)>0)
@@ -440,9 +563,9 @@ void print_usage()
    printf("       Optionally a personal label for each relay can be supplied which will\n");
    printf("       be displayed next to the relay name on the web page.\n\n");
    printf("       To access the web interface point your Web browser to the following address:\n");
-   printf("       http://<my-ip-address>:%d\n\n", SERVER_PORT);
+   printf("       http://<my-ip-address>:%d\n\n", DEFAULT_SERVER_PORT);
    printf("       To use the HTTP API send a POST or GET request from the client to this URL:\n");
-   printf("       http://<my-ip-address>:%d/%s\n\n", SERVER_PORT, API_URL);
+   printf("       http://<my-ip-address>:%d/%s\n\n", DEFAULT_SERVER_PORT, API_URL);
 }
 
 
@@ -467,25 +590,88 @@ int main(int argc, char *argv[])
       /*****  Daemon mode *****/
       
       struct sockaddr_in sin;
+      struct in_addr iface;
+      int port=DEFAULT_SERVER_PORT;
       int sock;
       int i;
       
-      /* Parse command line */
+      openlog("crelay", LOG_PID|LOG_CONS, LOG_USER);
+      syslog(LOG_DAEMON | LOG_NOTICE, "Starting crelay daemon (version %s)\n", VERSION);
+   
+      /* Setup signal handlers */
+      signal(SIGINT, exit_handler);   /* Ctrl-C */
+      signal(SIGTERM, exit_handler);  /* "regular" kill */
+   
+      /* Load configuration from .conf file */
+      memset((void*)&config, 0, sizeof(config_t));
+      if (conf_parse(CONFIG_FILE, config_cb, &config) < 0) 
+      {
+         syslog(LOG_DAEMON | LOG_NOTICE, "Can't load %s, using default parameters\n", CONFIG_FILE);
+      }
+      else
+      {
+         syslog(LOG_DAEMON | LOG_NOTICE, "Config parameters read from %s:\n", CONFIG_FILE);
+         syslog(LOG_DAEMON | LOG_NOTICE, "***************************\n");
+         syslog(LOG_DAEMON | LOG_NOTICE, "server_iface: %s\n", config.server_iface);
+         syslog(LOG_DAEMON | LOG_NOTICE, "server_port: %u\n", config.server_port);
+         syslog(LOG_DAEMON | LOG_NOTICE, "relay1_label: %s\n", config.relay1_label);
+         syslog(LOG_DAEMON | LOG_NOTICE, "relay2_label: %s\n", config.relay2_label);
+         syslog(LOG_DAEMON | LOG_NOTICE, "relay3_label: %s\n", config.relay3_label);
+         syslog(LOG_DAEMON | LOG_NOTICE, "relay4_label: %s\n", config.relay4_label);
+         syslog(LOG_DAEMON | LOG_NOTICE, "relay5_label: %s\n", config.relay5_label);
+         syslog(LOG_DAEMON | LOG_NOTICE, "relay6_label: %s\n", config.relay6_label);
+         syslog(LOG_DAEMON | LOG_NOTICE, "relay7_label: %s\n", config.relay7_label);
+         syslog(LOG_DAEMON | LOG_NOTICE, "relay8_label: %s\n", config.relay8_label);
+         syslog(LOG_DAEMON | LOG_NOTICE, "gpio_num_relays: %u\n", config.gpio_num_relays);
+         syslog(LOG_DAEMON | LOG_NOTICE, "relay1_gpio_pin: %u\n", config.relay1_gpio_pin);
+         syslog(LOG_DAEMON | LOG_NOTICE, "relay2_gpio_pin: %u\n", config.relay2_gpio_pin);
+         syslog(LOG_DAEMON | LOG_NOTICE, "relay3_gpio_pin: %u\n", config.relay3_gpio_pin);
+         syslog(LOG_DAEMON | LOG_NOTICE, "relay4_gpio_pin: %u\n", config.relay4_gpio_pin);
+         syslog(LOG_DAEMON | LOG_NOTICE, "relay5_gpio_pin: %u\n", config.relay5_gpio_pin);
+         syslog(LOG_DAEMON | LOG_NOTICE, "relay6_gpio_pin: %u\n", config.relay6_gpio_pin);
+         syslog(LOG_DAEMON | LOG_NOTICE, "relay7_gpio_pin: %u\n", config.relay7_gpio_pin);
+         syslog(LOG_DAEMON | LOG_NOTICE, "relay8_gpio_pin: %u\n", config.relay8_gpio_pin);
+         syslog(LOG_DAEMON | LOG_NOTICE, "sainsmart_num_relays: %u\n", config.sainsmart_num_relays);
+         syslog(LOG_DAEMON | LOG_NOTICE, "***************************\n");
+      }
+      
+      /* Get relay labels from config file */
+      if (strlen(config.relay1_label)) strcpy(rlabels[0], config.relay1_label);
+      if (strlen(config.relay2_label)) strcpy(rlabels[1], config.relay2_label);
+      if (strlen(config.relay3_label)) strcpy(rlabels[2], config.relay3_label);
+      if (strlen(config.relay4_label)) strcpy(rlabels[3], config.relay4_label);
+      if (strlen(config.relay5_label)) strcpy(rlabels[4], config.relay5_label);
+      if (strlen(config.relay6_label)) strcpy(rlabels[5], config.relay6_label);
+      if (strlen(config.relay7_label)) strcpy(rlabels[6], config.relay7_label);
+      if (strlen(config.relay8_label)) strcpy(rlabels[7], config.relay8_label);
+      
+      /* Parse command line for relay labels (overrides config file)*/
       for (i=0; i<argc-2 && i<MAX_NUM_RELAYS; i++)
       {  
          strcpy(rlabels[i], argv[i+2]);
       }
 
-      sock = socket(AF_INET, SOCK_STREAM, 0);
-      sin.sin_family = AF_INET;
-      sin.sin_addr.s_addr = INADDR_ANY;
-      sin.sin_port = htons(SERVER_PORT);
-      bind(sock, (struct sockaddr *) &sin, sizeof(sin));
+      /* Get listen interface from config file */
+      if (inet_aton(config.server_iface, &iface) == 0)
+      {
+         syslog(LOG_DAEMON | LOG_NOTICE, "Invalid iface address in config file, using default value");
+         iface.s_addr = INADDR_ANY;
+      }
+      
+      /* Get listen port from config file */
+      if (config.server_port > 0)
+      {
+         port = config.server_port;
+      }
       
       /* Start build-in web server */
+      sock = socket(AF_INET, SOCK_STREAM, 0);
+      sin.sin_family = AF_INET;
+      sin.sin_addr.s_addr = iface.s_addr;
+      sin.sin_port = htons(port);
+      bind(sock, (struct sockaddr *) &sin, sizeof(sin));      
       listen(sock, 5);
-      printf("HTTP server listening on port %d\n", SERVER_PORT);
-      
+      syslog(LOG_DAEMON | LOG_NOTICE, "HTTP server listening on %s:%d\n", inet_ntoa(iface), port);      
       
       while (1)
       {
@@ -512,7 +698,7 @@ int main(int argc, char *argv[])
       char com_port[MAX_COM_PORT_NAME_LEN];
       char cname[MAX_RELAY_CARD_NAME_LEN];
       
-      if (detect_com_port(com_port) == -1)
+      if (detect_relay_card(com_port, NULL) == -1)
       {
          printf("No compatible device detected.\n");
          

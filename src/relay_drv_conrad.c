@@ -14,7 +14,7 @@
  *   gcc -c relay_drv_conrad.c -lusb-1.0
  * 
  * Last modified:
- *   14/08/2015
+ *   19/08/2015
  *
  * Copyright 2015, Ondrej Wisniewski 
  * 
@@ -108,19 +108,19 @@ static libusb_device *device;
 
 
 /**********************************************************
- * Function detect_com_port_conrad_4chan()
+ * Function detect_relay_card_conrad_4chan()
  * 
- * Description: Detect the port used for communicating 
- *              with the Conrad USB relay card
+ * Description: Detect the Conrad USB relay card
  * 
  * Parameters: portname (out) - pointer to a string where
  *                              the detected com port will
  *                              be stored
+ *             num_relays(out)- pointer to number of relays
  * 
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_com_port_conrad_4chan(char* portname)
+int detect_relay_card_conrad_4chan(char* portname, uint8* num_relays)
 {
    struct libusb_device_handle *dev = NULL; 
    struct libusb_device_descriptor devdesc;
@@ -158,6 +158,8 @@ int detect_com_port_conrad_4chan(char* portname)
       return -1;
    }
    
+   /* Return parameters */
+   if (num_relays!=NULL) *num_relays = CONRAD_4CHANNEL_USB_NUM_RELAYS;
    sprintf(portname, "Serial number %s", sernum);
    libusb_close(dev);
    libusb_exit(NULL);

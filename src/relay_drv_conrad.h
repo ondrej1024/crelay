@@ -10,7 +10,7 @@
  *   Ondrej Wisniewski (ondrej.wisniewski *at* gmail.com)
  *
  * Last modified:
- *   25/02/2014
+ *   19/08/2015
  *
  * Copyright 2015, Ondrej Wisniewski 
  * 
@@ -35,19 +35,19 @@
 #define relay_drv_conrad_h
 
 /**********************************************************
- * Function detect_com_port_conrad_4chan()
+ * Function detect_relay_card_conrad_4chan()
  * 
- * Description: Detect the port used for communicating 
- *              with the Conrad USB relay card
+ * Description: Detect the Conrad USB relay card
  * 
  * Parameters: portname (out) - pointer to a string where
  *                              the detected com port will
  *                              be stored
+ *             num_relays(out)- pointer to number of relays
  * 
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_com_port_conrad_4chan(char* portname);
+int detect_relay_card_conrad_4chan(char* portname, uint8* num_relays);
 
 /**********************************************************
  * Function get_relay_conrad_4chan()

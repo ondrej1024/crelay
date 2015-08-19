@@ -10,7 +10,7 @@
  *   Ondrej Wisniewski (ondrej.wisniewski *at* gmail.com)
  *
  * Last modified:
- *   26/01/2015
+ *   19/08/2015
  *
  * Copyright 2015, Ondrej Wisniewski 
  * 
@@ -35,22 +35,22 @@
 #define relay_drv_sainsmart_h
 
 /**********************************************************
- * Function detect_com_port_sainsmart_4chan()
+ * Function detect_relay_card_sainsmart_4_8chan()
  * 
- * Description: Detect the port used for communicating 
- *              with the Conrad USB relay card
+ * Description: Detect the Sainsmart USB relay card
  * 
  * Parameters: portname (out) - pointer to a string where
  *                              the detected com port will
  *                              be stored
+ *             num_relays(out)- pointer to number of relays
  * 
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_com_port_sainsmart_4chan(char* portname);
+int detect_relay_card_sainsmart_4_8chan(char* portname, uint8* num_relays);
 
 /**********************************************************
- * Function get_relay_sainsmart_4chan()
+ * Function get_relay_sainsmart_4_8chan()
  * 
  * Description: Get the current relay state
  * 
@@ -61,10 +61,10 @@ int detect_com_port_sainsmart_4chan(char* portname);
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int get_relay_sainsmart_4chan(char* portname, uint8 relay, relay_state_t* relay_state);
+int get_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t* relay_state);
 
 /**********************************************************
- * Function set_relay_sainsmart_4chan()
+ * Function set_relay_sainsmart_4_8chan()
  * 
  * Description: Set new relay state
  * 
@@ -75,6 +75,6 @@ int get_relay_sainsmart_4chan(char* portname, uint8 relay, relay_state_t* relay_
  * Return:   o - success
  *          -1 - fail
  *********************************************************/
-int set_relay_sainsmart_4chan(char* portname, uint8 relay, relay_state_t relay_state);
+int set_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t relay_state);
 
 #endif

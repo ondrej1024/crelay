@@ -20,7 +20,7 @@
  *   gcc -c relay_drv_sainsmart.c
  * 
  * Last modified:
- *   26/01/2015
+ *   19/08/2015
  *
  * Copyright 2015, Ondrej Wisniewski 
  * 
@@ -79,22 +79,25 @@
 #define DEVICE_ID 0x6001
 
 static struct ftdi_context *ftdi;
+static uint8 g_num_relays=SAINSMART_USB_NUM_RELAYS;
+
+extern config_t config;
 
 
 /**********************************************************
- * Function detect_com_port_sainsmart_4chan()
+ * Function detect_relay_card_sainsmart_4_8chan()
  * 
- * Description: Detect the port used for communicating 
- *              with the Conrad USB relay card
+ * Description: Detect the Sainsmart USB relay card
  * 
  * Parameters: portname (out) - pointer to a string where
  *                              the detected com port will
  *                              be stored
+ *             num_relays(out)- pointer to number of relays
  * 
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_com_port_sainsmart_4chan(char* portname)
+int detect_relay_card_sainsmart_4_8chan(char* portname, uint8* num_relays)
 {
    unsigned int chipid;
    
@@ -129,6 +132,15 @@ int detect_com_port_sainsmart_4chan(char* portname)
    
    /* Read out FTDI Chip-ID of R type chips */
    ftdi_read_chipid(ftdi, &chipid);
+   
+   if (config.sainsmart_num_relays >= FIRST_RELAY &&
+       config.sainsmart_num_relays <= MAX_NUM_RELAYS)
+   {
+      g_num_relays = config.sainsmart_num_relays;
+   }
+   
+   /* Return parameters */
+   if (num_relays!=NULL) *num_relays = g_num_relays;
    sprintf(portname, "FTDI chipid %X", chipid);
    //printf("DBG: portname %s\n", portname);
    
@@ -138,7 +150,7 @@ int detect_com_port_sainsmart_4chan(char* portname)
 
 
 /**********************************************************
- * Function get_relay_sainsmart_4chan()
+ * Function get_relay_sainsmart_4_8chan()
  * 
  * Description: Get the current relay state
  * 
@@ -149,11 +161,11 @@ int detect_com_port_sainsmart_4chan(char* portname)
  * Return:    0 - success
  *          < 0 - fail
  *********************************************************/
-int get_relay_sainsmart_4chan(char* portname, uint8 relay, relay_state_t* relay_state)
+int get_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t* relay_state)
 {
    unsigned char buf[1];
    
-   if (relay<FIRST_RELAY || relay>(FIRST_RELAY+SAINSMART_4CHANNEL_USB_NUM_RELAYS-1))
+   if (relay<FIRST_RELAY || relay>(FIRST_RELAY+g_num_relays-1))
    {  
       fprintf(stderr, "ERROR: Relay number out of range\n");
       return -1;      
@@ -183,7 +195,7 @@ int get_relay_sainsmart_4chan(char* portname, uint8 relay, relay_state_t* relay_
 
 
 /**********************************************************
- * Function set_relay_sainsmart_4chan()
+ * Function set_relay_sainsmart_4_8chan()
  * 
  * Description: Set new relay state
  * 
@@ -194,11 +206,11 @@ int get_relay_sainsmart_4chan(char* portname, uint8 relay, relay_state_t* relay_
  * Return:    0 - success
  *          < 0 - fail
  *********************************************************/
-int set_relay_sainsmart_4chan(char* portname, uint8 relay, relay_state_t relay_state)
+int set_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t relay_state)
 {
    unsigned char buf[1];
    
-   if (relay<FIRST_RELAY || relay>(FIRST_RELAY+SAINSMART_4CHANNEL_USB_NUM_RELAYS-1))
+   if (relay<FIRST_RELAY || relay>(FIRST_RELAY+g_num_relays-1))
    {  
       fprintf(stderr, "ERROR: Relay number out of range\n");
       return -1;      

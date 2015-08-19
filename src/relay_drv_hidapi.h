@@ -10,7 +10,7 @@
  *   Ondrej Wisniewski (ondrej.wisniewski *at* gmail.com)
  * 
  * Last modified:
- *   07/03/2015
+ *   19/08/2015
  *
  * Copyright 2015, Ondrej Wisniewski 
  * 
@@ -35,19 +35,19 @@
 #define relay_drv_hidapi_h
 
 /**********************************************************
- * Function detect_com_port_hidapi()
+ * Function detect_relay_card_hidapi()
  * 
- * Description: Detect the port used for communicating 
- *              with a HID API compatible relay card
+ * Description: Detect the HID API compatible relay card
  * 
  * Parameters: portname (out) - pointer to a string where
  *                              the detected com port will
  *                              be stored
+ *             num_relays(out)- pointer to number of relays
  * 
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_com_port_hidapi(char* portname);
+int detect_relay_card_hidapi(char* portname, uint8* num_relays);
 
 
 /**********************************************************

@@ -10,7 +10,7 @@
  *   Ondrej Wisniewski (ondrej.wisniewski *at* gmail.com)
  *
  * Last modified:
- *   07/03/2015
+ *   19/08/2015
  *
  * Copyright 2015, Ondrej Wisniewski 
  * 
@@ -60,65 +60,61 @@ static relay_type_t relay_type=NO_RELAY_TYPE;
 static relay_data_t relay_data[LAST_RELAY_TYPE] =
 { 
    {  // NO_RELAY_TYPE (dummy entry)
-      NULL, NULL, NULL, "", 0
+      NULL, NULL, NULL, ""
    },
 #ifdef DRV_CONRAD
    {  // CONRAD_4CHANNEL_USB_RELAY_TYPE
-      detect_com_port_conrad_4chan,
+      detect_relay_card_conrad_4chan,
       get_relay_conrad_4chan,
       set_relay_conrad_4chan,
-      CONRAD_4CHANNEL_USB_NAME,
-      CONRAD_4CHANNEL_USB_NUM_RELAYS
+      CONRAD_4CHANNEL_USB_NAME
    },
 #endif
 #ifdef DRV_SAINSMART
    {  // SAINSMART_4CHANNEL_USB_RELAY_TYPE
-      detect_com_port_sainsmart_4chan,
-      get_relay_sainsmart_4chan,
-      set_relay_sainsmart_4chan,
-      SAINSMART_4CHANNEL_USB_NAME,
-      SAINSMART_4CHANNEL_USB_NUM_RELAYS
+      detect_relay_card_sainsmart_4_8chan,
+      get_relay_sainsmart_4_8chan,
+      set_relay_sainsmart_4_8chan,
+      SAINSMART_USB_NAME
    },
 #endif
 #ifdef DRV_HIDAPI
    {  // HID_API_RELAY_TYPE
-      detect_com_port_hidapi,
+      detect_relay_card_hidapi,
       get_relay_hidapi,
       set_relay_hidapi,
-      HID_API_RELAY_NAME,
-      HID_API_NUM_RELAYS
+      HID_API_RELAY_NAME
    },
 #endif
    {  // GENERIC_GPIO_RELAY_TYPE
-      detect_com_port_generic_gpio,
+      detect_relay_card_generic_gpio,
       get_relay_generic_gpio,
       set_relay_generic_gpio,
-      GENERIC_GPIO_NAME,
-      GENERIC_GPIO_NUM_RELAYS
+      GENERIC_GPIO_NAME
    }
 };
 
 
 /**********************************************************
- * Function detect_com_port()
+ * Function detect_relay_card()
  * 
- * Description: Detect the port used for communicating 
- *              with the relay card
+ * Description: Detect the relay card
  * 
  * Parameters: portname (out) - pointer to a string where
  *                              the detected com port will
  *                              be stored
+ *             num_relays(out)- pointer to number of relays
  * 
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_com_port(char* portname)
+int detect_relay_card(char* portname, uint8* num_relays)
 {
    int i;
    
    for (i=1; i<LAST_RELAY_TYPE; i++)
    {
-      if ((*relay_data[i].detect_com_port_fun)(portname) == 0)
+      if ((*relay_data[i].detect_relay_card_fun)(portname, num_relays) == 0)
       {
          relay_type=i;
          return 0;
@@ -219,27 +215,4 @@ int get_relay_card_name(relay_type_t rtype, char* card_name)
    {   
       return -1;
    }  
-}
-
-
-/**********************************************************
- * Function get_last_relay_num()
- * 
- * Description: Get the number of the last relay for
- *              the detected card
- * 
- * Parameters: none
- * 
- * Return: last relay number
- *********************************************************/
-int get_last_relay_num()
-{
-   if (relay_type != NO_RELAY_TYPE)
-   {
-      return FIRST_RELAY+relay_data[relay_type].num_relays-1;
-   }
-   else
-   {
-      return FIRST_RELAY;
-   }
 }

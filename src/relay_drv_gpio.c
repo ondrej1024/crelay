@@ -13,7 +13,7 @@
  *   gcc -c relay_drv_gpio.c
  * 
  * Last modified:
- *   22/04/2015
+ *   19/08/2015
  *
  * Copyright 2015, Ondrej Wisniewski 
  * 
@@ -51,30 +51,23 @@
 #define UNEXPORT_FILE  GPIO_BASE_DIR"unexport"
 #define GPIO_BASE_FILE GPIO_BASE_DIR"gpio"
 
-/* Relay number to GPIO pin number associaten */
-/*** Change this if you want to use other pins  ***/
-#define RELAY1_GPIO_PIN 17 // GPIO 0
-#define RELAY2_GPIO_PIN 18 // GPIO 1
-#define RELAY3_GPIO_PIN 27 // GPIO 2 (RPi rev.2)
-#define RELAY4_GPIO_PIN 22 // GPIO 3
-#define RELAY5_GPIO_PIN 23 // GPIO 4
-#define RELAY6_GPIO_PIN 24 // GPIO 5
-#define RELAY7_GPIO_PIN 25 // GPIO 6
-#define RELAY8_GPIO_PIN  4 // GPIO 7
-
 
 static uint8 pins[] =
 {
   0, // dummy
-  RELAY1_GPIO_PIN,
-  RELAY2_GPIO_PIN,
-  RELAY3_GPIO_PIN,
-  RELAY4_GPIO_PIN,  
-  RELAY5_GPIO_PIN,  
-  RELAY6_GPIO_PIN,  
-  RELAY7_GPIO_PIN,  
-  RELAY8_GPIO_PIN  
+  0, // pin 1
+  0, // pin 2
+  0, // pin 3
+  0, // pin 4
+  0, // pin 5
+  0, // pin 6
+  0, // pin 7
+  0  // pin 8
 };
+
+static uint8 g_num_relays=GENERIC_GPIO_NUM_RELAYS;
+
+extern config_t config;
 
 
 /**********************************************************
@@ -181,20 +174,22 @@ static int do_unexport(uint8 pin)
 
 
 /**********************************************************
- * Function detect_com_port_generic_gpio()
+ * Function detect_relay_card_generic_gpio()
  * 
  * Description: Detect if GPIO sysfs support is available
  * 
  * Parameters: portname (out) - pointer to a string where
  *                              the detected com port will
  *                              be stored
+ *             num_relays(out)- pointer to number of relays
  * 
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_com_port_generic_gpio(char* portname)
+int detect_relay_card_generic_gpio(char* portname, uint8* num_relays)
 {
    int fd;
+   int i;
 
    /* Check if GPIO sysfs is available */  
    fd = open(EXPORT_FILE, O_WRONLY);
@@ -203,6 +198,30 @@ int detect_com_port_generic_gpio(char* portname)
       return -1;
    }
    
+   if (config.gpio_num_relays >= FIRST_RELAY &&
+       config.gpio_num_relays <= MAX_NUM_RELAYS)
+   {
+      g_num_relays = config.gpio_num_relays;
+   }
+   
+   /* Get pin numbers from config */
+   pins[1] = config.relay1_gpio_pin;
+   pins[2] = config.relay2_gpio_pin;
+   pins[3] = config.relay3_gpio_pin;
+   pins[4] = config.relay4_gpio_pin;
+   pins[5] = config.relay5_gpio_pin;
+   pins[6] = config.relay6_gpio_pin;
+   pins[7] = config.relay7_gpio_pin;
+   pins[8] = config.relay8_gpio_pin;
+   
+   /* Check if necessary pin numbers are defined */
+   for (i=1; i<=g_num_relays; i++)
+   {
+      if (pins[i]==0) return -1;
+   }
+   
+   /* Return parameters */
+   if (num_relays!=NULL) *num_relays = g_num_relays; 
    strcpy(portname, GPIO_BASE_DIR);
    close(fd);
    
@@ -229,7 +248,7 @@ int get_relay_generic_gpio(char* portname, uint8 relay, relay_state_t* relay_sta
    char d[1];
    uint8 pin;
 
-   if (relay<FIRST_RELAY || relay>(FIRST_RELAY+GENERIC_GPIO_NUM_RELAYS-1))
+   if (relay<FIRST_RELAY || relay>(FIRST_RELAY+g_num_relays-1))
    {
       fprintf(stderr, "ERROR: Relay number out of range\n");
       return -1;
@@ -292,7 +311,7 @@ int set_relay_generic_gpio(char* portname, uint8 relay, relay_state_t relay_stat
    char d[1];
    uint8 pin;
    
-   if (relay<FIRST_RELAY || relay>(FIRST_RELAY+GENERIC_GPIO_NUM_RELAYS-1))
+   if (relay<FIRST_RELAY || relay>(FIRST_RELAY+g_num_relays-1))
    {
       fprintf(stderr, "ERROR: Relay number out of range\n");
       return -1;

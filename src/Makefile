@@ -28,6 +28,7 @@ CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Winline $(INCLUDE) -pipe -fPIC
 #########################################
 SRC	= $(BIN).c
 SRC	+= relay_drv.c
+SRC	+= config.c
 
 # Relay card specific driver source files
 #########################################
@@ -44,7 +45,7 @@ endif
 #ifdef DRV_SAINSMART
 ifeq ($(DRV_SAINSMART), y)
 SRC	+= relay_drv_sainsmart.c
-LIBS	+= -lftdi 
+LIBS	+= -lftdi
 OPTS	+= -DDRV_SAINSMART
 endif
 #ifdef DRV_HIDAPI

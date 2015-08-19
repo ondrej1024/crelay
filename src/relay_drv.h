@@ -10,7 +10,7 @@
  *   Ondrej Wisniewski (ondrej.wisniewski *at* gmail.com)
  *
  * Last modified:
- *   09/03/2015
+ *   19/08/2015
  *
  * Copyright 2015, Ondrej Wisniewski 
  * 
@@ -38,9 +38,9 @@
 #define CONRAD_4CHANNEL_USB_NAME       "Conrad USB 4-channel relay card"
 #define CONRAD_4CHANNEL_USB_NUM_RELAYS 4
 
-/* Sainsmart 4 channel USB relay card */
-#define SAINSMART_4CHANNEL_USB_NAME    "Sainsmart USB 4-channel relay card"
-#define SAINSMART_4CHANNEL_USB_NUM_RELAYS 4
+/* Sainsmart 4/8 channel USB relay card */
+#define SAINSMART_USB_NAME             "Sainsmart USB 4/8-channel relay card"
+#define SAINSMART_USB_NUM_RELAYS       8
 
 /* HID API compatibe x channel relay card */
 #define HID_API_RELAY_NAME             "HID API compatible relay card"
@@ -64,7 +64,7 @@ typedef enum
    CONRAD_4CHANNEL_USB_RELAY_TYPE, /* Conrad usb 4-channel relay card */
 #endif
 #ifdef DRV_SAINSMART
-   SAINSMART_4CHANNEL_USB_RELAY_TYPE, /* Sainsmart usb 4-channel relay card */
+   SAINSMART_USB_RELAY_TYPE,       /* Sainsmart usb 4/8-channel relay card */
 #endif
 #ifdef DRV_HIDAPI
    HID_API_RELAY_TYPE,             /* HID API compatible relay card */
@@ -87,11 +87,10 @@ relay_state_t;
 
 typedef struct
 {
-   int (*detect_com_port_fun)(char*);                  /* function to detect the relay communication port */
+   int (*detect_relay_card_fun)(char*, uint8*);        /* function to detect the relay card */
    int (*get_relay_fun)(char*, uint8, relay_state_t*); /* function to get the current relay state */
    int (*set_relay_fun)(char*, uint8, relay_state_t);  /* function to set the new relay state */
    char *card_name;                                    /* card name string */
-   int  num_relays;                                    /* number of relays on the card */
 }
 relay_data_t;
 
@@ -99,19 +98,19 @@ relay_data_t;
 
 
 /**********************************************************
- * Function detect_com_port()
+ * Function detect_relay_card()
  * 
- * Description: Detect the port used for communicating 
- *              with the relay card
+ * Description: Detect the relay card
  * 
  * Parameters: portname (out) - pointer to a string where
  *                              the detected com port will
  *                              be stored
+ *             num_relays(out)- pointer to number of relays
  * 
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_com_port(char* portname);
+int detect_relay_card(char* portname, uint8* num_relays);
 
 /**********************************************************
  * Function get_relay()
@@ -162,18 +161,6 @@ relay_type_t get_relay_card_type();
  * Return: relay card name
  *********************************************************/
 int get_relay_card_name(relay_type_t rtype, char* card_name);
-
-/**********************************************************
- * Function get_last_relay_num()
- * 
- * Description: Get the number of the last relay for
- *              the detected card
- * 
- * Parameters: none
- * 
- * Return: last relay number
- *********************************************************/
-int get_last_relay_num();
 
 #endif
 
