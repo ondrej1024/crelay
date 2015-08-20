@@ -26,20 +26,17 @@ The following picture shows a high level view on the modular software architectu
 
 ### Features
 - Command line mode and daemon mode with Web GUI
-- Automatic detection of communication port
+- Automatic detection of relay card
 - Reading of current relay states
 - Setting of new relay states
 - Single pulse generation on relay contact
 - HTTP API for external clients (e.g. Smartphone/tablet apps)
 - Multiple relay card type support  
-<br>
-
-### Coming soon (to do)
-- ThingSpeak Talkback App (https://thingspeak.com/docs/talkback)
-- Support for configuration file for custom parameters  
+- Support for configuration file with custom parameters
 <br>
 
 ### Nice to have (wishlist)
+- ThingSpeak Talkback App (https://thingspeak.com/docs/talkback)
 - Multiple cards support
 - Access control for Web GUI and HTTP API
 - Programmable timers for relay actions  
@@ -55,7 +52,7 @@ The following picture shows a high level view on the modular software architectu
 
 #### Command line interface
     $ crelay 
-    crelay, version 0.7
+    crelay, version 0.9
     
     This utility provides a unified way of controlling different types of relay cards.
     Currently supported relay cards:
@@ -164,7 +161,55 @@ To save you the hassle of building crelay from source, prebuild binaries are pro
 <pre>
     apt-get install libftdi1 libhidapi-libusb0 libusb-1.0-0
 </pre>  
-  
+
+### Configuration
+The parameters for *crelay* can be customized via the configuration file crelay.conf which should be placed in the `/etc/` system folder. An example file is provided together with the programs source code in the `conf/` folder.
+
+<pre>
+################################################
+#
+# crelay config file
+#
+# This file is read by crelay in daemon mode
+# from /etc/crelay.conf
+#
+################################################
+
+# HTTP server parameters
+################################################
+[HTTP server]
+server_iface = 0.0.0.0    # listen interface IP address
+#server_iface = 127.0.0.1 # to listen on localhost only
+server_port  = 8000       # listen port
+relay1_label = Device 1   # label for relay 1
+relay2_label = Device 2   # label for relay 2
+relay3_label = Device 3   # label for relay 3
+relay4_label = Device 4   # label for relay 4
+relay5_label = Device 5   # label for relay 5
+relay6_label = Device 6   # label for relay 6
+relay7_label = Device 7   # label for relay 7
+relay8_label = Device 8   # label for relay 8
+    
+# GPIO driver parameters
+################################################
+[GPIO drv]
+#num_relays = 8    # Number of GPIOs connected to relays (1 to 8)
+#relay1_gpio_pin = 17   # GPIO pin for relay 1 (17 for RPi GPIO0)
+#relay2_gpio_pin = 18   # GPIO pin for relay 2 (18 for RPi GPIO1)
+#relay3_gpio_pin = 27   # GPIO pin for relay 3 (27 for RPi GPIO2)
+#relay4_gpio_pin = 22   # GPIO pin for relay 4 (22 for RPi GPIO3)
+#relay5_gpio_pin = 23   # GPIO pin for relay 5 (23 for RPi GPIO4)
+#relay6_gpio_pin = 24   # GPIO pin for relay 6 (24 for RPi GPIO5)
+#relay7_gpio_pin = 25   # GPIO pin for relay 7 (25 for RPi GPIO6)
+#relay8_gpio_pin = 4    # GPIO pin for relay 8 ( 4 for RPi GPIO7)
+    
+# Sainsmart driver parameters
+################################################
+[Sainsmart drv]
+num_relays = 4   # Number of relays on the Sainsmart card (4 or 8)
+</pre>
+
+<br>
   
 ### Adding new relay card drivers
 The modular architecture of *crelay* makes it possible to easily add new relay card drivers.  
@@ -192,16 +237,4 @@ To prevent automatic loading of the driver, add the following line to /etc/modpr
 <br>  
 
 ##### <i>Note 3 (GPIO controlled relays)</i>:
-The following GPIO pins are defined as factory default in relay_drv_gpio.c. Change these if you want to control different pins.
-<pre>
- #define RELAY1_GPIO_PIN 17 // GPIO 0
- #define RELAY2_GPIO_PIN 18 // GPIO 1
- #define RELAY3_GPIO_PIN 27 // GPIO 2 (RPi rev.2)
- #define RELAY4_GPIO_PIN 22 // GPIO 3
- #define RELAY5_GPIO_PIN 23 // GPIO 4
- #define RELAY6_GPIO_PIN 24 // GPIO 5
- #define RELAY7_GPIO_PIN 25 // GPIO 6
- #define RELAY8_GPIO_PIN  4 // GPIO 7
-</pre>
-
-In order to be able to access the GPIO pins you need to run as superuser, therefore crelay needs to be executed with the <i>sudo</i> command on a multiuser system.
+Since GPIO pin configuration is strictly device specific, the generic GPIO mode is disabled by default and can only be used in daemon mode. In order to enable it, the specific GPIO pins used as relay control lines have to be specified in the configuration file, `[GPIO drv]` section.

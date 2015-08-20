@@ -35,7 +35,7 @@
 #define relay_drv_sample_h
 
 /**********************************************************
- * Function detect_com_port_sample()
+ * Function detect_relay_card_sample()
  * 
  * Description: Detect the port used for communicating 
  *              with the sample relay card
@@ -43,11 +43,12 @@
  * Parameters: portname (out) - pointer to a string where
  *                              the detected com port will
  *                              be stored
+ *             num_relays(out)- pointer to number of relays
  * 
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_com_port_sample(char* portname);
+int detect_relay_card_sample(char* portname, uint8* num_relays)
 
 
 /**********************************************************

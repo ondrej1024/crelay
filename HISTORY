@@ -33,3 +33,11 @@ Version history
 0.8: 14/08/2015
 - New implementation for the Conrad card driver, now uses libusb and
   therefore completely removes the need for the patched cp210x kernel driver
+  
+0.9: 20/08/2015
+- Added parameter handling in daemon mode via configuration files
+- Added new parameters for daemon listen interface and port
+- Added new parameters for GPIO pin definitions
+- Added new parameter for number of relays on Sainsmart card (4/8)
+- Added detection for number of relays on HID API compatible relay card
+- Added logging daemon messages to syslog
