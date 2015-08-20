@@ -288,9 +288,9 @@ void web_page_error(FILE *f)
    fprintf(f, "<tbody><tr style=\"font-size: 20px; font-weight: bold;\">\r\n");
    fprintf(f, "<td>No compatible relay card detected !<br>\r\n");
    fprintf(f, "<span style=\"font-size: 14px; color: grey;  font-weight: normal;\">This can be due to the following reasons:\r\n");
-   fprintf(f, "<div>- No supported relay card is connected via USB or serial cable</div>\r\n");
-   fprintf(f, "<div>- The relay card is broken</div>\r\n");
-   fprintf(f, "<div>- There is no GPIO sysfs support available on your platform\r\n");
+   fprintf(f, "<div>- No supported relay card is connected via USB cable</div>\r\n");
+   fprintf(f, "<div>- The relay card is connected but it is broken</div>\r\n");
+   fprintf(f, "<div>- There is no GPIO sysfs support available or GPIO pins not defined in %s\r\n", CONFIG_FILE);
    fprintf(f, "<div>- You are running on a multiuser OS and don't have root permissions\r\n");
    fprintf(f, "</span></td></tbody></table><br>\r\n");
 }   
@@ -595,6 +595,9 @@ int main(int argc, char *argv[])
       int sock;
       int i;
       
+      iface.s_addr = INADDR_ANY;
+      
+      
       openlog("crelay", LOG_PID|LOG_CONS, LOG_USER);
       syslog(LOG_DAEMON | LOG_NOTICE, "Starting crelay daemon (version %s)\n", VERSION);
    
@@ -604,65 +607,67 @@ int main(int argc, char *argv[])
    
       /* Load configuration from .conf file */
       memset((void*)&config, 0, sizeof(config_t));
-      if (conf_parse(CONFIG_FILE, config_cb, &config) < 0) 
-      {
-         syslog(LOG_DAEMON | LOG_NOTICE, "Can't load %s, using default parameters\n", CONFIG_FILE);
-      }
-      else
+      if (conf_parse(CONFIG_FILE, config_cb, &config) >= 0) 
       {
          syslog(LOG_DAEMON | LOG_NOTICE, "Config parameters read from %s:\n", CONFIG_FILE);
          syslog(LOG_DAEMON | LOG_NOTICE, "***************************\n");
-         syslog(LOG_DAEMON | LOG_NOTICE, "server_iface: %s\n", config.server_iface);
-         syslog(LOG_DAEMON | LOG_NOTICE, "server_port: %u\n", config.server_port);
-         syslog(LOG_DAEMON | LOG_NOTICE, "relay1_label: %s\n", config.relay1_label);
-         syslog(LOG_DAEMON | LOG_NOTICE, "relay2_label: %s\n", config.relay2_label);
-         syslog(LOG_DAEMON | LOG_NOTICE, "relay3_label: %s\n", config.relay3_label);
-         syslog(LOG_DAEMON | LOG_NOTICE, "relay4_label: %s\n", config.relay4_label);
-         syslog(LOG_DAEMON | LOG_NOTICE, "relay5_label: %s\n", config.relay5_label);
-         syslog(LOG_DAEMON | LOG_NOTICE, "relay6_label: %s\n", config.relay6_label);
-         syslog(LOG_DAEMON | LOG_NOTICE, "relay7_label: %s\n", config.relay7_label);
-         syslog(LOG_DAEMON | LOG_NOTICE, "relay8_label: %s\n", config.relay8_label);
-         syslog(LOG_DAEMON | LOG_NOTICE, "gpio_num_relays: %u\n", config.gpio_num_relays);
-         syslog(LOG_DAEMON | LOG_NOTICE, "relay1_gpio_pin: %u\n", config.relay1_gpio_pin);
-         syslog(LOG_DAEMON | LOG_NOTICE, "relay2_gpio_pin: %u\n", config.relay2_gpio_pin);
-         syslog(LOG_DAEMON | LOG_NOTICE, "relay3_gpio_pin: %u\n", config.relay3_gpio_pin);
-         syslog(LOG_DAEMON | LOG_NOTICE, "relay4_gpio_pin: %u\n", config.relay4_gpio_pin);
-         syslog(LOG_DAEMON | LOG_NOTICE, "relay5_gpio_pin: %u\n", config.relay5_gpio_pin);
-         syslog(LOG_DAEMON | LOG_NOTICE, "relay6_gpio_pin: %u\n", config.relay6_gpio_pin);
-         syslog(LOG_DAEMON | LOG_NOTICE, "relay7_gpio_pin: %u\n", config.relay7_gpio_pin);
-         syslog(LOG_DAEMON | LOG_NOTICE, "relay8_gpio_pin: %u\n", config.relay8_gpio_pin);
-         syslog(LOG_DAEMON | LOG_NOTICE, "sainsmart_num_relays: %u\n", config.sainsmart_num_relays);
+         if (config.server_iface != NULL) syslog(LOG_DAEMON | LOG_NOTICE, "server_iface: %s\n", config.server_iface);
+         if (config.server_port != 0)     syslog(LOG_DAEMON | LOG_NOTICE, "server_port: %u\n", config.server_port);
+         if (config.relay1_label != NULL) syslog(LOG_DAEMON | LOG_NOTICE, "relay1_label: %s\n", config.relay1_label);
+         if (config.relay2_label != NULL) syslog(LOG_DAEMON | LOG_NOTICE, "relay2_label: %s\n", config.relay2_label);
+         if (config.relay3_label != NULL) syslog(LOG_DAEMON | LOG_NOTICE, "relay3_label: %s\n", config.relay3_label);
+         if (config.relay4_label != NULL) syslog(LOG_DAEMON | LOG_NOTICE, "relay4_label: %s\n", config.relay4_label);
+         if (config.relay5_label != NULL) syslog(LOG_DAEMON | LOG_NOTICE, "relay5_label: %s\n", config.relay5_label);
+         if (config.relay6_label != NULL) syslog(LOG_DAEMON | LOG_NOTICE, "relay6_label: %s\n", config.relay6_label);
+         if (config.relay7_label != NULL) syslog(LOG_DAEMON | LOG_NOTICE, "relay7_label: %s\n", config.relay7_label);
+         if (config.relay8_label != NULL) syslog(LOG_DAEMON | LOG_NOTICE, "relay8_label: %s\n", config.relay8_label);
+         if (config.gpio_num_relays != 0) syslog(LOG_DAEMON | LOG_NOTICE, "gpio_num_relays: %u\n", config.gpio_num_relays);
+         if (config.relay1_gpio_pin != 0) syslog(LOG_DAEMON | LOG_NOTICE, "relay1_gpio_pin: %u\n", config.relay1_gpio_pin);
+         if (config.relay2_gpio_pin != 0) syslog(LOG_DAEMON | LOG_NOTICE, "relay2_gpio_pin: %u\n", config.relay2_gpio_pin);
+         if (config.relay3_gpio_pin != 0) syslog(LOG_DAEMON | LOG_NOTICE, "relay3_gpio_pin: %u\n", config.relay3_gpio_pin);
+         if (config.relay4_gpio_pin != 0) syslog(LOG_DAEMON | LOG_NOTICE, "relay4_gpio_pin: %u\n", config.relay4_gpio_pin);
+         if (config.relay5_gpio_pin != 0) syslog(LOG_DAEMON | LOG_NOTICE, "relay5_gpio_pin: %u\n", config.relay5_gpio_pin);
+         if (config.relay6_gpio_pin != 0) syslog(LOG_DAEMON | LOG_NOTICE, "relay6_gpio_pin: %u\n", config.relay6_gpio_pin);
+         if (config.relay7_gpio_pin != 0) syslog(LOG_DAEMON | LOG_NOTICE, "relay7_gpio_pin: %u\n", config.relay7_gpio_pin);
+         if (config.relay8_gpio_pin != 0) syslog(LOG_DAEMON | LOG_NOTICE, "relay8_gpio_pin: %u\n", config.relay8_gpio_pin);
+         if (config.sainsmart_num_relays != 0) syslog(LOG_DAEMON | LOG_NOTICE, "sainsmart_num_relays: %u\n", config.sainsmart_num_relays);
          syslog(LOG_DAEMON | LOG_NOTICE, "***************************\n");
+         
+         /* Get relay labels from config file */
+         if (config.relay1_label != NULL) strcpy(rlabels[0], config.relay1_label);
+         if (config.relay2_label != NULL) strcpy(rlabels[1], config.relay2_label);
+         if (config.relay3_label != NULL) strcpy(rlabels[2], config.relay3_label);
+         if (config.relay4_label != NULL) strcpy(rlabels[3], config.relay4_label);
+         if (config.relay5_label != NULL) strcpy(rlabels[4], config.relay5_label);
+         if (config.relay6_label != NULL) strcpy(rlabels[5], config.relay6_label);
+         if (config.relay7_label != NULL) strcpy(rlabels[6], config.relay7_label);
+         if (config.relay8_label != NULL) strcpy(rlabels[7], config.relay8_label);
+         
+         /* Get listen interface from config file */
+         if (config.server_iface != NULL)
+         {
+            if (inet_aton(config.server_iface, &iface) == 0)
+            {
+               syslog(LOG_DAEMON | LOG_NOTICE, "Invalid iface address in config file, using default value");
+            }
+         }
+         
+         /* Get listen port from config file */
+         if (config.server_port > 0)
+         {
+            port = config.server_port;
+         }
       }
-      
-      /* Get relay labels from config file */
-      if (strlen(config.relay1_label)) strcpy(rlabels[0], config.relay1_label);
-      if (strlen(config.relay2_label)) strcpy(rlabels[1], config.relay2_label);
-      if (strlen(config.relay3_label)) strcpy(rlabels[2], config.relay3_label);
-      if (strlen(config.relay4_label)) strcpy(rlabels[3], config.relay4_label);
-      if (strlen(config.relay5_label)) strcpy(rlabels[4], config.relay5_label);
-      if (strlen(config.relay6_label)) strcpy(rlabels[5], config.relay6_label);
-      if (strlen(config.relay7_label)) strcpy(rlabels[6], config.relay7_label);
-      if (strlen(config.relay8_label)) strcpy(rlabels[7], config.relay8_label);
+      else
+      {
+         syslog(LOG_DAEMON | LOG_NOTICE, "Can't load %s, using default parameters\n", CONFIG_FILE);
+      }
       
       /* Parse command line for relay labels (overrides config file)*/
       for (i=0; i<argc-2 && i<MAX_NUM_RELAYS; i++)
-      {  
+      {
          strcpy(rlabels[i], argv[i+2]);
-      }
-
-      /* Get listen interface from config file */
-      if (inet_aton(config.server_iface, &iface) == 0)
-      {
-         syslog(LOG_DAEMON | LOG_NOTICE, "Invalid iface address in config file, using default value");
-         iface.s_addr = INADDR_ANY;
-      }
-      
-      /* Get listen port from config file */
-      if (config.server_port > 0)
-      {
-         port = config.server_port;
-      }
+      }         
       
       /* Start build-in web server */
       sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -697,8 +702,9 @@ int main(int argc, char *argv[])
       relay_state_t rstate;
       char com_port[MAX_COM_PORT_NAME_LEN];
       char cname[MAX_RELAY_CARD_NAME_LEN];
+      uint8 num_relays=FIRST_RELAY;
       
-      if (detect_relay_card(com_port, NULL) == -1)
+      if (detect_relay_card(com_port, &num_relays) == -1)
       {
          printf("No compatible device detected.\n");
          
@@ -715,7 +721,7 @@ int main(int argc, char *argv[])
       if (!strcmp(argv[1],"-i"))
       {
          if (get_relay_card_name(get_relay_card_type(), cname) == 0)
-            printf("Detected relay card type is %s (on %s)\n", cname, com_port);
+            printf("Detected relay card type is %s (on %s, %d channels)\n", cname, com_port, num_relays);
          return 0;         
       }
    

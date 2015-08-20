@@ -94,6 +94,8 @@
 #define VENDOR_ID 0x16c0
 #define DEVICE_ID 0x05df
 
+#define PRODUCT_STR_BASE "USBRelay"
+
 #define REPORT_LEN          9
 #define REPORT_RDDAT_OFFSET 7
 #define REPORT_WRCMD_OFFSET 1
@@ -103,6 +105,8 @@
 #define CMD_ALL_ON  0xfe
 #define CMD_OFF     0xfd
 #define CMD_ALL_OFF 0xfc
+
+static uint8 g_num_relays=HID_API_NUM_RELAYS;
 
 
 /**********************************************************
@@ -121,16 +125,30 @@
 int detect_relay_card_hidapi(char* portname, uint8* num_relays)
 {
    struct hid_device_info *devs;
+   uint8 num;
    
    if ((devs = hid_enumerate(VENDOR_ID, DEVICE_ID)) == NULL)
    {
       return -1;  
    }
-        
+
+   if (devs->product_string == NULL ||
+       devs->path == NULL)
+   {
+      return -1;
+   }
+   
    //printf("DBG: card %ls found\n", devs->product_string);
+   
+   /* Get number of relays from product description */
+   num = atoi((const char *)(devs->product_string+strlen(PRODUCT_STR_BASE)));
+   if (num>0)
+   {
+      g_num_relays = num;
+   }
 
    /* Return parameters */
-   if (num_relays!=NULL) *num_relays = HID_API_NUM_RELAYS; // TODO: do proper detection
+   if (num_relays!=NULL) *num_relays = g_num_relays;
    sprintf(portname, "%s", devs->path);
   
    hid_free_enumeration(devs);   
@@ -155,7 +173,7 @@ int get_relay_hidapi(char* portname, uint8 relay, relay_state_t* relay_state)
    hid_device *hid_dev;
    unsigned char buf[REPORT_LEN];  
    
-   if (relay<FIRST_RELAY || relay>(FIRST_RELAY+HID_API_NUM_RELAYS-1))
+   if (relay<FIRST_RELAY || relay>(FIRST_RELAY+g_num_relays-1))
    {  
       fprintf(stderr, "ERROR: Relay number out of range\n");
       return -1;      
@@ -202,7 +220,7 @@ int set_relay_hidapi(char* portname, uint8 relay, relay_state_t relay_state)
    hid_device *hid_dev;
    unsigned char buf[REPORT_LEN];  
    
-   if (relay<FIRST_RELAY || relay>(FIRST_RELAY+HID_API_NUM_RELAYS-1))
+   if (relay<FIRST_RELAY || relay>(FIRST_RELAY+g_num_relays-1))
    {  
       fprintf(stderr, "ERROR: Relay number out of range\n");
       return -1;      
