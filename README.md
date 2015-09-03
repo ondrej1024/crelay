@@ -8,19 +8,24 @@ This software is intended to run on Linux systems to control USB relay cards fro
 The software was designed with the following requirements in mind:  
 
  - simple, intuitive usage and interface
- - as little dependencies as possible (libraries, external programs)
- - runs on different Linux distributions, different hardware platforms
+ - as little dependencies as possible (libraries, drivers, external programs)
+ - runs on a variety of Linux distributions, different hardware platforms
  - lightweight, can run on simple devices
  - easily expandable (adding relay card types and user interfaces)
 
 New relay cards support can be added by providing the cards driver code for detecting the card, reading and setting the relays.
 Currently the following relay cards are supported:  
 
-- [Conrad USB 4-channel relay card](http://www.conrad.de/ce/de/product/393905), see <i>Note 1</i> below
-- [Sainsmart USB 4/8-channel relay card](http://www.sainsmart.com/sainsmart-4-channel-5v-usb-relay-board-module-controller-for-automation-robotics.html), see <i>Note 2</i> below
+- [Conrad USB 4-channel relay card](http://www.conrad.de/ce/de/product/393905), 
+  see [*Note 1*](https://github.com/ondrej1024/crelay#note-1-conrad-usb-4-channel-relay-card) below
+- [Sainsmart USB 4/8-channel relay card](http://www.sainsmart.com/sainsmart-4-channel-5v-usb-relay-board-module-controller-for-automation-robotics.html), 
+  see [*Note 2*](https://github.com/ondrej1024/crelay#note-2-sainsmart-usb-48-channel-relay-card) below
 - [HID API compatible relay cards (1/2/4/8 channel)](http://www.ebay.com/itm/For-Smart-Home-5V-USB-Relay-2-Channel-Programmable-Computer-Control-/190950124351)
-- Generic GPIO controlled relays, see <i>Note 3</i> below  
-<br>
+- Generic GPIO controlled relays, 
+  see [*Note 3*](https://github.com/ondrej1024/crelay#note-3-gpio-controlled-relays) below  
+
+The used relay card is automatically detected. No complicated port or communication parameter settings required. Just plug in your card and play.  
+
 
 The following picture shows a high level view on the modular software architecture.  
 
@@ -40,7 +45,7 @@ The following picture shows a high level view on the modular software architectu
 
 ### Nice to have (wishlist)
 - Integrated MQTT client
-- ThingSpeak Talkback App (https://thingspeak.com/docs/talkback)
+- [ThingSpeak Talkback App](https://thingspeak.com/docs/talkback)
 - Multiple cards support
 - Access control for Web GUI and HTTP API
 - Programmable timers for relay actions  
@@ -95,8 +100,8 @@ The following picture shows a high level view on the modular software architectu
 <br>  
 
 ### HTTP API
-An HTTP API is provided to access the server from external clients. This API is compatible with the PiRelay Android app. Therefore this app can be used on your Android phone to control <i>crelay</i> remotely.  
-I am considering to add a more universally usable Json format based API in the future.
+An HTTP API is provided to access the server from external clients. This API is compatible with the [PiRelay Android app](https://play.google.com/store/apps/details?id=com.jasonfindlay.pirelay). Therefore the app can be used on your Android phone to control *crelay* remotely.  
+I am also considering to add a more universally usable Json format based API in the future.
 
 - API url:  
 <pre><i>ip_address[:port]</i>/gpio</pre>  
@@ -183,7 +188,7 @@ If anyone wants to build packages for other Linux distributions, please feel fre
 <br>
 
 ### Configuration
-The parameters for *crelay* can be customized via the configuration file crelay.conf which should be placed in the `/etc/` system folder. An example file is provided together with the programs source code in the `conf/` folder.
+When running in daemon mode. the parameters for *crelay* can be customized via the configuration file `crelay.conf` which should be placed in the `/etc/` system folder. An example file is provided together with the programs source code in the `conf/` folder.
 
 <pre>
 ################################################
@@ -239,9 +244,9 @@ See example files `relay_drv_sample.c` and `relay_drv_sample.h` in the src direc
 ### Credits
 The support for the different relay cards in *crelay* has only been possible thanks to the valuable contributions of the following people who reverse engineered the communication protocols of the cards and provided the protocol specifications.
 
-* [Dominic Sacré](https://github.com/dsacre) who discovered the communication protocol of the Conrad card
+* [Dominic Sacré](https://github.com/dsacre) who discovered the communication protocol of the Conrad USB card
 * [Darryl Bond](https://github.com/darrylb123), who discovered the communication protocol of the HID API cards
-* User stav from the RPi forum, who discovered the communication protocol of the Sainsmart card
+* [Steve Crow](https://github.com/stav09), who discovered the communication protocol of the Sainsmart USB cards
 
 <br>  
 
@@ -257,14 +262,16 @@ The current version of *crelay* uses libusb to talk directly to the CP2104 on th
 <br>  
 
 ##### <i>Note 2 (Sainsmart USB 4/8-channel relay card)</i>:
-The Sainsmart card uses the FTDI FT245RL chip. This chip is controlled directly through the open source libFTDI library. No Kernel driver is needed. However on most Linux distributions, the *ftdi_sio* serial driver is automatically loaded when the FT245RL chip is detected. In order to grant the <i>crelay</i> software access to the card, the default driver needs to be unloaded:  
+The Sainsmart card uses the FTDI FT245RL chip. This chip is controlled directly through the open source libFTDI library. No Kernel driver is needed. However on most Linux distributions, the *ftdi_sio* serial driver is automatically loaded when the FT245RL chip is detected. In order to grant the *crelay* software access to the card, the default driver needs to be unloaded:  
 
     rmmod ftdi_sio
 
 To prevent automatic loading of the driver, add the following line to /etc/modprobe.d/blacklist.conf:  
 
     blacklist ftdi_sio
-    
+
+Both 4 and 8 channel versions are supported. However, there seems to be no way to automatically detect which version of the card is used. Therefore the number of relay channles can be configured in the configuration file.  
+
 <br>  
 
 ##### <i>Note 3 (GPIO controlled relays)</i>:
