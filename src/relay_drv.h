@@ -87,10 +87,10 @@ relay_state_t;
 
 typedef struct
 {
-   int (*detect_relay_card_fun)(char*, uint8*);        /* function to detect the relay card */
-   int (*get_relay_fun)(char*, uint8, relay_state_t*); /* function to get the current relay state */
-   int (*set_relay_fun)(char*, uint8, relay_state_t);  /* function to set the new relay state */
-   char *card_name;                                    /* card name string */
+   int (*detect_relay_card_fun)(char*, uint8*, char*);        /* function to detect the relay card */
+   int (*get_relay_fun)(char*, uint8, relay_state_t*, char*); /* function to get the current relay state */
+   int (*set_relay_fun)(char*, uint8, relay_state_t, char*);  /* function to set the new relay state */
+   char *card_name;                                           /* card name string */
 }
 relay_data_t;
 
@@ -110,7 +110,7 @@ relay_data_t;
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card(char* portname, uint8* num_relays);
+int detect_relay_card(char* portname, uint8* num_relays, char* serial);
 
 /**********************************************************
  * Function get_relay()
@@ -124,7 +124,7 @@ int detect_relay_card(char* portname, uint8* num_relays);
  * Return:   o - success
  *          -1 - fail
  *********************************************************/
-int get_relay(char* portname, uint8 relay, relay_state_t* relay_state);
+int get_relay(char* portname, uint8 relay, relay_state_t* relay_state, char* serial);
 
 /**********************************************************
  * Function set_relay()
@@ -138,7 +138,7 @@ int get_relay(char* portname, uint8 relay, relay_state_t* relay_state);
  * Return:   o - success
  *          -1 - fail
  *********************************************************/
-int set_relay(char* portname, uint8 relay, relay_state_t relay_state);
+int set_relay(char* portname, uint8 relay, relay_state_t relay_state, char* serial);
 
 /**********************************************************
  * Function get_relay_card_type()

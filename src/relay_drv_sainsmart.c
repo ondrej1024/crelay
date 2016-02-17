@@ -97,7 +97,7 @@ extern config_t config;
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_sainsmart_4_8chan(char* portname, uint8* num_relays)
+int detect_relay_card_sainsmart_4_8chan(char* portname, uint8* num_relays, char* serial)
 {
    unsigned int chipid;
    
@@ -108,7 +108,7 @@ int detect_relay_card_sainsmart_4_8chan(char* portname, uint8* num_relays)
    }
 
    /* Try to open FTDI USB device */
-   if ((ftdi_usb_open(ftdi, VENDOR_ID, DEVICE_ID)) < 0)
+   if ((ftdi_usb_open_desc(ftdi, VENDOR_ID, DEVICE_ID, NULL, serial)) < 0)
    {
       ftdi_free(ftdi);
       return -1;
@@ -161,7 +161,7 @@ int detect_relay_card_sainsmart_4_8chan(char* portname, uint8* num_relays)
  * Return:    0 - success
  *          < 0 - fail
  *********************************************************/
-int get_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t* relay_state)
+int get_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t* relay_state, char* serial)
 {
    unsigned char buf[1];
    
@@ -172,7 +172,7 @@ int get_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t* rela
    }
 
    /* Open FTDI USB device */
-   if ((ftdi_usb_open(ftdi, VENDOR_ID, DEVICE_ID)) < 0)
+   if ((ftdi_usb_open_desc(ftdi, VENDOR_ID, DEVICE_ID, NULL, serial)) < 0)
    {
       fprintf(stderr, "unable to open ftdi device: (%s)\n", ftdi_get_error_string(ftdi));
       ftdi_free(ftdi);
@@ -206,7 +206,7 @@ int get_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t* rela
  * Return:    0 - success
  *          < 0 - fail
  *********************************************************/
-int set_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t relay_state)
+int set_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t relay_state, char* serial)
 {
    unsigned char buf[1];
    
@@ -217,7 +217,7 @@ int set_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t relay
    }
    
    /* Open FTDI USB device */
-   if ((ftdi_usb_open(ftdi, VENDOR_ID, DEVICE_ID)) < 0)
+   if ((ftdi_usb_open_desc(ftdi, VENDOR_ID, DEVICE_ID, NULL, serial)) < 0)
    {
       fprintf(stderr, "unable to open ftdi device: (%s)\n", ftdi_get_error_string(ftdi));
       ftdi_free(ftdi);

@@ -120,7 +120,7 @@ static libusb_device *device;
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_conrad_4chan(char* portname, uint8* num_relays)
+int detect_relay_card_conrad_4chan(char* portname, uint8* num_relays, char* serial)
 {
    struct libusb_device_handle *dev = NULL; 
    struct libusb_device_descriptor devdesc;
@@ -180,7 +180,7 @@ int detect_relay_card_conrad_4chan(char* portname, uint8* num_relays)
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int get_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t* relay_state)
+int get_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t* relay_state, char* serial)
 {
    struct libusb_device_handle *dev = NULL; 
    int r;  
@@ -245,7 +245,7 @@ int get_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t* relay_sta
  * Return:   o - success
  *          -1 - fail
  *********************************************************/
-int set_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t relay_state)
+int set_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t relay_state, char* serial)
 {
    struct libusb_device_handle *dev = NULL; 
    int r;  

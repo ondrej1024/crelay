@@ -48,7 +48,7 @@
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_sample(char* portname, uint8* num_relays)
+int detect_relay_card_sample(char* portname, uint8* num_relays, char* serial)
 
 
 /**********************************************************
@@ -63,7 +63,7 @@ int detect_relay_card_sample(char* portname, uint8* num_relays)
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int get_relay_sample(char* portname, uint8 relay, relay_state_t* relay_state);
+int get_relay_sample(char* portname, uint8 relay, relay_state_t* relay_state, char* serial);
 
 
 /**********************************************************
@@ -75,9 +75,9 @@ int get_relay_sample(char* portname, uint8 relay, relay_state_t* relay_state);
  *             relay (in)        - relay number
  *             relay_state (in)  - current relay state
  * 
- * Return:   o - success
+ * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int set_relay_sample(char* portname, uint8 relay, relay_state_t relay_state);
+int set_relay_sample(char* portname, uint8 relay, relay_state_t relay_state, char* serial);
 
 #endif

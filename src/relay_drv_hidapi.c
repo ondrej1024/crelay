@@ -122,7 +122,7 @@ static uint8 g_num_relays=HID_API_NUM_RELAYS;
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_hidapi(char* portname, uint8* num_relays)
+int detect_relay_card_hidapi(char* portname, uint8* num_relays, char* serial)
 {
    struct hid_device_info *devs;
    uint8 num;
@@ -168,7 +168,7 @@ int detect_relay_card_hidapi(char* portname, uint8* num_relays)
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int get_relay_hidapi(char* portname, uint8 relay, relay_state_t* relay_state)
+int get_relay_hidapi(char* portname, uint8 relay, relay_state_t* relay_state, char* serial)
 {
    hid_device *hid_dev;
    unsigned char buf[REPORT_LEN];  
@@ -215,7 +215,7 @@ int get_relay_hidapi(char* portname, uint8 relay, relay_state_t* relay_state)
  * Return:   o - success
  *          -1 - fail
  *********************************************************/
-int set_relay_hidapi(char* portname, uint8 relay, relay_state_t relay_state)
+int set_relay_hidapi(char* portname, uint8 relay, relay_state_t relay_state, char* serial)
 { 
    hid_device *hid_dev;
    unsigned char buf[REPORT_LEN];  
