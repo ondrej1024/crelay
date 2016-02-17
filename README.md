@@ -41,12 +41,13 @@ The following picture shows a high level view on the modular software architectu
 - HTTP API for external clients (e.g. Smartphone/tablet apps)
 - Multiple relay card type support  
 - Support for configuration file with custom parameters
+- Multiple cards support (command line interface only)
 <br>
 
 ### Nice to have (wishlist)
 - Integrated MQTT client
 - [ThingSpeak Talkback App](https://thingspeak.com/docs/talkback)
-- Multiple cards support
+- Multiple cards support (Web UI)
 - Access control for Web GUI and HTTP API
 - Programmable timers for relay actions  
 <br>
@@ -70,19 +71,19 @@ The following picture shows a high level view on the modular software architectu
       - Sainsmart USB 4-channel relay card
       - HID API compatible relay card
       - Generic GPIO relays
-    The card which is detected first will be used. 
+    The card which is detected first will be used, unless -s switch and a serial number is passed.
     
     The program can be run in interactive (command line) mode or in daemon mode with
     built-in web server.
 
     Interactive mode:
-        crelay -i | [<relay number>] [ON|OFF]
+        crelay [-s <serial number>] -i | [<relay number>] [ON|OFF]
 
            The state of any relay can be read or it can be changed to a new state.
            If only the relay number is provided then the current state is returned,
            otherwise the relays state is set to the new value provided as second parameter.
            The USB communication port is auto detected. The first compatible device
-           found will be used.
+           found will be used, unless -s switch and a serial number is passed.
 
     Daemon mode:
         crelay -d [<relay1_label> [<relay2_label> [<relay3_label> [<relay4_label>]]]] 

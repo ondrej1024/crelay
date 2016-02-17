@@ -556,7 +556,7 @@ void print_usage()
    printf("       If only the relay number is provided then the current state is returned,\n");
    printf("       otherwise the relays state is set to the new value provided as second parameter.\n");
    printf("       The USB communication port is auto detected. The first compatible device\n");
-   printf("       found will be used.\n\n");
+   printf("       found will be used, unless -s switch and a serial number is passed.\n\n");
    printf("Daemon mode:\n");
    printf("    crelay -d [<relay1_label> [<relay2_label> [<relay3_label> [<relay4_label>]]]] \n\n");
    printf("       In daemon mode the built-in web server will be started and the relays\n");
