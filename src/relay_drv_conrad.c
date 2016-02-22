@@ -106,6 +106,58 @@
 
 static libusb_device *device;
 
+libusb_device_handle* open_device_with_vid_pid_serial(uint16_t vendorid, uint16_t productid, char *serial)
+{
+   int r;
+   ssize_t i, devnum;
+   libusb_device **devices;
+   unsigned char sernum[64];
+   struct libusb_device_handle *dev = NULL;
+   struct libusb_device_descriptor devdesc;
+
+   // Get a list of all connected USB devices
+   devnum = libusb_get_device_list(NULL, &devices);
+   if (devnum <= LIBUSB_SUCCESS)
+   {
+      if (devnum == LIBUSB_SUCCESS)
+      {
+         fprintf(stderr, "No USB devices found\n");
+      } else {
+         fprintf(stderr, "Unable to list USB devices (%s)\n", libusb_error_name(devnum));
+      }
+      return NULL;
+   }
+
+   for (i = 0; i < devnum; i++)
+   {
+      libusb_get_device_descriptor(devices[i], &devdesc);
+      // Skip devices not matching vendor and device IDs
+      if (devdesc.idVendor != vendorid || devdesc.idProduct != productid)
+      {
+         continue;
+      }
+      r = libusb_open(devices[i], &dev);
+      if (r < 0)
+      {
+         fprintf(stderr, "Unable to open device (%s)\n", libusb_error_name(r));
+         continue;
+      }
+      // If serial number was not specified, return handle to first device found
+      if (serial == NULL)
+      {
+         return dev;
+      }
+      libusb_get_string_descriptor_ascii (dev, devdesc.iSerialNumber, sernum, 64);
+      if (!strcmp(serial, (char *)sernum))
+      {
+         return dev;
+      }
+      libusb_close(dev);
+   }
+
+   libusb_free_device_list(devices, 0);
+   return NULL;
+}
 
 /**********************************************************
  * Function detect_relay_card_conrad_4chan()
@@ -128,9 +180,9 @@ int detect_relay_card_conrad_4chan(char* portname, uint8* num_relays, char* seri
    unsigned char sernum[64];
    
    libusb_init(NULL);
-   
+
    /* Try to open Conrad CP2104 USB device */
-   dev = libusb_open_device_with_vid_pid(NULL, VENDOR_ID, DEVICE_ID);
+   dev = open_device_with_vid_pid_serial(VENDOR_ID, DEVICE_ID, serial);
    if (dev == NULL)
    {
       libusb_exit(NULL);
