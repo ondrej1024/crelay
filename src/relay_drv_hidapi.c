@@ -126,15 +126,12 @@ static uint8 g_num_relays=HID_API_NUM_RELAYS;
  *********************************************************/
 int detect_relay_card_hidapi(char* portname, uint8* num_relays, char* serial)
 {
-   struct hid_device_info *devs, *next;
+   struct hid_device_info *devs, *nextdev;
+   hid_device *hid_dev;
+   unsigned char buf[REPORT_LEN];  
+   uint8 found=0;
    uint8 num;
-   wchar_t *serialw;
 
-   if (serial != NULL)
-   {
-      serialw = malloc(sizeof(wchar_t)*strlen(serial));
-      mbstowcs(serialw, serial, strlen(serial));
-   }
    
    if ((devs = hid_enumerate(VENDOR_ID, DEVICE_ID)) == NULL)
    {
@@ -144,21 +141,49 @@ int detect_relay_card_hidapi(char* portname, uint8* num_relays, char* serial)
    if (devs->product_string == NULL ||
        devs->path == NULL)
    {
-      return -1;
+      return -2;
    }
 
-   // Find controller with matching serial number if it's specified
-   while (serial != NULL && wcscmp(serialw, devs->serial_number))
+   /* Find controller with matching serial number if it's specified */
+   buf[0]=0;
+   nextdev = devs;
+   while (nextdev)
    {
-      next = devs->next;
-      hid_free_enumeration(devs);
-      devs = next;
+      /* Open HID API device */
+      if ((hid_dev = hid_open_path(nextdev->path)) == NULL)
+      {
+         fprintf(stderr, "unable to open HID API device %s\n", portname);
+         return -3;
+      }
+      
+      /* Read relay Id requesting a feature report with Id 0x01 */
+      buf[0] = 0x01;
+      if (hid_get_feature_report(hid_dev, buf, sizeof(buf)) != REPORT_LEN)
+      {
+         fprintf(stderr, "unable to read feature report from device %s (%ls)\n", portname, hid_error(hid_dev));
+         return -4;
+      }
+      //printf("DBG: Relay ID: %s\n", buf);
+      
+      hid_close(hid_dev);
+      
+      if (serial == NULL || !strcmp(serial, (char *)buf))
+      {
+         found = 1;
+         break;
+      }
+      nextdev = nextdev->next;
+   }
+   
+   if (found == 0)
+   {
+      return -5;
    }
    
    //printf("DBG: card %ls found\n", devs->product_string);
    
    /* Get number of relays from product description */
-   num = atoi((const char *)(devs->product_string+strlen(PRODUCT_STR_BASE)));
+   num = atoi((const char *)(nextdev->product_string+strlen(PRODUCT_STR_BASE)));
    if (num>0)
    {
       g_num_relays = num;
@@ -166,7 +191,7 @@ int detect_relay_card_hidapi(char* portname, uint8* num_relays, char* serial)
 
    /* Return parameters */
    if (num_relays!=NULL) *num_relays = g_num_relays;
-   sprintf(portname, "%s", devs->path);
+   sprintf(portname, "%s", nextdev->path);
   
    hid_free_enumeration(devs);   
    return 0;
