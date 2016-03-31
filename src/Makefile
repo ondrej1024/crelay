@@ -16,6 +16,7 @@ BIN=crelay
 DRV_CONRAD	= y
 DRV_SAINSMART	= y
 DRV_HIDAPI	= y
+DRV_HIDAPI_SAIN	= y
 
 #DEBUG	= -g -O0
 DEBUG	= -O2
@@ -53,6 +54,12 @@ ifeq ($(DRV_HIDAPI), y)
 SRC	+= relay_drv_hidapi.c
 LIBS	+= -lhidapi-libusb
 OPTS	+= -DDRV_HIDAPI
+endif
+#ifdef DRV_HIDAPI_SAIN
+ifeq ($(DRV_HIDAPI_SAIN), y)
+SRC	+= relay_drv_hidapi_sain.c
+LIBS	+= -lhidapi-libusb
+OPTS	+= -DDRV_HIDAPI_SAIN
 endif
 
 OBJ	= $(SRC:.c=.o)
