@@ -57,72 +57,87 @@
 #define VENDOR_ID 0x0416
 #define DEVICE_ID 0x5020
 
+#define CMD_READ  0xD2
+#define CMD_WRITE 0xC3
+#define CMD_SIGNATURE "HIDC"
+
+
+/* USB HID message structure */
+typedef struct
+{
+   uint8  cmd;          // command READ/WRITE  
+   uint8  len;          // message length
+   uint16 bitmap;       // relay state bitmap
+   uint8  reserved[6];  // reserved bytes
+   uint8  signature[4]; // command signature
+   uint16 chksum;       // 16 bit checksum 
+} hid_msg_t;
+
+/* Association between relay number (array index) and bit position */
+static uint8 relay_bit_pos[] = {7 , 8 , 6 , 9 , 5 , 10, 4 , 11, 3 , 12, 2 , 13, 1 , 14, 0 , 15};
+
 static uint8 g_num_relays=HID_API_SAIN_NUM_RELAYS;
 
-static unsigned char read_cmd[] = {
-  0xD2, 0x0E, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x48, 0x49, 0x44,
-  0x43, 0x80, 0x02, 0x00, 0x00, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
-  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
-  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
-  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC
-};
 
-static unsigned char write_cmd[] = {
-  0xC3, 0x0E, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x49, 0x44,
-  0x43, 0xEE, 0x01, 0x00, 0x00, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
-  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
-  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
-  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC
-};
+static void init_hid_msg(hid_msg_t *hid_msg, uint8 cmd, uint16 bitmap)
+{
+   int i;
+   uint16 checksum=0;
+   
+   if (cmd==CMD_READ)
+     memset(hid_msg, 0x11, sizeof(hid_msg_t));
+   else
+     memset(hid_msg, 0x00, sizeof(hid_msg_t));
+      
+   hid_msg->cmd = cmd;
+   hid_msg->len = sizeof(hid_msg_t) - 2;
+   hid_msg->bitmap = bitmap;
+   memcpy(hid_msg->signature, CMD_SIGNATURE, 4);
+   for (i=0; i<hid_msg->len; i++) checksum += *(((uint8*)hid_msg)+i);
+   hid_msg->chksum = checksum;
+   
+   printf("DBG: msg ");
+   for (i=0; i<sizeof(hid_msg_t); i++) printf("%02X ", *(((uint8*)hid_msg)+i));
+   printf("\n");
+}
 
-static unsigned short
-mask_map[] = {128, 256, 64, 512, 32, 1024, 16, 2048, 8, 4096, 4, 8192, 2, 16384, 1, 32768};
 
-static unsigned short get_mask(hid_device *handle) {
-  int i, res;
-  unsigned short mask, read_mask;
-  unsigned char buf[16];
-  unsigned short *buf16 = (unsigned short *)buf;
-  
-  res = hid_write(handle, read_cmd, sizeof(read_cmd));
-  if (res < 0)
-    printf("Unable to read()\n");
+static int get_mask(hid_device *handle, uint16 *bitmap)
+{
+  hid_msg_t  hid_msg;
+
+  init_hid_msg(&hid_msg, CMD_READ, 0x1111);
+
+  if (hid_write(handle, (unsigned char *)&hid_msg, sizeof(hid_msg)) < 0)
+  {
+    return -1;
+  }
   usleep(1000);
   
-  res = hid_read(handle, buf, sizeof(buf));
-  if (res < 0)
-    printf("Unable to read()\n");
-     
-  mask = 0;
-  read_mask = buf16[1];
-  
-  for ( i = 0 ; i < g_num_relays; i ++) {
-    if (read_mask & mask_map[i]) {
-      mask |= 1 << i;
-    }
+  if (hid_read(handle, (unsigned char *)&hid_msg, sizeof(hid_msg)) < 0)
+  {
+    return -2;
   }
-
-  /* printf("DBG: get_mask = 0x%04x\n", mask); */
-  return mask;
+  
+  /* printf("DBG: get_mask = 0x%04x\n", hid_msg.bitmap); */
+  *bitmap = hid_msg.bitmap;
+  return 0;
 }
 
-static void set_mask(hid_device *handle, unsigned short mask) {
-  int i, res;
-  unsigned int size;
-  unsigned short checksum = 0, *write_cmd16 = (unsigned short *)write_cmd;
-  
-  /* printf("DBG: set_mask = 0x%04x\n", mask); */
-  
-  write_cmd16[1] = mask;
-  size = write_cmd[1];
-  for (i = 0; i < size; i++)
-    checksum += write_cmd[i];
-  write_cmd16[size/2] = checksum;
-  
-  res = hid_write(handle, write_cmd, sizeof(write_cmd));
-  if (res < 0)
-    printf("Unable to write()\n");
+
+static int set_mask(hid_device *handle, uint16 bitmap) 
+{
+  hid_msg_t  hid_msg;
+
+  /* printf("DBG: set_mask = 0x%04x\n", bitmap); */
+  init_hid_msg(&hid_msg, CMD_WRITE, bitmap);
+  if (hid_write(handle, (unsigned char *)&hid_msg, sizeof(hid_msg)) < 0)
+  {
+    return -1;
+  }
+  return 0;
 }
+
 
 /**********************************************************
   * Function detect_relay_card_hidapi_sain()
@@ -173,29 +188,37 @@ int detect_relay_card_hidapi_sain(char* portname, uint8* num_relays)
  *             relay_state (out) - current relay state
  * 
  * Return:   0 - success
- *          -1 - fail
+ *          <0 - fail
  *********************************************************/
 int get_relay_hidapi_sain(char* portname, uint8 relay, relay_state_t* relay_state)
 {
    hid_device *hid_dev;
-   unsigned short mask, bit;
+   uint16 bitmap, bit;
    
    if (relay<FIRST_RELAY || relay>(FIRST_RELAY+g_num_relays-1))
    {  
       fprintf(stderr, "ERROR: Relay number out of range\n");
       return -1;      
    }
-
+   
    /* Open HID API device */
    if ((hid_dev = hid_open_path(portname)) == NULL)
    {
       fprintf(stderr, "unable to open HID API device %s\n", portname);
       return -2;
    }
-
-   mask = get_mask(hid_dev);
-   bit = 1 << relay;
-   if (mask & bit)
+   
+   /* Read relay states */
+   if (get_mask(hid_dev, &bitmap) < 0)
+   {
+      fprintf(stderr, "unable to read data from device %s (%ls)\n", portname, hid_error(hid_dev));
+      return -3;
+   }
+   
+   //*relay_state = (bitmap & (1<<relay_bit_pos[relay-1])) ? ON : OFF;
+   
+   bit = 1 << relay_bit_pos[relay-1];
+   if (bitmap & bit)
      *relay_state = ON;
    else
      *relay_state = OFF;
@@ -216,20 +239,19 @@ int get_relay_hidapi_sain(char* portname, uint8 relay, relay_state_t* relay_stat
  *             relay_state (in)  - current relay state
  * 
  * Return:   0 - success
- *          -1 - fail
+ *          <0 - fail
  *********************************************************/
 int set_relay_hidapi_sain(char* portname, uint8 relay, relay_state_t relay_state)
 { 
    hid_device *hid_dev;
-   unsigned int bit;
-   unsigned short mask;
+   uint16     bitmap;
    
    if (relay<FIRST_RELAY || relay>(FIRST_RELAY+g_num_relays-1))
    {  
       fprintf(stderr, "ERROR: Relay number out of range\n");
       return -1;      
    }
-
+   
    /* Open HID API device */
    if ((hid_dev = hid_open_path(portname)) == NULL)
    {
@@ -237,17 +259,32 @@ int set_relay_hidapi_sain(char* portname, uint8 relay, relay_state_t relay_state
       return -2;
    }
 
-   printf("DBG: Sain USB-HID: set: portname=%s, relay=%d, state=%d\n", portname, relay, (int)relay_state);
-
-   mask = get_mask(hid_dev);
-   bit = 1 << (relay - 1);
-   if (relay_state)
-     mask |= bit;
-   else
-     mask &= ~bit;
-  
-   set_mask(hid_dev, mask);
+   /* Read relay states */
+   if (get_mask(hid_dev, &bitmap) < 0)
+   {
+      fprintf(stderr, "unable to read data from device %s (%ls)\n", portname, hid_error(hid_dev));
+      return -3;
+   }
    
+   /* Set the new relay state bit */
+   if (relay_state == OFF) 
+   {
+      /* Clear the relay bit in mask */
+      bitmap &= ~(1<<(relay-1));
+   }
+   else
+   {
+      /* Set the relay bit in mask */
+      bitmap |= (1<<(relay-1));
+   }
+   
+   /* Write relay states */
+   if (set_mask(hid_dev, bitmap) < 0)
+   {
+      fprintf(stderr, "unable to write data to device %s (%ls)\n", portname, hid_error(hid_dev));
+      return -4;
+   }
+  
    hid_close(hid_dev);
    return 0;
 }
