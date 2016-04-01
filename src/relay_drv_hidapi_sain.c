@@ -83,12 +83,12 @@ static void init_hid_msg(hid_msg_t *hid_msg, uint8 cmd, uint16 bitmap)
 {
    int i;
    uint16 checksum=0;
-   
+
    if (cmd==CMD_READ)
      memset(hid_msg, 0x11, sizeof(hid_msg_t));
    else
      memset(hid_msg, 0x00, sizeof(hid_msg_t));
-      
+
    hid_msg->cmd = cmd;
    hid_msg->len = sizeof(hid_msg_t) - 2;
    hid_msg->bitmap = bitmap;
@@ -104,8 +104,10 @@ static void init_hid_msg(hid_msg_t *hid_msg, uint8 cmd, uint16 bitmap)
 
 static int get_mask(hid_device *handle, uint16 *bitmap)
 {
+  int i;
   hid_msg_t  hid_msg;
-
+  unsigned short mask;
+  
   init_hid_msg(&hid_msg, CMD_READ, 0x1111);
 
   if (hid_write(handle, (unsigned char *)&hid_msg, sizeof(hid_msg)) < 0)
@@ -119,8 +121,16 @@ static int get_mask(hid_device *handle, uint16 *bitmap)
     return -2;
   }
   
+  mask = 0;
+  for ( i = 0 ; i < g_num_relays; i ++) {
+    if (hid_msg.bitmap & (1 << relay_bit_pos[i])) {
+      mask |= 1 << i;
+    }
+  }
+
   /* printf("DBG: get_mask = 0x%04x\n", hid_msg.bitmap); */
-  *bitmap = hid_msg.bitmap;
+  *bitmap = hid_msg.bitmap = mask;
+
   return 0;
 }
 
@@ -215,9 +225,7 @@ int get_relay_hidapi_sain(char* portname, uint8 relay, relay_state_t* relay_stat
       return -3;
    }
    
-   //*relay_state = (bitmap & (1<<relay_bit_pos[relay-1])) ? ON : OFF;
-   
-   bit = 1 << relay_bit_pos[relay-1];
+   bit = 1 << relay;
    if (bitmap & bit)
      *relay_state = ON;
    else
