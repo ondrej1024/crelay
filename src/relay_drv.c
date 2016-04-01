@@ -42,6 +42,7 @@
 #include "relay_drv_conrad.h"
 #include "relay_drv_sainsmart.h"
 #include "relay_drv_hidapi.h"
+#include "relay_drv_hidapi_sain.h"
 #include "relay_drv_gpio.h"
 
 
@@ -83,6 +84,14 @@ static relay_data_t relay_data[LAST_RELAY_TYPE] =
       detect_relay_card_hidapi,
       get_relay_hidapi,
       set_relay_hidapi,
+      HID_API_RELAY_NAME
+   },
+#endif
+#ifdef DRV_HIDAPI_SAIN
+   {  // HID_API_RELAY_TYPE
+      detect_relay_card_hidapi_sain,
+      get_relay_hidapi_sain,
+      set_relay_hidapi_sain,
       HID_API_RELAY_NAME
    },
 #endif
