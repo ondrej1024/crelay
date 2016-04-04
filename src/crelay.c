@@ -418,7 +418,7 @@ int process_http_request(FILE *f)
    //printf("DBG: form data: %s\n", formdata);
    
    /* Check if a relay card is present */
-   if (detect_relay_card(com_port, &last_relay, serial) == -1)
+   if (detect_relay_card(com_port, &last_relay, serial, NULL) == -1)
    {
       if (strstr(url, API_URL))
       {
@@ -705,8 +705,29 @@ int main(int argc, char *argv[])
       char cname[MAX_RELAY_CARD_NAME_LEN];
       char* serial=NULL;
       int argn = 1;
+      int i = 1;
       uint8 num_relays=FIRST_RELAY;
+      relay_info_t *relay_info;
       
+      if (!strcmp(argv[argn],"-i"))
+      {
+         /* Detect all cards connected to the system */
+         if (detect_all_relay_cards(&relay_info) == -1)
+         {
+            printf("No compatible device detected.\n");
+            return -1;
+         }
+         printf("\nDetected relay cards:\n");
+         while (relay_info->next != NULL)
+         {
+            get_relay_card_name(relay_info->relay_type, cname);
+            printf("  #%d\t%s (serial %s)\n", i++ ,cname, relay_info->serial);
+            relay_info = relay_info->next;
+            // TODO: free relay_info list memory
+         }
+         return 0;         
+      }
+   
       if (!strcmp(argv[argn], "-s"))
       {
          serial = malloc(sizeof(char)*strlen(argv[argn+1]));
@@ -714,7 +735,7 @@ int main(int argc, char *argv[])
          argn += 2;
       }
 
-      if (detect_relay_card(com_port, &num_relays, serial) == -1)
+      if (detect_relay_card(com_port, &num_relays, serial, NULL) == -1)
       {
          printf("No compatible device detected.\n");
          
@@ -728,13 +749,6 @@ int main(int argc, char *argv[])
          return -1;
       }
 
-      if (!strcmp(argv[argn],"-i"))
-      {
-         if (get_relay_card_name(get_relay_card_type(), cname) == 0)
-            printf("Detected relay card type is %s (on %s, %d channels)\n", cname, com_port, num_relays);
-         return 0;         
-      }
-   
       switch (argc)
       {
          case 2:

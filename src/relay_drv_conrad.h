@@ -47,7 +47,7 @@
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_conrad_4chan(char* portname, uint8* num_relays, char* serial);
+int detect_relay_card_conrad_4chan(char* portname, uint8* num_relays, char* serial, relay_info_t** relay_info);
 
 /**********************************************************
  * Function get_relay_conrad_4chan()

@@ -55,6 +55,8 @@
 #define MAX_NUM_RELAYS 8
 #define MAX_RELAY_CARD_NAME_LEN 40
 #define MAX_COM_PORT_NAME_LEN 32
+#define MAX_SERIAL_LEN 32
+
 
 typedef enum
 {
@@ -85,9 +87,17 @@ typedef enum
 }
 relay_state_t;
 
+typedef struct relay_info
+{
+   relay_type_t relay_type;
+   char         serial[MAX_SERIAL_LEN]; 
+   struct relay_info *next;
+} 
+relay_info_t;
+
 typedef struct
 {
-   int (*detect_relay_card_fun)(char*, uint8*, char*);        /* function to detect the relay card */
+   int (*detect_relay_card_fun)(char*, uint8*, char*, relay_info_t **); /* function to detect the relay card */
    int (*get_relay_fun)(char*, uint8, relay_state_t*, char*); /* function to get the current relay state */
    int (*set_relay_fun)(char*, uint8, relay_state_t, char*);  /* function to set the new relay state */
    char *card_name;                                           /* card name string */
@@ -96,6 +106,18 @@ relay_data_t;
 
 
 
+/**********************************************************
+ * Function detect_all_relay_cards()
+ * 
+ * Description: Detect all relay cards
+ * 
+ * Parameters: relay_info(out)- pointer to list of 
+ *                              relays info struct
+ * 
+ * Return:  0 - success
+ *         -1 - fail, no relay card found
+ *********************************************************/
+int detect_all_relay_cards(relay_info_t** relay_info);
 
 /**********************************************************
  * Function detect_relay_card()
@@ -110,7 +132,7 @@ relay_data_t;
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card(char* portname, uint8* num_relays, char* serial);
+int detect_relay_card(char* portname, uint8* num_relays, char* serial, relay_info_t** relay_info);
 
 /**********************************************************
  * Function get_relay()

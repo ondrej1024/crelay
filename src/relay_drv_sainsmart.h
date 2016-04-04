@@ -47,7 +47,7 @@
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_sainsmart_4_8chan(char* portname, uint8* num_relays, char* serial);
+int detect_relay_card_sainsmart_4_8chan(char* portname, uint8* num_relays, char* serial, relay_info_t** relay_info);
 
 /**********************************************************
  * Function get_relay_sainsmart_4_8chan()

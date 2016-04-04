@@ -124,13 +124,14 @@ static uint8 g_num_relays=HID_API_NUM_RELAYS;
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_hidapi(char* portname, uint8* num_relays, char* serial)
+int detect_relay_card_hidapi(char* portname, uint8* num_relays, char* serial, relay_info_t** relay_info)
 {
    struct hid_device_info *devs, *nextdev;
    hid_device *hid_dev;
    unsigned char buf[REPORT_LEN];  
    uint8 found=0;
    uint8 num;
+   relay_info_t* rinfo;
 
    
    if ((devs = hid_enumerate(VENDOR_ID, DEVICE_ID)) == NULL)
@@ -167,7 +168,20 @@ int detect_relay_card_hidapi(char* portname, uint8* num_relays, char* serial)
       
       hid_close(hid_dev);
       
-      if (serial == NULL || !strcmp(serial, (char *)buf))
+      if (relay_info != NULL)
+      {
+         // Save serial number and type in current relay info struct
+         (*relay_info)->relay_type = HID_API_RELAY_TYPE;
+         strcpy((*relay_info)->serial, (char *)buf);
+         // Allocate new struct
+         rinfo = malloc(sizeof(relay_info_t));
+         rinfo->next = NULL;
+         // Link current to new struct
+         (*relay_info)->next = rinfo;
+         // Move pointer to new struct
+         *relay_info = rinfo;
+      } 
+      else if (serial == NULL || !strcmp(serial, (char *)buf))
       {
          found = 1;
          break;
