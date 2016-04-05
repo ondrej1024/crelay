@@ -15,8 +15,8 @@ BIN=crelay
 # To exclude a specific driver add DRV_<XYZ>=n to the make command
 DRV_CONRAD	= y
 DRV_SAINSMART	= y
+DRV_SAINSMART16	= y
 DRV_HIDAPI	= y
-DRV_HIDAPI_SAIN	= y
 
 #DEBUG	= -g -O0
 DEBUG	= -O2
@@ -37,29 +37,25 @@ SRC	+= config.c
 SRC	+= relay_drv_gpio.c
 
 # Include only needed drivers and libraries
-#ifdef DRV_CONRAD
 ifeq ($(DRV_CONRAD), y)
 SRC	+= relay_drv_conrad.c
 LIBS	+= -lusb-1.0
 OPTS	+= -DDRV_CONRAD
 endif
-#ifdef DRV_SAINSMART
 ifeq ($(DRV_SAINSMART), y)
 SRC	+= relay_drv_sainsmart.c
 LIBS	+= -lftdi
 OPTS	+= -DDRV_SAINSMART
 endif
-#ifdef DRV_HIDAPI
+ifeq ($(DRV_SAINSMART16), y)
+SRC	+= relay_drv_sainsmart16.c
+LIBS	+= -lhidapi-libusb
+OPTS	+= -DDRV_SAINSMART16
+endif
 ifeq ($(DRV_HIDAPI), y)
 SRC	+= relay_drv_hidapi.c
 LIBS	+= -lhidapi-libusb
 OPTS	+= -DDRV_HIDAPI
-endif
-#ifdef DRV_HIDAPI_SAIN
-ifeq ($(DRV_HIDAPI_SAIN), y)
-SRC	+= relay_drv_hidapi_sain.c
-LIBS	+= -lhidapi-libusb
-OPTS	+= -DDRV_HIDAPI_SAIN
 endif
 
 OBJ	= $(SRC:.c=.o)

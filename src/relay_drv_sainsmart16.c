@@ -76,7 +76,7 @@ typedef struct
 /* Association between relay number (array index) and bit position */
 static uint8 relay_bit_pos[] = {7 , 8 , 6 , 9 , 5 , 10, 4 , 11, 3 , 12, 2 , 13, 1 , 14, 0 , 15};
 
-static uint8 g_num_relays=HID_API_SAIN_NUM_RELAYS;
+static uint8 g_num_relays=SAINSMART16_USB_NUM_RELAYS;
 
 
 static void init_hid_msg(hid_msg_t *hid_msg, uint8 cmd, uint16 bitmap)
@@ -106,7 +106,7 @@ static int get_mask(hid_device *handle, uint16 *bitmap)
 {
   int i;
   hid_msg_t  hid_msg;
-  unsigned short mask;
+  uint16 mask;
   
   init_hid_msg(&hid_msg, CMD_READ, 0x1111);
 
@@ -129,7 +129,7 @@ static int get_mask(hid_device *handle, uint16 *bitmap)
   }
 
   /* printf("DBG: get_mask = 0x%04x\n", hid_msg.bitmap); */
-  *bitmap = hid_msg.bitmap = mask;
+  *bitmap = mask;
 
   return 0;
 }
@@ -150,9 +150,9 @@ static int set_mask(hid_device *handle, uint16 bitmap)
 
 
 /**********************************************************
-  * Function detect_relay_card_hidapi_sain()
+ * Function detect_relay_card_sainsmart_16chan()
  * 
- * Description: Detect the HID API compatible relay card
+ * Description: Detect the Saintsmart 16 channel relay card
  * 
  * Parameters: portname (out) - pointer to a string where
  *                              the detected com port will
@@ -162,7 +162,7 @@ static int set_mask(hid_device *handle, uint16 bitmap)
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_hidapi_sain(char* portname, uint8* num_relays)
+int detect_relay_card_sainsmart_16chan(char* portname, uint8* num_relays)
 {
    struct hid_device_info *devs;
    
@@ -189,7 +189,7 @@ int detect_relay_card_hidapi_sain(char* portname, uint8* num_relays)
 
 
 /**********************************************************
- * Function get_relay_hidapi_sain()
+ * Function get_relay_sainsmart_16chan()
  * 
  * Description: Get the current relay state
  * 
@@ -200,7 +200,7 @@ int detect_relay_card_hidapi_sain(char* portname, uint8* num_relays)
  * Return:   0 - success
  *          <0 - fail
  *********************************************************/
-int get_relay_hidapi_sain(char* portname, uint8 relay, relay_state_t* relay_state)
+int get_relay_sainsmart_16chan(char* portname, uint8 relay, relay_state_t* relay_state)
 {
    hid_device *hid_dev;
    uint16 bitmap, bit;
@@ -238,7 +238,7 @@ int get_relay_hidapi_sain(char* portname, uint8 relay, relay_state_t* relay_stat
 
 
 /**********************************************************
- * Function set_relay_hidapi_sain()
+ * Function set_relay_sainsmart_16chan()
  * 
  * Description: Set new relay state
  * 
@@ -249,7 +249,7 @@ int get_relay_hidapi_sain(char* portname, uint8 relay, relay_state_t* relay_stat
  * Return:   0 - success
  *          <0 - fail
  *********************************************************/
-int set_relay_hidapi_sain(char* portname, uint8 relay, relay_state_t relay_state)
+int set_relay_sainsmart_16chan(char* portname, uint8 relay, relay_state_t relay_state)
 { 
    hid_device *hid_dev;
    uint16     bitmap;

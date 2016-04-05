@@ -36,13 +36,13 @@
  * 
  *****************************************************************************/ 
 
-#ifndef relay_drv_hidapi_sain_h
-#define relay_drv_hidapi_sain_h
+#ifndef relay_drv_sainsmart16_h
+#define relay_drv_sainsmart16_h
 
 /**********************************************************
- * Function detect_relay_card_hidapi_sain()
+ * Function detect_relay_card_sainsmart_16chan()
  * 
- * Description: Detect the HID API compatible relay card
+ * Description: Detect the Saintsmart 16 channel relay card
  * 
  * Parameters: portname (out) - pointer to a string where
  *                              the detected com port will
@@ -52,11 +52,11 @@
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_hidapi_sain(char* portname, uint8* num_relays);
+int detect_relay_card_sainsmart_16chan(char* portname, uint8* num_relays);
 
 
 /**********************************************************
- * Function get_relay_hidapi_sain()
+ * Function get_relay_sainsmart_16chan()
  * 
  * Description: Get the current relay state
  * 
@@ -67,11 +67,11 @@ int detect_relay_card_hidapi_sain(char* portname, uint8* num_relays);
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int get_relay_hidapi_sain(char* portname, uint8 relay, relay_state_t* relay_state);
+int get_relay_sainsmart_16chan(char* portname, uint8 relay, relay_state_t* relay_state);
 
 
 /**********************************************************
- * Function set_relay_hidapi_sain()
+ * Function set_relay_sainsmart_16chan()
  * 
  * Description: Set new relay state
  * 
@@ -82,6 +82,6 @@ int get_relay_hidapi_sain(char* portname, uint8 relay, relay_state_t* relay_stat
  * Return:   o - success
  *          -1 - fail
  *********************************************************/
-int set_relay_hidapi_sain(char* portname, uint8 relay, relay_state_t relay_state);
+int set_relay_sainsmart_16chan(char* portname, uint8 relay, relay_state_t relay_state);
 
 #endif

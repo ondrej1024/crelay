@@ -47,8 +47,8 @@
 #define HID_API_NUM_RELAYS             8
 
 /* Sainsmart HID API compatibe 16-channel relay card */
-#define HID_API_SAIN_RELAY_NAME        "Sainsmart USB-HID 16-channel relay card"
-#define HID_API_SAIN_NUM_RELAYS        16
+#define SAINSMART16_USB_NAME          "Sainsmart USB-HID 16-channel relay card"
+#define SAINSMART16_USB_NUM_RELAYS     16
 
 /* Generic GPIO connected relay cards */
 #define GENERIC_GPIO_NAME              "Generic GPIO relays"
@@ -73,8 +73,8 @@ typedef enum
 #ifdef DRV_HIDAPI
    HID_API_RELAY_TYPE,             /* HID API compatible relay card */
 #endif
-#ifdef DRV_HIDAPI_SAIN
-   HID_API_SAIN_RELAY_TYPE,        /* Sainsmart USB-HID relay card */
+#ifdef DRV_SAINSMART16
+   SAINSMART16_USB_RELAY_TYPE,     /* Sainsmart USB-HID relay card */
 #endif
    
    /* Add other relay types here */
