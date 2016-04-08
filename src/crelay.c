@@ -677,7 +677,12 @@ int main(int argc, char *argv[])
       bind(sock, (struct sockaddr *) &sin, sizeof(sin));      
       listen(sock, 5);
       syslog(LOG_DAEMON | LOG_NOTICE, "HTTP server listening on %s:%d\n", inet_ntoa(iface), port);      
-      
+
+      if (daemon(0, 0) == -1) {
+	      syslog(LOG_DAEMON | LOG_ERR, "Failed to daemonize: %s", strerror(errno));
+	      exit(EXIT_FAILURE);
+      }
+
       while (1)
       {
          int s;
