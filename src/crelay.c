@@ -195,7 +195,7 @@ static int config_cb(void* user, const char* section, const char* name, const ch
 static void exit_handler(int signum)
 {
    syslog(LOG_DAEMON | LOG_NOTICE, "Exit crelay daemon\n");
-   exit(0);
+   exit(EXIT_SUCCESS);
 }
 
                                            
@@ -582,7 +582,7 @@ int main(int argc, char *argv[])
    if (argc==1)
    {
       print_usage();
-      return 0;
+      exit(EXIT_SUCCESS);
    }
    
    if (!strcmp(argv[1],"-d"))
@@ -720,14 +720,14 @@ int main(int argc, char *argv[])
             printf("Consider invoking the program from the root account or use \"sudo ...\"\n");
          }
          
-         return -1;
+         exit(EXIT_FAILURE);
       }
 
       if (!strcmp(argv[1],"-i"))
       {
          if (get_relay_card_name(get_relay_card_type(), cname) == 0)
             printf("Detected relay card type is %s (on %s, %d channels)\n", cname, com_port, num_relays);
-         return 0;         
+         exit(EXIT_SUCCESS);
       }
    
       switch (argc)
@@ -752,5 +752,5 @@ int main(int argc, char *argv[])
             print_usage();
       }
    }
-   return 0;
+   exit(EXIT_SUCCESS);
 }
