@@ -708,7 +708,8 @@ int main(int argc, char *argv[])
       char com_port[MAX_COM_PORT_NAME_LEN];
       char cname[MAX_RELAY_CARD_NAME_LEN];
       uint8 num_relays=FIRST_RELAY;
-      
+      int err;
+
       if (detect_relay_card(com_port, &num_relays) == -1)
       {
          printf("No compatible device detected.\n");
@@ -736,16 +737,22 @@ int main(int argc, char *argv[])
             /* GET current relay state */
             if (get_relay(com_port, atoi(argv[1]), &rstate) == 0)
                printf("Relay %d is %s\n", atoi(argv[1]), (rstate==ON)?"on":"off");
+	    else
+	      exit(EXIT_FAILURE);
             break;
             
          case 3:
             /* SET new relay state */
             if (!strcmp(argv[2],"on") || !strcmp(argv[2],"ON")) 
-               set_relay(com_port, atoi(argv[1]), ON);
+               err = set_relay(com_port, atoi(argv[1]), ON);
             else if (!strcmp(argv[2],"off") || !strcmp(argv[2],"OFF")) 
-               set_relay(com_port, atoi(argv[1]), OFF);
-            else
-               print_usage();
+               err = set_relay(com_port, atoi(argv[1]), OFF);
+            else {
+		print_usage();
+		exit(EXIT_FAILURE);
+	    }
+	    if (err)
+	      exit(EXIT_FAILURE);
             break;
             
          default:
