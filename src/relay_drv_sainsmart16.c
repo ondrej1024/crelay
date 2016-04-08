@@ -96,9 +96,9 @@ static void init_hid_msg(hid_msg_t *hid_msg, uint8 cmd, uint16 bitmap)
    for (i=0; i<hid_msg->len; i++) checksum += *(((uint8*)hid_msg)+i);
    hid_msg->chksum = checksum;
    
-   printf("DBG: msg ");
-   for (i=0; i<sizeof(hid_msg_t); i++) printf("%02X ", *(((uint8*)hid_msg)+i));
-   printf("\n");
+   /* printf("DBG: msg "); */
+   /* for (i=0; i<sizeof(hid_msg_t); i++) printf("%02X ", *(((uint8*)hid_msg)+i)); */
+   /* printf("\n"); */
 }
 
 
@@ -267,6 +267,9 @@ int set_relay_sainsmart_16chan(char* portname, uint8 relay, relay_state_t relay_
       return -2;
    }
 
+   printf("Sain16 USB: portname=%s, relay=%d, state=%s\n",
+	  portname, relay, relay_state == ON? "ON" : "OFF");
+   
    /* Read relay states */
    if (get_mask(hid_dev, &bitmap) < 0)
    {
