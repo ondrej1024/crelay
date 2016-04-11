@@ -21,6 +21,7 @@ Currently the following relay cards are supported:
 - [Sainsmart USB 4/8-channel relay card](http://www.sainsmart.com/sainsmart-4-channel-5v-usb-relay-board-module-controller-for-automation-robotics.html), 
   see [*Note 2*](https://github.com/ondrej1024/crelay#note-2-sainsmart-usb-48-channel-relay-card) below
 - [HID API compatible relay cards (1/2/4/8 channel)](http://www.ebay.com/itm/For-Smart-Home-5V-USB-Relay-2-Channel-Programmable-Computer-Control-/190950124351)
+- [Sainsmart USB 16-channel relay control module](http://www.sainsmart.com/arduino/sainsmart-16-channel-controller-usb-hid-programmable-control-relay-module.html)
 - Generic GPIO controlled relays, 
   see [*Note 3*](https://github.com/ondrej1024/crelay#note-3-gpio-controlled-relays) below  
 
@@ -62,13 +63,14 @@ The following picture shows a high level view on the modular software architectu
 
 #### Command line interface
     $ crelay 
-    crelay, version 0.9
+    crelay, version 0.10
     
     This utility provides a unified way of controlling different types of relay cards.
     Currently supported relay cards:
       - Conrad USB 4-channel relay card
-      - Sainsmart USB 4-channel relay card
+      - Sainsmart USB 4/8-channel relay card
       - HID API compatible relay card
+      - Sainsmart USB-HID 16-channel relay card
       - Generic GPIO relays
     The card which is detected first will be used. 
     
@@ -247,7 +249,8 @@ The support for the different relay cards in *crelay* has only been possible tha
 * [Dominic Sacré](https://github.com/dsacre) who discovered the communication protocol of the Conrad USB card
 * [Darryl Bond](https://github.com/darrylb123), who discovered the communication protocol of the HID API cards
 * [Steve Crow](https://github.com/stav09), who discovered the communication protocol of the Sainsmart USB cards
-
+* [Kevin Hilman](https://github.com/khilman), who implemented and tested the support for the Sainsmart 16-channel control module
+* [Andrew Lunn](https://github.com/lunn), who contributed cleanup patches
 <br>  
 
 ### Notes

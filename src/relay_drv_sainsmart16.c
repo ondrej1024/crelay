@@ -45,6 +45,60 @@
  * along with crelay.  If not, see <http://www.gnu.org/licenses/>.
  * 
  *****************************************************************************/ 
+
+/******************************************************************************
+ * Communication protocol description
+ * ==================================
+ * 
+ * Read command
+ * ------------
+ * 
+ *   Request (16 bytes)
+ * 
+ *   Send the following buffer using hid_write():
+ *   RD LN 11 11 11 11 11 11 11 11 'H' 'I' 'D' 'C' CS CS
+ * 
+ *   RD: read command (0xD2)
+ *   LN: message length (excluding checksum)
+ *   CS: checksum bytes (16 bits)
+ * 
+ *   Response
+ * 
+ *   Receive the response using hid_read():
+ *   XX XX BM BM
+ *   BM: Relay state bitmap (16 bits)
+ *   XX: unknown meaning
+ * 
+ *   Relay State Bitmap:
+ *    15  14  13  12  11  10   9   8   7   6   5   4   3   2   1   0    bits
+ *   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+ *   | 15| 0 | 14| 1 | 13| 2 | 12| 3 | 11| 4 | 10| 5 | 9 | 6 | 8 | 7 |  relay number
+ *   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+ * 
+ * Write command
+ * -------------
+ * 
+ *   Request (16 bytes)
+ * 
+ *   Send the following buffer using hid_write():
+ *   WR LN BM BM 00 00 00 00 00 00 'H' 'I' 'D' 'C' CS CS
+ * 
+ *   WR: write command (0xC3)
+ *   LN: message length (excluding checksum)
+ *   BM: Relay state bitmap (16 bits)
+ *   CS: checksum bytes (16 bits)
+ * 
+ *   Response:
+ *   None
+ *   
+ *   Relay State Bitmap:
+ *    15  14  13  12  11  10   9   8   7   6   5   4   3   2   1   0    bits
+ *   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+ *   | 15| 14| 13| 12| 11| 10| 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |  relay number
+ *   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
+ *****************************************************************************/ 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -267,9 +321,10 @@ int set_relay_sainsmart_16chan(char* portname, uint8 relay, relay_state_t relay_
       return -2;
    }
 
-   printf("Sain16 USB: portname=%s, relay=%d, state=%s\n",
-	  portname, relay, relay_state == ON? "ON" : "OFF");
-   
+   /*
+   printf("DBG: Sain16 USB: portname=%s, relay=%d, state=%s\n",
+          portname, relay, relay_state == ON? "ON" : "OFF");
+   */
    /* Read relay states */
    if (get_mask(hid_dev, &bitmap) < 0)
    {

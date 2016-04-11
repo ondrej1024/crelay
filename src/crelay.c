@@ -17,9 +17,9 @@
  *   sudo make install
  * 
  * Last modified:
- *   19/08/2015
+ *   11/04/2016
  *
- * Copyright 2015, Ondrej Wisniewski 
+ * Copyright 2016, Ondrej Wisniewski 
  * 
  * This file is part of crelay.
  * 
@@ -57,8 +57,8 @@
 #include "config.h"
 #include "relay_drv.h"
 
-#define VERSION "0.9"
-#define DATE "2015"
+#define VERSION "0.10"
+#define DATE "2016"
 
 /* HTTP server defines */
 #define SERVER "crelay/"VERSION

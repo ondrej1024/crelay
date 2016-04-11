@@ -1,0 +1,56 @@
+SainSmart 16 Channel controller USB HID Programmable Control Relay Module
+=========================================================================
+
+This is a plug in module which can be used with the Sainsmart 16 channel relay cards 
+to add a USB interface to these cards.
+
+The module implements the "Human Interface Device" (HID) interface class. The HIDAPI 
+multi-platform library can be used to access this kind of device:
+http://www.signal11.us/oss/hidapi/
+
+
+Product page:
+
+http://www.sainsmart.com/arduino/sainsmart-16-channel-controller-usb-hid-programmable-control-relay-module.html
+
+
+Communication protocol description:
+
+Read command
+------------
+
+  Request (16 bytes):
+  RD LN 11 11 11 11 11 11 11 11 'H' 'I' 'D' 'C' CS CS
+  RD: read command (0xD2)
+  LN: message length (excluding checksum)
+  CS: checksum bytes (16 bits)
+
+  Response:
+  XX XX BM BM
+  BM: Relay state bitmap (16 bits)
+  XX: unknown meaning
+
+  Relay State Bitmap:
+   15  14  13  12  11  10   9   8   7   6   5   4   3   2   1   0    bits
+  +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+  | 15| 0 | 14| 1 | 13| 2 | 12| 3 | 11| 4 | 10| 5 | 9 | 6 | 8 | 7 |  relay number
+  +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
+Write command
+-------------
+
+  Request (16 bytes):
+  WR LN BM BM 00 00 00 00 00 00 'H' 'I' 'D' 'C' CS CS
+  WR: write command (0xC3)
+  LN: message length (excluding checksum)
+  BM: Relay state bitmap (16 bits)
+  CS: checksum bytes (16 bits)
+
+  Response:
+  None
+  
+  Relay State Bitmap:
+   15  14  13  12  11  10   9   8   7   6   5   4   3   2   1   0    bits
+  +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+  | 15| 14| 13| 12| 11| 10| 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |  relay number
+  +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
