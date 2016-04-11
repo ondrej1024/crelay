@@ -42,6 +42,7 @@
 #include "relay_drv_conrad.h"
 #include "relay_drv_sainsmart.h"
 #include "relay_drv_hidapi.h"
+#include "relay_drv_sainsmart16.h"
 #include "relay_drv_gpio.h"
 
 
@@ -71,7 +72,7 @@ static relay_data_t relay_data[LAST_RELAY_TYPE] =
    },
 #endif
 #ifdef DRV_SAINSMART
-   {  // SAINSMART_4CHANNEL_USB_RELAY_TYPE
+   {  // SAINSMART_USB_RELAY_TYPE
       detect_relay_card_sainsmart_4_8chan,
       get_relay_sainsmart_4_8chan,
       set_relay_sainsmart_4_8chan,
@@ -84,6 +85,14 @@ static relay_data_t relay_data[LAST_RELAY_TYPE] =
       get_relay_hidapi,
       set_relay_hidapi,
       HID_API_RELAY_NAME
+   },
+#endif
+#ifdef DRV_SAINSMART16
+   {  // SAINSMART16_USB_RELAY_TYPE
+      detect_relay_card_sainsmart_16chan,
+      get_relay_sainsmart_16chan,
+      set_relay_sainsmart_16chan,
+      SAINSMART16_USB_NAME
    },
 #endif
    {  // GENERIC_GPIO_RELAY_TYPE
