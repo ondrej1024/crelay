@@ -20,13 +20,13 @@
 
     <section class="main-content">
       <h1>
-<a id="crelay" class="anchor" href="#crelay" aria-hidden="true"><span class="octicon octicon-link"></span></a>crelay</h1>
+<a id="crelay" class="anchor" href="#crelay" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>crelay</h1>
 
 <h4>
-<a id="controlling-different-relay-cards-for-home-automation-with-a-linux-software" class="anchor" href="#controlling-different-relay-cards-for-home-automation-with-a-linux-software" aria-hidden="true"><span class="octicon octicon-link"></span></a>Controlling different relay cards for home automation with a Linux software</h4>
+<a id="controlling-different-relay-cards-for-home-automation-with-a-linux-software" class="anchor" href="#controlling-different-relay-cards-for-home-automation-with-a-linux-software" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Controlling different relay cards for home automation with a Linux software</h4>
 
 <h3>
-<a id="about" class="anchor" href="#about" aria-hidden="true"><span class="octicon octicon-link"></span></a>About</h3>
+<a id="about" class="anchor" href="#about" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>About</h3>
 
 <p>Ever bougth a cute little USB relay card and wanted to use it on a Linux based device or computer? Chances are that your were out of luck because the Linux software support for the card provided by the manufacturer was non existent. Conrad, Sainsmart, Denkovi and friends are still ignoring the existence of this operating system. That's why I started this project.  </p>
 
@@ -52,6 +52,7 @@ see <a href="https://github.com/ondrej1024/crelay#note-1-conrad-usb-4-channel-re
 <a href="http://www.sainsmart.com/sainsmart-4-channel-5v-usb-relay-board-module-controller-for-automation-robotics.html">Sainsmart USB 4/8-channel relay card</a>, 
 see <a href="https://github.com/ondrej1024/crelay#note-2-sainsmart-usb-48-channel-relay-card"><em>Note 2</em></a> below</li>
 <li><a href="http://www.ebay.com/itm/For-Smart-Home-5V-USB-Relay-2-Channel-Programmable-Computer-Control-/190950124351">HID API compatible relay cards (1/2/4/8 channel)</a></li>
+<li><a href="http://www.sainsmart.com/arduino/sainsmart-16-channel-controller-usb-hid-programmable-control-relay-module.html">Sainsmart USB 16-channel relay control module</a></li>
 <li>Generic GPIO controlled relays, 
 see <a href="https://github.com/ondrej1024/crelay#note-3-gpio-controlled-relays"><em>Note 3</em></a> below<br>
 </li>
@@ -61,11 +62,11 @@ see <a href="https://github.com/ondrej1024/crelay#note-3-gpio-controlled-relays"
 
 <p>The following picture shows a high level view on the modular software architecture.  </p>
 
-<p><img src="https://raw.githubusercontent.com/ondrej1024/crelay/master/screenshots/sw-architecture.png" alt="Software architechture">
+<p><img src="screenshots/sw-architecture.png" alt="Software architechture">
 <br><br></p>
 
 <h3>
-<a id="features" class="anchor" href="#features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features</h3>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features</h3>
 
 <ul>
 <li>Command line mode and daemon mode with Web GUI</li>
@@ -82,7 +83,7 @@ see <a href="https://github.com/ondrej1024/crelay#note-3-gpio-controlled-relays"
 </ul>
 
 <h3>
-<a id="nice-to-have-wishlist" class="anchor" href="#nice-to-have-wishlist" aria-hidden="true"><span class="octicon octicon-link"></span></a>Nice to have (wishlist)</h3>
+<a id="nice-to-have-wishlist" class="anchor" href="#nice-to-have-wishlist" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Nice to have (wishlist)</h3>
 
 <ul>
 <li>Integrated MQTT client</li>
@@ -95,31 +96,32 @@ see <a href="https://github.com/ondrej1024/crelay#note-3-gpio-controlled-relays"
 </ul>
 
 <h3>
-<a id="screenshots" class="anchor" href="#screenshots" aria-hidden="true"><span class="octicon octicon-link"></span></a>Screenshots</h3>
+<a id="screenshots" class="anchor" href="#screenshots" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Screenshots</h3>
 
 <h4>
-<a id="web-gui" class="anchor" href="#web-gui" aria-hidden="true"><span class="octicon octicon-link"></span></a>Web GUI</h4>
+<a id="web-gui" class="anchor" href="#web-gui" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Web GUI</h4>
 
-<p><img src="https://raw.githubusercontent.com/ondrej1024/crelay/master/screenshots/crelay-screenshot1.png" alt="Screenshot" title="Web GUI with Conrad card connected"></p>
+<p><img src="screenshots/crelay-screenshot1.png" alt="Screenshot" title="Web GUI with Conrad card connected"></p>
 
 <h2>
-<a id="" class="anchor" href="#" aria-hidden="true"><span class="octicon octicon-link"></span></a><br>
+<a id="" class="anchor" href="#" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><br>
 </h2>
 
-<p><img src="https://raw.githubusercontent.com/ondrej1024/crelay/master/screenshots/crelay-screenshot2.png" alt="Screenshot" title="Web GUI with GPIO relays connected">
+<p><img src="screenshots/crelay-screenshot2.png" alt="Screenshot" title="Web GUI with GPIO relays connected">
 <br><br></p>
 
 <h4>
-<a id="command-line-interface" class="anchor" href="#command-line-interface" aria-hidden="true"><span class="octicon octicon-link"></span></a>Command line interface</h4>
+<a id="command-line-interface" class="anchor" href="#command-line-interface" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Command line interface</h4>
 
 <pre><code>$ crelay 
-crelay, version 0.9
+crelay, version 0.10
 
 This utility provides a unified way of controlling different types of relay cards.
 Currently supported relay cards:
   - Conrad USB 4-channel relay card
-  - Sainsmart USB 4-channel relay card
+  - Sainsmart USB 4/8-channel relay card
   - HID API compatible relay card
+  - Sainsmart USB-HID 16-channel relay card
   - Generic GPIO relays
 The card which is detected first will be used. 
 
@@ -153,7 +155,7 @@ Daemon mode:
 <p><br>  </p>
 
 <h3>
-<a id="http-api" class="anchor" href="#http-api" aria-hidden="true"><span class="octicon octicon-link"></span></a>HTTP API</h3>
+<a id="http-api" class="anchor" href="#http-api" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>HTTP API</h3>
 
 <p>An HTTP API is provided to access the server from external clients. This API is compatible with the <a href="https://play.google.com/store/apps/details?id=com.jasonfindlay.pirelay">PiRelay Android app</a>. Therefore the app can be used on your Android phone to control <em>crelay</em> remotely.<br>
 I am also considering to add a more universally usable Json format based API in the future.</p>
@@ -188,7 +190,7 @@ Relay 4:[0|1]
 </ul>
 
 <h3>
-<a id="installation-from-source" class="anchor" href="#installation-from-source" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation from source</h3>
+<a id="installation-from-source" class="anchor" href="#installation-from-source" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation from source</h3>
 
 <p>The installation procedure is usually perfomed directly on the target system. Therefore a C compiler and friends should already be installed. Otherwise a cross compilation environment needs to be setup on a PC (this is not described here).  </p>
 
@@ -246,7 +248,7 @@ sudo make install
 <p><br></p>
 
 <h3>
-<a id="installation-of-prebuilt-binaries" class="anchor" href="#installation-of-prebuilt-binaries" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation of prebuilt binaries</h3>
+<a id="installation-of-prebuilt-binaries" class="anchor" href="#installation-of-prebuilt-binaries" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation of prebuilt binaries</h3>
 
 <p>To save you the hassle of building crelay from source, prebuild binaries are provided for selected architectures. Just save the binary for your architecture on your host system and execute it.  </p>
 
@@ -261,7 +263,7 @@ sudo make install
 <p><br></p>
 
 <h3>
-<a id="distribution-specific-packages" class="anchor" href="#distribution-specific-packages" aria-hidden="true"><span class="octicon octicon-link"></span></a>Distribution specific packages</h3>
+<a id="distribution-specific-packages" class="anchor" href="#distribution-specific-packages" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Distribution specific packages</h3>
 
 <p>Currently, there are official OpenWRT packages available for different architectures from the developement snapshot repositories. They can be downloaded here:  </p>
 
@@ -273,7 +275,7 @@ sudo make install
 <p><br></p>
 
 <h3>
-<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configuration</h3>
+<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Configuration</h3>
 
 <p>When running in daemon mode. the parameters for <em>crelay</em> can be customized via the configuration file <code>crelay.conf</code> which should be placed in the <code>/etc/</code> system folder. An example file is provided together with the programs source code in the <code>conf/</code> folder.</p>
 
@@ -324,14 +326,14 @@ num_relays = 4   # Number of relays on the Sainsmart card (4 or 8)
 <p><br></p>
 
 <h3>
-<a id="adding-new-relay-card-drivers" class="anchor" href="#adding-new-relay-card-drivers" aria-hidden="true"><span class="octicon octicon-link"></span></a>Adding new relay card drivers</h3>
+<a id="adding-new-relay-card-drivers" class="anchor" href="#adding-new-relay-card-drivers" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Adding new relay card drivers</h3>
 
 <p>The modular architecture of <em>crelay</em> makes it possible to easily add new relay card drivers.<br>
 See example files <code>relay_drv_sample.c</code> and <code>relay_drv_sample.h</code> in the src directory for details on how to write your own low level driver functions.<br>
 <br>  </p>
 
 <h3>
-<a id="credits" class="anchor" href="#credits" aria-hidden="true"><span class="octicon octicon-link"></span></a>Credits</h3>
+<a id="credits" class="anchor" href="#credits" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Credits</h3>
 
 <p>The support for the different relay cards in <em>crelay</em> has only been possible thanks to the valuable contributions of the following people who reverse engineered the communication protocols of the cards and provided the protocol specifications.</p>
 
@@ -342,15 +344,19 @@ See example files <code>relay_drv_sample.c</code> and <code>relay_drv_sample.h</
 <a href="https://github.com/darrylb123">Darryl Bond</a>, who discovered the communication protocol of the HID API cards</li>
 <li>
 <a href="https://github.com/stav09">Steve Crow</a>, who discovered the communication protocol of the Sainsmart USB cards</li>
+<li>
+<a href="https://github.com/khilman">Kevin Hilman</a>, who implemented and tested the support for the Sainsmart 16-channel control module</li>
+<li>
+<a href="https://github.com/lunn">Andrew Lunn</a>, who contributed cleanup patches
+<br><br>
+</li>
 </ul>
 
-<p><br>  </p>
-
 <h3>
-<a id="notes" class="anchor" href="#notes" aria-hidden="true"><span class="octicon octicon-link"></span></a>Notes</h3>
+<a id="notes" class="anchor" href="#notes" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Notes</h3>
 
 <h5>
-<a id="note-1-conrad-usb-4-channel-relay-card" class="anchor" href="#note-1-conrad-usb-4-channel-relay-card" aria-hidden="true"><span class="octicon octicon-link"></span></a><i>Note 1 (Conrad USB 4-channel relay card)</i>:</h5>
+<a id="note-1-conrad-usb-4-channel-relay-card" class="anchor" href="#note-1-conrad-usb-4-channel-relay-card" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><i>Note 1 (Conrad USB 4-channel relay card)</i>:</h5>
 
 <p>The relay card software provided by Conrad is Windows only and uses a binary runtime DLL which implements the communication protocol between the host computer and the card. Thanks to a raspberrypi.org forum member, the communication protocol was discovered and made public. This made it possible to develop an open source driver for the Conrad card which can run on any Linux distribution.</p>
 
@@ -361,7 +367,7 @@ See example files <code>relay_drv_sample.c</code> and <code>relay_drv_sample.h</
 <br>  </p>
 
 <h5>
-<a id="note-2-sainsmart-usb-48-channel-relay-card" class="anchor" href="#note-2-sainsmart-usb-48-channel-relay-card" aria-hidden="true"><span class="octicon octicon-link"></span></a><i>Note 2 (Sainsmart USB 4/8-channel relay card)</i>:</h5>
+<a id="note-2-sainsmart-usb-48-channel-relay-card" class="anchor" href="#note-2-sainsmart-usb-48-channel-relay-card" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><i>Note 2 (Sainsmart USB 4/8-channel relay card)</i>:</h5>
 
 <p>The Sainsmart card uses the FTDI FT245RL chip. This chip is controlled directly through the open source libFTDI library. No Kernel driver is needed. However on most Linux distributions, the <em>ftdi_sio</em> serial driver is automatically loaded when the FT245RL chip is detected. In order to grant the <em>crelay</em> software access to the card, the default driver needs to be unloaded:  </p>
 
@@ -378,7 +384,7 @@ See example files <code>relay_drv_sample.c</code> and <code>relay_drv_sample.h</
 <p><br>  </p>
 
 <h5>
-<a id="note-3-gpio-controlled-relays" class="anchor" href="#note-3-gpio-controlled-relays" aria-hidden="true"><span class="octicon octicon-link"></span></a><i>Note 3 (GPIO controlled relays)</i>:</h5>
+<a id="note-3-gpio-controlled-relays" class="anchor" href="#note-3-gpio-controlled-relays" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><i>Note 3 (GPIO controlled relays)</i>:</h5>
 
 <p>Since GPIO pin configuration is strictly device specific, the generic GPIO mode is disabled by default and can only be used in daemon mode. In order to enable it, the specific GPIO pins used as relay control lines have to be specified in the configuration file, <code>[GPIO drv]</code> section.  </p>
 
