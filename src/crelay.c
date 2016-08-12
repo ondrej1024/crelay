@@ -17,7 +17,7 @@
  *   sudo make install
  * 
  * Last modified:
- *   11/04/2016
+ *   11/08/2016
  *
  * Copyright 2016, Ondrej Wisniewski 
  * 
@@ -421,7 +421,8 @@ int process_http_request(FILE *f)
    {
       if (strstr(url, API_URL))
       {
-         /* HTTP API request */
+         /* HTTP API request, send response */
+         send_headers(f, 200, "OK", NULL, "text/html", -1, -1);
          fprintf(f, "ERROR: No compatible device detected !\r\n");
       }
       else
@@ -484,10 +485,11 @@ int process_http_request(FILE *f)
    /* Send response to client */
    if (strstr(url, API_URL))
    {
-      /* HTTP API request */
+      /* HTTP API request, send response */
+      send_headers(f, 200, "OK", NULL, "text/html", -1, -1);
       for (i=FIRST_RELAY; i<=last_relay; i++)
       {
-         fprintf(f, "Relay %d:%d\r\n", i, rstate[i-1]);
+         fprintf(f, "Relay %d:%d<br>", i, rstate[i-1]);
       }
    }
    else
@@ -551,17 +553,22 @@ void print_usage()
    printf("built-in web server.\n\n");
    printf("Interactive mode:\n");
    printf("    crelay -i | [<relay number>] [ON|OFF]\n\n");
+   printf("       -i print relay information\n\n");
    printf("       The state of any relay can be read or it can be changed to a new state.\n");
    printf("       If only the relay number is provided then the current state is returned,\n");
    printf("       otherwise the relays state is set to the new value provided as second parameter.\n");
    printf("       The USB communication port is auto detected. The first compatible device\n");
    printf("       found will be used.\n\n");
    printf("Daemon mode:\n");
-   printf("    crelay -d [<relay1_label> [<relay2_label> [<relay3_label> [<relay4_label>]]]] \n\n");
+   printf("    crelay -d|-D [<relay1_label> [<relay2_label> [<relay3_label> [<relay4_label>]]]] \n\n");
+   printf("       -d use daemon mode, run in foreground\n");
+   printf("       -D use daemon mode, run in background\n\n");
    printf("       In daemon mode the built-in web server will be started and the relays\n");
    printf("       can be completely controlled via a Web browser GUI or HTTP API.\n");
-   printf("       Optionally a personal label for each relay can be supplied which will\n");
-   printf("       be displayed next to the relay name on the web page.\n\n");
+   printf("       The config file %s will be used, if present.\n", CONFIG_FILE);
+   printf("       Optionally a personal label for each relay can be supplied as command\n");
+   printf("       line parameter which will be displayed next to the relay name on the\n");
+   printf("       web page.\n\n");
    printf("       To access the web interface point your Web browser to the following address:\n");
    printf("       http://<my-ip-address>:%d\n\n", DEFAULT_SERVER_PORT);
    printf("       To use the HTTP API send a POST or GET request from the client to this URL:\n");
@@ -585,7 +592,7 @@ int main(int argc, char *argv[])
       exit(EXIT_SUCCESS);
    }
    
-   if (!strcmp(argv[1],"-d"))
+   if (!strcmp(argv[1],"-d") || !strcmp(argv[1],"-D"))
    {
       /*****  Daemon mode *****/
       
@@ -678,9 +685,15 @@ int main(int argc, char *argv[])
       listen(sock, 5);
       syslog(LOG_DAEMON | LOG_NOTICE, "HTTP server listening on %s:%d\n", inet_ntoa(iface), port);      
 
-      if (daemon(0, 0) == -1) {
-	      syslog(LOG_DAEMON | LOG_ERR, "Failed to daemonize: %s", strerror(errno));
-	      exit(EXIT_FAILURE);
+      if (!strcmp(argv[1],"-D"))
+      {
+         /* Daemonise program (send to background) */
+         if (daemon(0, 0) == -1) 
+         {
+            syslog(LOG_DAEMON | LOG_ERR, "Failed to daemonize: %s", strerror(errno));
+            exit(EXIT_FAILURE);
+         }
+         syslog(LOG_DAEMON | LOG_NOTICE, "Program is now running as system daemon");
       }
 
       while (1)
