@@ -57,7 +57,7 @@
 #include "config.h"
 #include "relay_drv.h"
 
-#define VERSION "0.10"
+#define VERSION "0.10.1"
 #define DATE "2016"
 
 /* HTTP server defines */
@@ -269,7 +269,7 @@ void web_page_footer(FILE *f)
    fprintf(f, "<table style=\"text-align: left; width: 600px; background-color: rgb(0, 0, 153);\" border=\"0\" cellpadding=\"2\" cellspacing=\"2\"><tbody>\r\n");
    fprintf(f, "<tr><td style=\"vertical-align: top; text-align: center;\"><span style=\"font-family: Helvetica,Arial,sans-serif; color: white;\">crelay | version %s | %s</span></td></tr>\r\n",
            VERSION, DATE);
-   fprintf(f, "</tbody></table></body></html>\r\n");    
+   fprintf(f, "</tbody></table></body></html>\r\n");
 }   
 
 
@@ -369,8 +369,9 @@ int read_httpget_data(char* buf, char* data)
  * Parameters:
  * 
  *********************************************************/
-int process_http_request(FILE *f)
+int process_http_request(int sock)
 {
+   FILE *fin, *fout;
    char buf[256];
    char *method;
    char *url;
@@ -384,37 +385,56 @@ int process_http_request(FILE *f)
    relay_state_t nstate=INVALID;
    
    formdata[0]=0;  
+
+   /* Open file for input */
+   fin = fdopen(sock, "r");
    
    /* Read  first line of request header which contains 
     * the request method and url seperated by a space
     */
-   if (!fgets(buf, sizeof(buf), f)) return -1;
+   if (!fgets(buf, sizeof(buf), fin)) 
+   {
+      fclose(fin);
+      return -1;
+   }
    //printf("********** Raw data ***********\n");
    //printf("%s", buf);
    
    method = strtok(buf, " ");
-   if (!method) return -1;
+   if (!method) 
+   {
+      fclose(fin);
+      return -1;
+   }
    //printf("method: %s\n", method);
    
    url = strtok(NULL, " ");
-   if (!url) return -2;
+   if (!url)
+   {
+      fclose(fin);
+      return -2;
+   }
    //printf("url: %s\n", url);
-   
-   fseek(f, 0, SEEK_CUR); // Force change of stream direction
    
    /* Check the request method we are dealing with */
    if (strcasecmp(method, "POST") == 0)
    {
-      read_httppost_data(f, formdata);
+      read_httppost_data(fin, formdata);
    }
    else if (strcasecmp(method, "GET") == 0)
    {
       read_httpget_data(url, formdata);         
    }
    else
+   {
+      fclose(fin);
       return -3;
+   }
    
    //printf("DBG: form data: %s\n", formdata);
+   
+   /* Open file for output */
+   fout = fdopen(sock, "w");
    
    /* Check if a relay card is present */
    if (detect_relay_card(com_port, &last_relay) == -1)
@@ -422,107 +442,112 @@ int process_http_request(FILE *f)
       if (strstr(url, API_URL))
       {
          /* HTTP API request, send response */
-         send_headers(f, 200, "OK", NULL, "text/html", -1, -1);
-         fprintf(f, "ERROR: No compatible device detected !\r\n");
+         send_headers(fout, 200, "OK", NULL, "text/html", -1, -1);
+         fprintf(fout, "ERROR: No compatible device detected !\r\n");
       }
       else
       {  
          /* Web page request */
-         web_page_header(f);
-         web_page_error(f);
-         web_page_footer(f);
+         web_page_header(fout);
+         web_page_error(fout);
+         web_page_footer(fout);
       }     
-      return -1;
    }
-   
-   /* Process form data */
-   if (strlen(formdata)>0)
-   {
-      /* Get values from form data */
-      datastr = strstr(formdata, RELAY_TAG);
-      if (datastr)
-         relay = atoi(datastr+strlen(RELAY_TAG)+1);
-      datastr = strstr(formdata, STATE_TAG);
-      if (datastr)
-         nstate = atoi(datastr+strlen(STATE_TAG)+1);
-      
-      //printf("DBG: Found data: relay=%d, state=%d\n\n", relay, nstate);
-      
-      if ((relay != 0) && (nstate != INVALID))
+   else
+   {  
+      /* Process form data */
+      if (strlen(formdata)>0)
       {
-         /* Perform the requested action here */
-         if (nstate==PULSE)
+         /* Get values from form data */
+         datastr = strstr(formdata, RELAY_TAG);
+         if (datastr)
+            relay = atoi(datastr+strlen(RELAY_TAG)+1);
+         datastr = strstr(formdata, STATE_TAG);
+         if (datastr)
+            nstate = atoi(datastr+strlen(STATE_TAG)+1);
+         
+         //printf("DBG: Found data: relay=%d, state=%d\n\n", relay, nstate);
+         
+         if ((relay != 0) && (nstate != INVALID))
          {
-            /* Generate pulse on relay switch */
-            get_relay(com_port, relay, &rstate[relay-1]);
-            if (rstate[relay-1] == ON)
+            /* Perform the requested action here */
+            if (nstate==PULSE)
             {
-               set_relay(com_port, relay, OFF);
-               sleep(1);
-               set_relay(com_port, relay, ON);
+               /* Generate pulse on relay switch */
+               get_relay(com_port, relay, &rstate[relay-1]);
+               if (rstate[relay-1] == ON)
+               {
+                  set_relay(com_port, relay, OFF);
+                  sleep(1);
+                  set_relay(com_port, relay, ON);
+               }
+               else
+               {
+                  set_relay(com_port, relay, ON);
+                  sleep(1);
+                  set_relay(com_port, relay, OFF);
+               }
             }
             else
             {
-               set_relay(com_port, relay, ON);
-               sleep(1);
-               set_relay(com_port, relay, OFF);
+               /* Switch relay on/off */
+               set_relay(com_port, relay, nstate);
             }
          }
-         else
+      }
+      
+      /* Read current state for all relays */
+      for (i=FIRST_RELAY; i<=last_relay; i++)
+      {
+         get_relay(com_port, i, &rstate[i-1]);
+      }
+      
+      /* Send response to client */
+      if (strstr(url, API_URL))
+      {
+         /* HTTP API request, send response */
+         send_headers(fout, 200, "OK", NULL, "text/html", -1, -1);
+         for (i=FIRST_RELAY; i<=last_relay; i++)
          {
-            /* Switch relay on/off */
-            set_relay(com_port, relay, nstate);
+            fprintf(fout, "Relay %d:%d<br>", i, rstate[i-1]);
          }
       }
-   }
-      
-   /* Read current state for all relays */
-   for (i=FIRST_RELAY; i<=last_relay; i++)
-   {
-      get_relay(com_port, i, &rstate[i-1]);
+      else
+      {
+         /* Web request */
+         char cname[MAX_RELAY_CARD_NAME_LEN];
+         get_relay_card_name(get_relay_card_type(), cname);
+         
+         web_page_header(fout);
+         
+         /* Display relay status and controls on web page */
+         fprintf(fout, "<img style=\"width: 250px; height: 250px;\" alt=\"Card image\" src=\"http://www.conrad.de/medias/global/ce/1000_1999/1900/1920/1928/192846_LB_00_FB.EPS_1000.jpg\">\r\n");
+         fprintf(fout, "<table style=\"text-align: left; width: 600px; background-color: white; font-family: Helvetica,Arial,sans-serif; font-weight: bold; font-size: 20px;\" border=\"0\" cellpadding=\"2\" cellspacing=\"3\"><tbody>\r\n");
+         fprintf(fout, "<tr style=\"font-size: 14px; background-color: lightgrey\">\r\n");
+         fprintf(fout, "<td style=\"width: 200px;\">%s<br><span style=\"font-style: italic; font-size: 12px; color: grey; font-weight: normal;\">on %s</span></td>\r\n", 
+                 cname, com_port);
+         fprintf(fout, "<td style=\"background-color: white;\"></td><td style=\"background-color: white;\"></td></tr>\r\n");
+         for (i=FIRST_RELAY; i<=last_relay; i++)
+         {
+            fprintf(fout, "<tr style=\"vertical-align: top; background-color: rgb(230, 230, 255);\">\r\n");
+            fprintf(fout, "<td style=\"width: 300px;\">Relay %d<br><span style=\"font-style: italic; font-size: 16px; color: grey;\">%s</span></td>\r\n", 
+                    i, rlabels[i-1]);
+            fprintf(fout, "<td style=\"text-align: center; vertical-align: middle; width: 100px; background-color: %s;\">%s</td>\r\n", 
+                    rstate[i-1]==ON?"red":"lightgrey", rstate[i-1]==ON?"ON":"OFF");
+            fprintf(fout, "<td style=\"text-align: center; vertical-align: middle; width: 100px;\"><form action='/' method='post'><input type='hidden' name='%s' value='%d' /><input type='hidden' name='%s' value='%d' /><input type='submit' title='Toggle relay' value='%s'></form></td>\r\n", 
+                    RELAY_TAG, i, STATE_TAG, rstate[i-1]==ON?0:1, rstate[i-1]==ON?"off":"on");
+            fprintf(fout, "<td style=\"text-align: center; vertical-align: middle; width: 100px;\"><form action='/' method='post'><input type='hidden' name='%s' value='%d' /><input type='hidden' name='%s' value='2' /><input type='submit' title='Generate pulse' value='pulse'></form></td></tr>\r\n", 
+                    RELAY_TAG, i, STATE_TAG);
+         }
+         fprintf(fout, "</tbody></table><br>\r\n");
+         
+         web_page_footer(fout);
+      }
    }
    
-   /* Send response to client */
-   if (strstr(url, API_URL))
-   {
-      /* HTTP API request, send response */
-      send_headers(f, 200, "OK", NULL, "text/html", -1, -1);
-      for (i=FIRST_RELAY; i<=last_relay; i++)
-      {
-         fprintf(f, "Relay %d:%d<br>", i, rstate[i-1]);
-      }
-   }
-   else
-   {
-      /* Web request */
-      char cname[MAX_RELAY_CARD_NAME_LEN];
-      get_relay_card_name(get_relay_card_type(), cname);
+   fclose(fout);
+   fclose(fin);
 
-      web_page_header(f);
-
-      /* Display relay status and controls on web page */
-      fprintf(f, "<img style=\"width: 250px; height: 250px;\" alt=\"Card image\" src=\"http://www.conrad.de/medias/global/ce/1000_1999/1900/1920/1928/192846_LB_00_FB.EPS_1000.jpg\">\r\n");
-      fprintf(f, "<table style=\"text-align: left; width: 600px; background-color: white; font-family: Helvetica,Arial,sans-serif; font-weight: bold; font-size: 20px;\" border=\"0\" cellpadding=\"2\" cellspacing=\"3\"><tbody>\r\n");
-      fprintf(f, "<tr style=\"font-size: 14px; background-color: lightgrey\">\r\n");
-      fprintf(f, "<td style=\"width: 200px;\">%s<br><span style=\"font-style: italic; font-size: 12px; color: grey; font-weight: normal;\">on %s</span></td>\r\n", 
-              cname, com_port);
-      fprintf(f, "<td style=\"background-color: white;\"></td><td style=\"background-color: white;\"></td></tr>\r\n");
-      for (i=FIRST_RELAY; i<=last_relay; i++)
-      {
-         fprintf(f, "<tr style=\"vertical-align: top; background-color: rgb(230, 230, 255);\">\r\n");
-         fprintf(f, "<td style=\"width: 300px;\">Relay %d<br><span style=\"font-style: italic; font-size: 16px; color: grey;\">%s</span></td>\r\n", 
-                 i, rlabels[i-1]);
-         fprintf(f, "<td style=\"text-align: center; vertical-align: middle; width: 100px; background-color: %s;\">%s</td>\r\n", 
-                 rstate[i-1]==ON?"red":"lightgrey", rstate[i-1]==ON?"ON":"OFF");
-         fprintf(f, "<td style=\"text-align: center; vertical-align: middle; width: 100px;\"><form action='/' method='post'><input type='hidden' name='%s' value='%d' /><input type='hidden' name='%s' value='%d' /><input type='submit' title='Toggle relay' value='%s'></form></td>\r\n", 
-                 RELAY_TAG, i, STATE_TAG, rstate[i-1]==ON?0:1, rstate[i-1]==ON?"off":"on");
-         fprintf(f, "<td style=\"text-align: center; vertical-align: middle; width: 100px;\"><form action='/' method='post'><input type='hidden' name='%s' value='%d' /><input type='hidden' name='%s' value='2' /><input type='submit' title='Generate pulse' value='pulse'></form></td></tr>\r\n", 
-                 RELAY_TAG, i, STATE_TAG);
-      }
-      fprintf(f, "</tbody></table><br>\r\n");
-      
-      web_page_footer(f);
-   }
    return 0;
 }
 
@@ -538,10 +563,11 @@ int process_http_request(FILE *f)
 void print_usage()
 {
    relay_type_t rtype;
-   char cname[30];
+   char cname[60];
+   
    printf("crelay, version %s\n\n", VERSION);
    printf("This utility provides a unified way of controlling different types of relay cards.\n");
-   printf("Currently supported relay cards:\n");
+   printf("Supported relay cards:\n");
    for(rtype=NO_RELAY_TYPE+1; rtype<LAST_RELAY_TYPE; rtype++)
    {
       get_relay_card_name(rtype, cname);
@@ -699,15 +725,14 @@ int main(int argc, char *argv[])
       while (1)
       {
          int s;
-         FILE *f;
-
+         
          /* Wait for request from web client */
          s = accept(sock, NULL, NULL);
+         printf("s=%d\n", s);
          if (s < 0) break;
          
-         f = fdopen(s, "a+");
-         process_http_request(f);
-         fclose(f);
+         /* Process request */
+         process_http_request(s);
          close(s);
       }
       
@@ -750,8 +775,8 @@ int main(int argc, char *argv[])
             /* GET current relay state */
             if (get_relay(com_port, atoi(argv[1]), &rstate) == 0)
                printf("Relay %d is %s\n", atoi(argv[1]), (rstate==ON)?"on":"off");
-	    else
-	      exit(EXIT_FAILURE);
+            else
+               exit(EXIT_FAILURE);
             break;
             
          case 3:
@@ -760,12 +785,13 @@ int main(int argc, char *argv[])
                err = set_relay(com_port, atoi(argv[1]), ON);
             else if (!strcmp(argv[2],"off") || !strcmp(argv[2],"OFF")) 
                err = set_relay(com_port, atoi(argv[1]), OFF);
-            else {
-		print_usage();
-		exit(EXIT_FAILURE);
-	    }
-	    if (err)
-	      exit(EXIT_FAILURE);
+            else 
+            {
+               print_usage();
+               exit(EXIT_FAILURE);
+            }
+            if (err)
+               exit(EXIT_FAILURE);
             break;
             
          default:
