@@ -64,7 +64,7 @@ all:	$(BIN)
 
 $(BIN):	$(OBJ)
 	@echo "[Link $(BIN)] with libs $(LIBS)"
-	@$(CC) -o $(BIN) $(OBJ) $(LIBS)
+	@$(CC) -o $(BIN) $(OBJ) $(LDFLAGS) $(LIBS)
 
 .c.o:
 	@echo "[Compile $<]"

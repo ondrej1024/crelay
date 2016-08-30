@@ -102,8 +102,10 @@ The following picture shows a high level view on the modular software architectu
 <br>  
 
 ### HTTP API
-An HTTP API is provided to access the server from external clients. This API is compatible with the [PiRelay Android app](https://play.google.com/store/apps/details?id=com.jasonfindlay.pirelay). Therefore the app can be used on your Android phone to control *crelay* remotely.  
-I am also considering to add a more universally usable Json format based API in the future.
+An HTTP API is provided to access the server from external clients. This API is compatible with the PiRelay Android app. Therefore the app can be used on your Android phone to control *crelay* remotely.  
+   
+Note: *the author of this app seems to have removed the free version of the app from the Google Play Store (leaving only the PRO version).
+For this reason and the fact that PiRelay is not open source I am considering to develop a dedicated crelay Android app. This will use a more universal Json format based API. Any volunteers who want to contribute to this app are very welcome.*
 
 - API url:  
 <pre><i>ip_address[:port]</i>/gpio</pre>  

@@ -4,7 +4,7 @@
  * 
  * Description:
  *   This software is used to controls different type of relays cards.
- *   There are 3 ways to control the relais:
+ *   There are 3 ways to control the relays:
  *    1. via command line
  *    2. via web interface using a browser
  *    3. via HTTP API using a client application
@@ -17,7 +17,7 @@
  *   sudo make install
  * 
  * Last modified:
- *   11/08/2016
+ *   30/08/2016
  *
  * Copyright 2016, Ondrej Wisniewski 
  * 
@@ -728,7 +728,6 @@ int main(int argc, char *argv[])
          
          /* Wait for request from web client */
          s = accept(sock, NULL, NULL);
-         printf("s=%d\n", s);
          if (s < 0) break;
          
          /* Process request */

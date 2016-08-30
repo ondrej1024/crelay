@@ -45,3 +45,9 @@ Version history
 0.10: 11/04/2016
 - Added support for SainSmart 16 Channel controller USB HID Programmable Control Relay Module
 - Cleanup patches
+
+0.10.1: 30/08/2016 (Bugfix release)
+- Fixed compatibility issue with PiRelay app
+- Added "-D" option for daemon mode ("-D" sends crelay to backgound, "-d" leaves crelay in foregraound)
+- Modified file stream handling as temporary workaround for web server connection issue on some systems (OpenWRT)
+- Added LDFLAGS parameter to linger command in Makefile (needed by OpenWRT)
