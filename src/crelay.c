@@ -52,6 +52,7 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <ctype.h>
 
 #include "data_types.h"
 #include "config.h"
@@ -74,7 +75,7 @@
 #define CONFIG_FILE "/etc/crelay.conf"
 
 /* Global variables */
-config_t config;
+config_t config = {0};
 
 static char rlabels[MAX_NUM_RELAYS][32] = {"My appliance 1", "My appliance 2", "My appliance 3", "My appliance 4",
                                            "My appliance 5", "My appliance 6", "My appliance 7", "My appliance 8"};                                       
@@ -612,13 +613,33 @@ void print_usage()
  *********************************************************/
 int main(int argc, char *argv[])
 {
+   int i, daemonize, background;
+   int interrogate = 0;
+    
    if (argc==1)
    {
       print_usage();
       exit(EXIT_SUCCESS);
    }
+
    
-   if (!strcmp(argv[1],"-d") || !strcmp(argv[1],"-D"))
+   daemonize = background = 0;
+   for (i = 0; i < argc; i++) {
+      if (!strcmp(argv[i], "-s")) {
+         config.device_identifier = argv[i+1];
+      }
+      if (!strcasecmp(argv[i], "-d")) {
+         daemonize = 1;
+      }
+      if (!strcmp(argv[i], "-D")) {
+         background = 1;
+      }
+      if (!strcmp(argv[i], "-i")) {
+         interrogate = 1;
+      }
+   }
+   
+   if (daemonize)
    {
       /*****  Daemon mode *****/
       
@@ -711,7 +732,7 @@ int main(int argc, char *argv[])
       listen(sock, 5);
       syslog(LOG_DAEMON | LOG_NOTICE, "HTTP server listening on %s:%d\n", inet_ntoa(iface), port);      
 
-      if (!strcmp(argv[1],"-D"))
+      if (background)
       {
          /* Daemonise program (send to background) */
          if (daemon(0, 0) == -1) 
@@ -745,7 +766,6 @@ int main(int argc, char *argv[])
       char com_port[MAX_COM_PORT_NAME_LEN];
       char cname[MAX_RELAY_CARD_NAME_LEN];
       uint8 num_relays=FIRST_RELAY;
-      int err;
 
       if (detect_relay_card(com_port, &num_relays) == -1)
       {
@@ -761,41 +781,36 @@ int main(int argc, char *argv[])
          exit(EXIT_FAILURE);
       }
 
-      if (!strcmp(argv[1],"-i"))
+      if (interrogate)
       {
          if (get_relay_card_name(get_relay_card_type(), cname) == 0)
             printf("Detected relay card type is %s (on %s, %d channels)\n", cname, com_port, num_relays);
          exit(EXIT_SUCCESS);
       }
-   
-      switch (argc)
-      {
-         case 2:
-            /* GET current relay state */
-            if (get_relay(com_port, atoi(argv[1]), &rstate) == 0)
-               printf("Relay %d is %s\n", atoi(argv[1]), (rstate==ON)?"on":"off");
-            else
-               exit(EXIT_FAILURE);
-            break;
-            
-         case 3:
-            /* SET new relay state */
-            if (!strcmp(argv[2],"on") || !strcmp(argv[2],"ON")) 
-               err = set_relay(com_port, atoi(argv[1]), ON);
-            else if (!strcmp(argv[2],"off") || !strcmp(argv[2],"OFF")) 
-               err = set_relay(com_port, atoi(argv[1]), OFF);
-            else 
-            {
-               print_usage();
-               exit(EXIT_FAILURE);
-            }
-            if (err)
-               exit(EXIT_FAILURE);
-            break;
-            
-         default:
-            print_usage();
+
+      char *last_arg = *(argv + (argc - 1));
+      int is_state_on = !strcasecmp(last_arg, "on");
+      int is_set = is_state_on || !strcasecmp(last_arg, "off");
+      char *relay_str =
+          is_set ? *(argv + (argc - 2)) : last_arg;
+      if(!isdigit(*relay_str)) {
+         fprintf(stderr, "non-numeric relay id: %s\n", relay_str);
+         exit(EXIT_FAILURE);
       }
-   }
+      int relay_id = atoi(relay_str);
+         
+      if(is_set) {
+         /* SET new relay state */
+         if (
+            set_relay(com_port, relay_id, is_state_on ? ON : OFF)
+         ) exit(EXIT_FAILURE);
+      } else {
+            /* GET current relay state */
+         if (get_relay(com_port, relay_id, &rstate) == 0)
+            printf("Relay %d is %s\n", relay_id, (rstate==ON)?"on":"off");
+         else
+            exit(EXIT_FAILURE);
+      }
    exit(EXIT_SUCCESS);
+   }
 }
