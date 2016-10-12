@@ -55,6 +55,9 @@ typedef struct
     const char* relay6_label;
     const char* relay7_label;
     const char* relay8_label;
+
+    /* device identification */
+    const char* device_identifier;
     
     /* [GPIO drv] */
     uint8 gpio_num_relays;

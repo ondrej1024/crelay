@@ -83,6 +83,15 @@ static uint8 g_num_relays=SAINSMART_USB_NUM_RELAYS;
 
 extern config_t config;
 
+int open_by_optional_serial(struct ftdi_context *ftdi)
+{
+    return
+        (config.device_identifier != NULL)
+        ?
+        ftdi_usb_open_desc(ftdi, VENDOR_ID, DEVICE_ID, NULL, config.device_identifier)
+        :
+        ftdi_usb_open(ftdi, VENDOR_ID, DEVICE_ID);
+}
 
 /**********************************************************
  * Function detect_relay_card_sainsmart_4_8chan()
@@ -108,7 +117,8 @@ int detect_relay_card_sainsmart_4_8chan(char* portname, uint8* num_relays)
    }
 
    /* Try to open FTDI USB device */
-   if ((ftdi_usb_open(ftdi, VENDOR_ID, DEVICE_ID)) < 0)
+
+   if (open_by_optional_serial(ftdi) < 0)
    {
       ftdi_free(ftdi);
       return -1;
@@ -172,7 +182,7 @@ int get_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t* rela
    }
 
    /* Open FTDI USB device */
-   if ((ftdi_usb_open(ftdi, VENDOR_ID, DEVICE_ID)) < 0)
+   if (open_by_optional_serial(ftdi) < 0)
    {
       fprintf(stderr, "unable to open ftdi device: (%s)\n", ftdi_get_error_string(ftdi));
       ftdi_free(ftdi);
@@ -217,7 +227,7 @@ int set_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t relay
    }
    
    /* Open FTDI USB device */
-   if ((ftdi_usb_open(ftdi, VENDOR_ID, DEVICE_ID)) < 0)
+   if (open_by_optional_serial(ftdi) < 0)
    {
       fprintf(stderr, "unable to open ftdi device: (%s)\n", ftdi_get_error_string(ftdi));
       ftdi_free(ftdi);
