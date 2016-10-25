@@ -17,7 +17,7 @@
  *   sudo make install
  * 
  * Last modified:
- *   30/08/2016
+ *   25/10/2016
  *
  * Copyright 2016, Ondrej Wisniewski 
  * 
@@ -57,7 +57,7 @@
 #include "config.h"
 #include "relay_drv.h"
 
-#define VERSION "0.10.1"
+#define VERSION "0.11"
 #define DATE "2016"
 
 /* HTTP server defines */
@@ -380,6 +380,7 @@ int process_http_request(int sock)
    int  relay=0;
    int  i;
    char com_port[MAX_COM_PORT_NAME_LEN];
+   char* serial=NULL;
    uint8 last_relay=FIRST_RELAY;
    relay_state_t rstate[MAX_NUM_RELAYS];
    relay_state_t nstate=INVALID;
@@ -437,7 +438,7 @@ int process_http_request(int sock)
    fout = fdopen(sock, "w");
    
    /* Check if a relay card is present */
-   if (detect_relay_card(com_port, &last_relay) == -1)
+   if (detect_relay_card(com_port, &last_relay, serial, NULL) == -1)
    {
       if (strstr(url, API_URL))
       {
@@ -474,24 +475,24 @@ int process_http_request(int sock)
             if (nstate==PULSE)
             {
                /* Generate pulse on relay switch */
-               get_relay(com_port, relay, &rstate[relay-1]);
+            get_relay(com_port, relay, &rstate[relay-1], serial);
                if (rstate[relay-1] == ON)
                {
-                  set_relay(com_port, relay, OFF);
+               set_relay(com_port, relay, OFF, serial);
                   sleep(1);
-                  set_relay(com_port, relay, ON);
+               set_relay(com_port, relay, ON, serial);
                }
                else
                {
-                  set_relay(com_port, relay, ON);
+               set_relay(com_port, relay, ON, serial);
                   sleep(1);
-                  set_relay(com_port, relay, OFF);
+               set_relay(com_port, relay, OFF, serial);
                }
             }
             else
             {
                /* Switch relay on/off */
-               set_relay(com_port, relay, nstate);
+            set_relay(com_port, relay, nstate, serial);
             }
          }
       }
@@ -499,7 +500,7 @@ int process_http_request(int sock)
       /* Read current state for all relays */
       for (i=FIRST_RELAY; i<=last_relay; i++)
       {
-         get_relay(com_port, i, &rstate[i-1]);
+      get_relay(com_port, i, &rstate[i-1], serial);
       }
       
       /* Send response to client */
@@ -573,18 +574,17 @@ void print_usage()
       get_relay_card_name(rtype, cname);
       printf("  - %s\n", cname);
    }
-   printf("The card which is detected first will be used.\n");
    printf("\n");
    printf("The program can be run in interactive (command line) mode or in daemon mode with\n");
    printf("built-in web server.\n\n");
    printf("Interactive mode:\n");
-   printf("    crelay -i | [<relay number>] [ON|OFF]\n\n");
+   printf("    crelay -i | [-s <serial number>] <relay number> [ON|OFF]\n\n");
    printf("       -i print relay information\n\n");
    printf("       The state of any relay can be read or it can be changed to a new state.\n");
    printf("       If only the relay number is provided then the current state is returned,\n");
    printf("       otherwise the relays state is set to the new value provided as second parameter.\n");
    printf("       The USB communication port is auto detected. The first compatible device\n");
-   printf("       found will be used.\n\n");
+   printf("       found will be used, unless -s switch and a serial number is passed.\n\n");
    printf("Daemon mode:\n");
    printf("    crelay -d|-D [<relay1_label> [<relay2_label> [<relay3_label> [<relay4_label>]]]] \n\n");
    printf("       -d use daemon mode, run in foreground\n");
@@ -629,7 +629,7 @@ int main(int argc, char *argv[])
       int i;
       
       iface.s_addr = INADDR_ANY;
-      
+
       
       openlog("crelay", LOG_PID|LOG_CONS, LOG_USER);
       syslog(LOG_DAEMON | LOG_NOTICE, "Starting crelay daemon (version %s)\n", VERSION);
@@ -744,46 +744,80 @@ int main(int argc, char *argv[])
       relay_state_t rstate;
       char com_port[MAX_COM_PORT_NAME_LEN];
       char cname[MAX_RELAY_CARD_NAME_LEN];
+      char* serial=NULL;
       uint8 num_relays=FIRST_RELAY;
+      relay_info_t *relay_info;
+      int argn = 1;
       int err;
+      int i = 1;
 
-      if (detect_relay_card(com_port, &num_relays) == -1)
+      if (!strcmp(argv[argn],"-i"))
+      {
+         /* Detect all cards connected to the system */
+         if (detect_all_relay_cards(&relay_info) == -1)
+         {
+            printf("No compatible device detected.\n");
+            return -1;
+         }
+         printf("\nDetected relay cards:\n");
+         while (relay_info->next != NULL)
+         {
+            get_relay_card_name(relay_info->relay_type, cname);
+            printf("  #%d\t%s (serial %s)\n", i++ ,cname, relay_info->serial);
+            relay_info = relay_info->next;
+            // TODO: free relay_info list memory
+         }
+         
+         exit(EXIT_SUCCESS);
+      }
+   
+      if (!strcmp(argv[argn], "-s"))
+      {
+         if (argc > (argn+1))
+         {
+            serial = malloc(sizeof(char)*strlen(argv[argn+1]));
+            strcpy(serial, argv[argn+1]);
+            argn += 2;
+         }
+         else
+         {
+            print_usage();
+            exit(EXIT_FAILURE);            
+         }
+      }
+
+      if (detect_relay_card(com_port, &num_relays, serial, NULL) == -1)
       {
          printf("No compatible device detected.\n");
          
          if(geteuid() != 0)
          {
-            printf("\nWarning: this program is currently not running with root priviledges !\n");
-            printf("Therefore it might not be able to access your relay cards communication port.\n");
+            printf("\nWarning: this program is currently not running with root privileges !\n");
+            printf("Therefore it might not be able to access your relay card communication port.\n");
             printf("Consider invoking the program from the root account or use \"sudo ...\"\n");
          }
          
          exit(EXIT_FAILURE);
       }
 
-      if (!strcmp(argv[1],"-i"))
-      {
-         if (get_relay_card_name(get_relay_card_type(), cname) == 0)
-            printf("Detected relay card type is %s (on %s, %d channels)\n", cname, com_port, num_relays);
-         exit(EXIT_SUCCESS);
-      }
-   
       switch (argc)
       {
          case 2:
+         case 4:
             /* GET current relay state */
-            if (get_relay(com_port, atoi(argv[1]), &rstate) == 0)
-               printf("Relay %d is %s\n", atoi(argv[1]), (rstate==ON)?"on":"off");
+            if (get_relay(com_port, atoi(argv[argn]), &rstate, serial) == 0)
+               printf("Relay %d is %s\n", atoi(argv[argn]), (rstate==ON)?"on":"off");
             else
                exit(EXIT_FAILURE);
             break;
             
          case 3:
+         case 5:
             /* SET new relay state */
-            if (!strcmp(argv[2],"on") || !strcmp(argv[2],"ON")) 
-               err = set_relay(com_port, atoi(argv[1]), ON);
-            else if (!strcmp(argv[2],"off") || !strcmp(argv[2],"OFF")) 
-               err = set_relay(com_port, atoi(argv[1]), OFF);
+            if (!strcmp(argv[argn+1],"on") || !strcmp(argv[argn+1],"ON"))
+               err = set_relay(com_port, atoi(argv[argn]), ON, serial);
+            else if (!strcmp(argv[argn+1],"off") || !strcmp(argv[argn+1],"OFF"))
+               err = set_relay(com_port, atoi(argv[argn]), OFF, serial);
             else 
             {
                print_usage();
@@ -797,5 +831,6 @@ int main(int argc, char *argv[])
             print_usage();
       }
    }
+   
    exit(EXIT_SUCCESS);
 }

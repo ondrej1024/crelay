@@ -47,7 +47,7 @@
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_sainsmart_4_8chan(char* portname, uint8* num_relays);
+int detect_relay_card_sainsmart_4_8chan(char* portname, uint8* num_relays, char* serial, relay_info_t** relay_info);
 
 /**********************************************************
  * Function get_relay_sainsmart_4_8chan()
@@ -61,7 +61,7 @@ int detect_relay_card_sainsmart_4_8chan(char* portname, uint8* num_relays);
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int get_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t* relay_state);
+int get_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t* relay_state, char* serial);
 
 /**********************************************************
  * Function set_relay_sainsmart_4_8chan()
@@ -72,9 +72,9 @@ int get_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t* rela
  *             relay (in)        - relay number
  *             relay_state (in)  - current relay state
  * 
- * Return:   o - success
+ * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int set_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t relay_state);
+int set_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t relay_state, char* serial);
 
 #endif

@@ -105,6 +105,45 @@ static relay_data_t relay_data[LAST_RELAY_TYPE] =
 
 
 /**********************************************************
+ * Function detect_all_relay_cards()
+ * 
+ * Description: Detect all relay cards
+ * 
+ * Parameters: relay_info(out)- pointer to list of 
+ *                              relays info struct
+ * 
+ * Return:  0 - success
+ *         -1 - fail, no relay card found
+ *********************************************************/
+int detect_all_relay_cards(relay_info_t** relay_info)
+{
+   int i, cards=0;
+   relay_info_t* my_relay_info;
+   
+   /* Create first list element */
+   my_relay_info = malloc(sizeof(relay_info_t));
+   my_relay_info->next = NULL;
+
+   /* Return pointer to first element to caller */
+   *relay_info = my_relay_info;
+   
+   for (i=1; i<LAST_RELAY_TYPE; i++)
+   {
+      /* Create new list element with related info for each detected card */
+      if ((*relay_data[i].detect_relay_card_fun)(NULL, NULL, NULL, &my_relay_info) == 0)
+      {
+         cards++;
+      }
+   }
+   
+   if (cards>0)
+      return 0;
+   else
+      return -1;
+}
+
+
+/**********************************************************
  * Function detect_relay_card()
  * 
  * Description: Detect the relay card
@@ -117,13 +156,13 @@ static relay_data_t relay_data[LAST_RELAY_TYPE] =
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card(char* portname, uint8* num_relays)
+int detect_relay_card(char* portname, uint8* num_relays, char* serial, relay_info_t** my_relay_info)
 {
    int i;
    
    for (i=1; i<LAST_RELAY_TYPE; i++)
    {
-      if ((*relay_data[i].detect_relay_card_fun)(portname, num_relays) == 0)
+      if ((*relay_data[i].detect_relay_card_fun)(portname, num_relays, serial, NULL) == 0)
       {
          relay_type=i;
          return 0;
@@ -147,11 +186,11 @@ int detect_relay_card(char* portname, uint8* num_relays)
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int get_relay(char* portname, uint8 relay, relay_state_t* relay_state)
+int get_relay(char* portname, uint8 relay, relay_state_t* relay_state, char* serial)
 {
    if (relay_type != NO_RELAY_TYPE)
    {
-      return (*relay_data[relay_type].get_relay_fun)(portname, relay, relay_state);
+      return (*relay_data[relay_type].get_relay_fun)(portname, relay, relay_state, serial);
    }
    else
    {   
@@ -172,11 +211,11 @@ int get_relay(char* portname, uint8 relay, relay_state_t* relay_state)
  * Return:   o - success
  *          -1 - fail
  *********************************************************/
-int set_relay(char* portname, uint8 relay, relay_state_t relay_state)
+int set_relay(char* portname, uint8 relay, relay_state_t relay_state, char* serial)
 {
    if (relay_type != NO_RELAY_TYPE)
    {
-      return (*relay_data[relay_type].set_relay_fun)(portname, relay, relay_state);
+      return (*relay_data[relay_type].set_relay_fun)(portname, relay, relay_state, serial);
    }
    else
    {   

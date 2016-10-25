@@ -24,7 +24,7 @@
  *   gcc -c relay_drv_hidapi.c
  * 
  * Last modified:
- *   19/08/2015
+ *   21/02/2016
  *
  * Copyright 2015, Ondrej Wisniewski 
  * 
@@ -118,14 +118,21 @@ static uint8 g_num_relays=HID_API_NUM_RELAYS;
  *                              the detected com port will
  *                              be stored
  *             num_relays(out)- pointer to number of relays
- * 
+ *             serial(in)     - pointer to a string containing
+ *                              serial number [optional]
+ *
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_hidapi(char* portname, uint8* num_relays)
+int detect_relay_card_hidapi(char* portname, uint8* num_relays, char* serial, relay_info_t** relay_info)
 {
-   struct hid_device_info *devs;
+   struct hid_device_info *devs, *nextdev;
+   hid_device *hid_dev;
+   unsigned char buf[REPORT_LEN];  
+   uint8 found=0;
    uint8 num;
+   relay_info_t* rinfo;
+
    
    if ((devs = hid_enumerate(VENDOR_ID, DEVICE_ID)) == NULL)
    {
@@ -135,13 +142,62 @@ int detect_relay_card_hidapi(char* portname, uint8* num_relays)
    if (devs->product_string == NULL ||
        devs->path == NULL)
    {
-      return -1;
+      return -2;
+   }
+
+   /* Find controller with matching serial number if it's specified */
+   buf[0]=0;
+   nextdev = devs;
+   while (nextdev)
+   {
+      /* Open HID API device */
+      if ((hid_dev = hid_open_path(nextdev->path)) == NULL)
+      {
+         fprintf(stderr, "unable to open HID API device %s\n", portname);
+         return -3;
+      }
+      
+      /* Read relay Id requesting a feature report with Id 0x01 */
+      buf[0] = 0x01;
+      if (hid_get_feature_report(hid_dev, buf, sizeof(buf)) != REPORT_LEN)
+      {
+         fprintf(stderr, "unable to read feature report from device %s (%ls)\n", portname, hid_error(hid_dev));
+         return -4;
+      }
+      //printf("DBG: Relay ID: %s\n", buf);
+      
+      hid_close(hid_dev);
+      
+      if (relay_info != NULL)
+      {
+         // Save serial number and type in current relay info struct
+         (*relay_info)->relay_type = HID_API_RELAY_TYPE;
+         strcpy((*relay_info)->serial, (char *)buf);
+         // Allocate new struct
+         rinfo = malloc(sizeof(relay_info_t));
+         rinfo->next = NULL;
+         // Link current to new struct
+         (*relay_info)->next = rinfo;
+         // Move pointer to new struct
+         *relay_info = rinfo;
+      } 
+      else if (serial == NULL || !strcmp(serial, (char *)buf))
+      {
+         found = 1;
+         break;
+      }
+      nextdev = nextdev->next;
+   }
+   
+   if (found == 0)
+   {
+      return -5;
    }
    
    //printf("DBG: card %ls found\n", devs->product_string);
    
    /* Get number of relays from product description */
-   num = atoi((const char *)(devs->product_string+strlen(PRODUCT_STR_BASE)));
+   num = atoi((const char *)(nextdev->product_string+strlen(PRODUCT_STR_BASE)));
    if (num>0)
    {
       g_num_relays = num;
@@ -149,7 +205,7 @@ int detect_relay_card_hidapi(char* portname, uint8* num_relays)
 
    /* Return parameters */
    if (num_relays!=NULL) *num_relays = g_num_relays;
-   sprintf(portname, "%s", devs->path);
+   sprintf(portname, "%s", nextdev->path);
   
    hid_free_enumeration(devs);   
    return 0;
@@ -164,15 +220,16 @@ int detect_relay_card_hidapi(char* portname, uint8* num_relays)
  * Parameters: portname (in)     - communication port
  *             relay (in)        - relay number
  *             relay_state (out) - current relay state
- * 
+ *             serial (in)       - serial number [not used]
+ *
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int get_relay_hidapi(char* portname, uint8 relay, relay_state_t* relay_state)
+int get_relay_hidapi(char* portname, uint8 relay, relay_state_t* relay_state, char* serial)
 {
    hid_device *hid_dev;
    unsigned char buf[REPORT_LEN];  
-   
+
    if (relay<FIRST_RELAY || relay>(FIRST_RELAY+g_num_relays-1))
    {  
       fprintf(stderr, "ERROR: Relay number out of range\n");
@@ -211,15 +268,16 @@ int get_relay_hidapi(char* portname, uint8 relay, relay_state_t* relay_state)
  * Parameters: portname (in)     - communication port
  *             relay (in)        - relay number
  *             relay_state (in)  - current relay state
- * 
+ *             serial (in)       - serial number [not used]
+ *
  * Return:   o - success
  *          -1 - fail
  *********************************************************/
-int set_relay_hidapi(char* portname, uint8 relay, relay_state_t relay_state)
+int set_relay_hidapi(char* portname, uint8 relay, relay_state_t relay_state, char* serial)
 { 
    hid_device *hid_dev;
    unsigned char buf[REPORT_LEN];  
-   
+
    if (relay<FIRST_RELAY || relay>(FIRST_RELAY+g_num_relays-1))
    {  
       fprintf(stderr, "ERROR: Relay number out of range\n");

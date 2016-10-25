@@ -77,10 +77,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
+//#include <unistd.h>
 #include <errno.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
+//#include <fcntl.h>
+//#include <sys/ioctl.h>
 #include <libusb-1.0/libusb.h>
 
 #include "data_types.h"
@@ -104,8 +104,129 @@
 #define RSTATES_BITOFFSET 8
 
 
-static libusb_device *device;
+//static libusb_device *device;
 
+
+/**********************************************************
+ * Function open_device_with_vid_pid_serial()
+ * 
+ * Description: Tries to open a device with given VIP, PID 
+ *              and serial number
+ * 
+ * Parameters: vendorid (in)   - Vendor Id
+ *             productid (in)  - Product Id
+ *             serial (in/out) - Serial number
+ * 
+ * Return:     NULL - fail, no matching device found
+ *             device handle otherwise
+ *********************************************************/
+static libusb_device_handle* open_device_with_vid_pid_serial(uint16_t vendorid, uint16_t productid, char *serial, relay_info_t **relay_info)
+{
+   int r;
+   ssize_t devnum;
+   int i;
+   libusb_device **devices;
+   unsigned char sernum[64];
+   struct libusb_device_handle *dev = NULL;
+   struct libusb_device_descriptor devdesc;
+   relay_info_t* rinfo;
+
+   // Get a list of all connected USB devices
+   devnum = libusb_get_device_list(NULL, &devices);
+   if (devnum <= LIBUSB_SUCCESS)
+   {
+      if (devnum == LIBUSB_SUCCESS)
+      {
+         fprintf(stderr, "No USB devices found\n");
+      } else {
+         fprintf(stderr, "Unable to list USB devices (%s)\n", libusb_error_name(devnum));
+      }
+      return NULL;
+   }
+
+   //printf("Found %d devices\n", (int)devnum);
+   for (i = 0; i < devnum; i++)
+   {
+      r=libusb_get_device_descriptor(devices[i], &devdesc);
+      if (r < 0)
+      {
+         fprintf(stderr, "unable to get device descripter (%s)\n", libusb_error_name(r));
+         continue;
+      }
+      
+      // Skip devices not matching vendor and device IDs
+      if (devdesc.idVendor != vendorid || devdesc.idProduct != productid)
+      {
+         //printf("Skip device %d %04X:%04X\n", i, devdesc.idVendor, devdesc.idProduct);
+         continue;
+      }
+      
+      // Open device
+      //printf("Device %d; open\n", i);
+      r = libusb_open(devices[i], &dev);
+      if (r < 0)
+      {
+         fprintf(stderr, "Unable to open device (%s)\n", libusb_error_name(r));
+         continue;
+      }
+      
+      // If serial number was not specified, return handle to first device found
+      if ((serial == NULL) && (relay_info == NULL))
+      {
+         //printf("Device %d; return dev\n", i);
+         return dev;
+      }
+      
+      // Read serial number from device
+      //printf("Device %d; get serial\n", i);
+      r=libusb_get_string_descriptor_ascii (dev, devdesc.iSerialNumber, sernum, 64);
+      if (r < 0)
+      {
+         fprintf(stderr, "unable to get string descripter (%s)\n", libusb_error_name(r));
+         libusb_close(dev);
+         continue;
+      }
+      
+      // Return serial number of first device
+      if ((serial[0] == 0) && (relay_info == NULL))
+      {
+         //printf("Device %d; return serial\n", i);
+         strcpy(serial, (char *)sernum);
+         return dev;
+      }
+
+      if (relay_info != NULL)
+      {
+         //printf("Device %d; save serial\n", i);
+         // Save serial number and type in current relay info struct
+         (*relay_info)->relay_type = CONRAD_4CHANNEL_USB_RELAY_TYPE;
+         strcpy((*relay_info)->serial, (char *)sernum);
+         // Allocate new struct
+         rinfo = malloc(sizeof(relay_info_t));
+         rinfo->next = NULL;
+         // Link current to new struct
+         (*relay_info)->next = rinfo;
+         // Move pointer to new struct
+         *relay_info = rinfo;
+      }
+      else
+      {
+         // Check if serial numbers match
+         //printf("Device %d; check serial\n", i);
+         if (!strcmp(serial, (char *)sernum))
+         {
+            return dev;
+         }
+      }
+      
+      //printf("Device %d; close\n", i);
+      libusb_close(dev);
+   }
+
+   //printf("Free device list\n");
+   libusb_free_device_list(devices, 0);
+   return NULL;
+}
 
 /**********************************************************
  * Function detect_relay_card_conrad_4chan()
@@ -120,17 +241,20 @@ static libusb_device *device;
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_conrad_4chan(char* portname, uint8* num_relays)
+int detect_relay_card_conrad_4chan(char* portname, uint8* num_relays, char* serial, relay_info_t** relay_info)
 {
    struct libusb_device_handle *dev = NULL; 
-   struct libusb_device_descriptor devdesc;
-   int r;
-   unsigned char sernum[64];
+   char sernum[64];
+   
+   if (serial) 
+      strcpy(sernum, serial);
+   else
+      sernum[0]=0;
    
    libusb_init(NULL);
-   
+
    /* Try to open Conrad CP2104 USB device */
-   dev = libusb_open_device_with_vid_pid(NULL, VENDOR_ID, DEVICE_ID);
+   dev = open_device_with_vid_pid_serial(VENDOR_ID, DEVICE_ID, sernum, relay_info);
    if (dev == NULL)
    {
       libusb_exit(NULL);
@@ -138,25 +262,7 @@ int detect_relay_card_conrad_4chan(char* portname, uint8* num_relays)
    }
    
    /* Get device reference (can be used later for libusb_open() calls) */
-   device = libusb_get_device(dev);
-
-   /* Get device descripter */
-   r=libusb_get_device_descriptor (libusb_get_device(dev), &devdesc);
-   if (r < 0)
-   {
-      fprintf(stderr, "unable to get device descripter (%s)\n", libusb_error_name(r));
-      libusb_exit(NULL);
-      return -1;
-   }
-
-   /* Get serial number */
-   r=libusb_get_string_descriptor_ascii (dev, devdesc.iSerialNumber, sernum, 64);
-   if (r < 0)
-   {
-      fprintf(stderr, "unable to get device descripter (%s)\n", libusb_error_name(r));
-      libusb_exit(NULL);
-      return -1;
-   }
+   //device = libusb_get_device(dev);
    
    /* Return parameters */
    if (num_relays!=NULL) *num_relays = CONRAD_4CHANNEL_USB_NUM_RELAYS;
@@ -180,7 +286,7 @@ int detect_relay_card_conrad_4chan(char* portname, uint8* num_relays)
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int get_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t* relay_state)
+int get_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t* relay_state, char* serial)
 {
    struct libusb_device_handle *dev = NULL; 
    int r;  
@@ -197,7 +303,7 @@ int get_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t* relay_sta
    /* Open USB device */
    //r = libusb_open(device, &dev);
    //if (r < 0)
-   dev = libusb_open_device_with_vid_pid(NULL, VENDOR_ID, DEVICE_ID);
+   dev = open_device_with_vid_pid_serial(VENDOR_ID, DEVICE_ID, serial, NULL);
    if (dev == NULL)
    {
       fprintf(stderr, "unable to open CP2104 device\n");
@@ -245,7 +351,7 @@ int get_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t* relay_sta
  * Return:   o - success
  *          -1 - fail
  *********************************************************/
-int set_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t relay_state)
+int set_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t relay_state, char* serial)
 {
    struct libusb_device_handle *dev = NULL; 
    int r;  
@@ -262,7 +368,7 @@ int set_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t relay_stat
    /* Open USB device */
    //r = libusb_open(device, &dev);
    //if (r < 0)
-   dev = libusb_open_device_with_vid_pid(NULL, VENDOR_ID, DEVICE_ID);
+   dev = open_device_with_vid_pid_serial(VENDOR_ID, DEVICE_ID, serial, NULL);
    if (dev == NULL)
    {
       fprintf(stderr, "unable to open CP2104 device\n");

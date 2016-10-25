@@ -186,7 +186,7 @@ static int do_unexport(uint8 pin)
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_generic_gpio(char* portname, uint8* num_relays)
+int detect_relay_card_generic_gpio(char* portname, uint8* num_relays, char* serial, relay_info_t** relay_info)
 {
    int fd;
    int i;
@@ -241,7 +241,7 @@ int detect_relay_card_generic_gpio(char* portname, uint8* num_relays)
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int get_relay_generic_gpio(char* portname, uint8 relay, relay_state_t* relay_state)
+int get_relay_generic_gpio(char* portname, uint8 relay, relay_state_t* relay_state, char* serial)
 {
    int fd;
    char b[64];
@@ -304,7 +304,7 @@ int get_relay_generic_gpio(char* portname, uint8 relay, relay_state_t* relay_sta
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int set_relay_generic_gpio(char* portname, uint8 relay, relay_state_t relay_state)
+int set_relay_generic_gpio(char* portname, uint8 relay, relay_state_t relay_state, char* serial)
 {
    int fd;
    char b[64];

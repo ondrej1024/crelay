@@ -216,9 +216,16 @@ static int set_mask(hid_device *handle, uint16 bitmap)
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_sainsmart_16chan(char* portname, uint8* num_relays)
+int detect_relay_card_sainsmart_16chan(char* portname, uint8* num_relays, char* serial, relay_info_t** relay_info)
 {
    struct hid_device_info *devs;
+   
+   /* Find all connected devices, if requested */
+   if (relay_info)
+   { 
+      // TODO: add multiple cards support
+      ;
+   }
    
    if ((devs = hid_enumerate(VENDOR_ID, DEVICE_ID)) == NULL)
    {
@@ -254,7 +261,7 @@ int detect_relay_card_sainsmart_16chan(char* portname, uint8* num_relays)
  * Return:   0 - success
  *          <0 - fail
  *********************************************************/
-int get_relay_sainsmart_16chan(char* portname, uint8 relay, relay_state_t* relay_state)
+int get_relay_sainsmart_16chan(char* portname, uint8 relay, relay_state_t* relay_state, char* serial)
 {
    hid_device *hid_dev;
    uint16 bitmap, bit;
@@ -303,7 +310,7 @@ int get_relay_sainsmart_16chan(char* portname, uint8 relay, relay_state_t* relay
  * Return:   0 - success
  *          <0 - fail
  *********************************************************/
-int set_relay_sainsmart_16chan(char* portname, uint8 relay, relay_state_t relay_state)
+int set_relay_sainsmart_16chan(char* portname, uint8 relay, relay_state_t relay_state, char* serial)
 { 
    hid_device *hid_dev;
    uint16     bitmap;

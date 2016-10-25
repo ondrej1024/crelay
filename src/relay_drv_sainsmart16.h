@@ -52,7 +52,7 @@
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_sainsmart_16chan(char* portname, uint8* num_relays);
+int detect_relay_card_sainsmart_16chan(char* portname, uint8* num_relays, char* serial, relay_info_t** relay_info);
 
 
 /**********************************************************
@@ -67,7 +67,7 @@ int detect_relay_card_sainsmart_16chan(char* portname, uint8* num_relays);
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int get_relay_sainsmart_16chan(char* portname, uint8 relay, relay_state_t* relay_state);
+int get_relay_sainsmart_16chan(char* portname, uint8 relay, relay_state_t* relay_state, char* serial);
 
 
 /**********************************************************
@@ -82,6 +82,6 @@ int get_relay_sainsmart_16chan(char* portname, uint8 relay, relay_state_t* relay
  * Return:   o - success
  *          -1 - fail
  *********************************************************/
-int set_relay_sainsmart_16chan(char* portname, uint8 relay, relay_state_t relay_state);
+int set_relay_sainsmart_16chan(char* portname, uint8 relay, relay_state_t relay_state, char* serial);
 
 #endif
