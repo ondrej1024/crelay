@@ -86,9 +86,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <hidapi/hidapi.h>
 
-#include "data_types.h"
 #include "relay_drv.h"
 
 #define VENDOR_ID 0x16c0
@@ -106,7 +106,7 @@
 #define CMD_OFF     0xfd
 #define CMD_ALL_OFF 0xfc
 
-static uint8 g_num_relays=HID_API_NUM_RELAYS;
+static uint8_t g_num_relays=HID_API_NUM_RELAYS;
 
 
 /**********************************************************
@@ -124,13 +124,13 @@ static uint8 g_num_relays=HID_API_NUM_RELAYS;
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_hidapi(char* portname, uint8* num_relays, char* serial, relay_info_t** relay_info)
+int detect_relay_card_hidapi(char* portname, uint8_t* num_relays, char* serial, relay_info_t** relay_info)
 {
    struct hid_device_info *devs, *nextdev;
    hid_device *hid_dev;
    unsigned char buf[REPORT_LEN];  
-   uint8 found=0;
-   uint8 num;
+   uint8_t found=0;
+   uint8_t num;
    relay_info_t* rinfo;
 
    
@@ -225,7 +225,7 @@ int detect_relay_card_hidapi(char* portname, uint8* num_relays, char* serial, re
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int get_relay_hidapi(char* portname, uint8 relay, relay_state_t* relay_state, char* serial)
+int get_relay_hidapi(char* portname, uint8_t relay, relay_state_t* relay_state, char* serial)
 {
    hid_device *hid_dev;
    unsigned char buf[REPORT_LEN];  
@@ -273,7 +273,7 @@ int get_relay_hidapi(char* portname, uint8 relay, relay_state_t* relay_state, ch
  * Return:   o - success
  *          -1 - fail
  *********************************************************/
-int set_relay_hidapi(char* portname, uint8 relay, relay_state_t relay_state, char* serial)
+int set_relay_hidapi(char* portname, uint8_t relay, relay_state_t relay_state, char* serial)
 { 
    hid_device *hid_dev;
    unsigned char buf[REPORT_LEN];  

@@ -32,7 +32,7 @@ INCLUDE	= -I.
 DEFS	= -D_GNU_SOURCE
 CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Winline $(INCLUDE) -pipe -fPIC
 
-LIBS    =
+OPTS	= -DBUILD_LIB
 
 # Main source files (don't change)
 #########################################
@@ -41,7 +41,7 @@ SRC	= $(SRCDIR)/relay_drv.c
 # Relay card specific driver source files
 #########################################
 
-SRC	+= $(SRCDIR)/relay_drv_gpio.c
+#SRC	+= $(SRCDIR)/relay_drv_gpio.c
 
 # Include only needed drivers and libraries
 ifeq ($(DRV_CONRAD), y)

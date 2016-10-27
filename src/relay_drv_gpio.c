@@ -41,6 +41,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <dirent.h>
+#include <stdint.h>
 
 #include "data_types.h"
 #include "relay_drv.h"
@@ -52,7 +53,7 @@
 #define GPIO_BASE_FILE GPIO_BASE_DIR"gpio"
 
 
-static uint8 pins[] =
+static uint8_t pins[] =
 {
   0, // dummy
   0, // pin 1
@@ -65,7 +66,7 @@ static uint8 pins[] =
   0  // pin 8
 };
 
-static uint8 g_num_relays=GENERIC_GPIO_NUM_RELAYS;
+static uint8_t g_num_relays=GENERIC_GPIO_NUM_RELAYS;
 
 extern config_t config;
 
@@ -81,7 +82,7 @@ extern config_t config;
  * Return:  0 - success
  *         -1 - fail
  *********************************************************/
-static int do_export(uint8 pin)
+static int do_export(uint8_t pin)
 {
    int fd;
    char b[64];
@@ -146,7 +147,7 @@ static int do_export(uint8 pin)
  * Return:  0 - success
  *         -1 - fail
  *********************************************************/
-static int do_unexport(uint8 pin)
+static int do_unexport(uint8_t pin)
 {
    int fd;
    char b[64];
@@ -186,7 +187,7 @@ static int do_unexport(uint8 pin)
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_generic_gpio(char* portname, uint8* num_relays, char* serial, relay_info_t** relay_info)
+int detect_relay_card_generic_gpio(char* portname, uint8_t* num_relays, char* serial, relay_info_t** relay_info)
 {
    int fd;
    int i;
@@ -241,12 +242,12 @@ int detect_relay_card_generic_gpio(char* portname, uint8* num_relays, char* seri
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int get_relay_generic_gpio(char* portname, uint8 relay, relay_state_t* relay_state, char* serial)
+int get_relay_generic_gpio(char* portname, uint8_t relay, relay_state_t* relay_state, char* serial)
 {
    int fd;
    char b[64];
    char d[1];
-   uint8 pin;
+   uint8_t pin;
 
    if (relay<FIRST_RELAY || relay>(FIRST_RELAY+g_num_relays-1))
    {
@@ -304,12 +305,12 @@ int get_relay_generic_gpio(char* portname, uint8 relay, relay_state_t* relay_sta
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int set_relay_generic_gpio(char* portname, uint8 relay, relay_state_t relay_state, char* serial)
+int set_relay_generic_gpio(char* portname, uint8_t relay, relay_state_t relay_state, char* serial)
 {
    int fd;
    char b[64];
    char d[1];
-   uint8 pin;
+   uint8_t pin;
    
    if (relay<FIRST_RELAY || relay>(FIRST_RELAY+g_num_relays-1))
    {

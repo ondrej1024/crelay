@@ -81,7 +81,9 @@ typedef enum
    
    /* Add other relay types here */
    
+#ifndef BUILD_LIB
    GENERIC_GPIO_RELAY_TYPE,        /* Relays connected directly via GPIO pins */
+#endif
    LAST_RELAY_TYPE
 } relay_type_t;
 
@@ -104,9 +106,9 @@ relay_info_t;
 
 typedef struct
 {
-   int (*detect_relay_card_fun)(char*, uint8*, char*, relay_info_t **); /* function to detect the relay card */
-   int (*get_relay_fun)(char*, uint8, relay_state_t*, char*); /* function to get the current relay state */
-   int (*set_relay_fun)(char*, uint8, relay_state_t, char*);  /* function to set the new relay state */
+   int (*detect_relay_card_fun)(char*, uint8_t*, char*, relay_info_t **); /* function to detect the relay card */
+   int (*get_relay_fun)(char*, uint8_t, relay_state_t*, char*); /* function to get the current relay state */
+   int (*set_relay_fun)(char*, uint8_t, relay_state_t, char*);  /* function to set the new relay state */
    char *card_name;                                           /* card name string */
 }
 relay_data_t;
@@ -139,7 +141,7 @@ int detect_all_relay_cards(relay_info_t** relay_info);
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card(char* portname, uint8* num_relays, char* serial, relay_info_t** relay_info);
+int detect_relay_card(char* portname, uint8_t* num_relays, char* serial, relay_info_t** relay_info);
 
 /**********************************************************
  * Function get_relay()
@@ -153,7 +155,7 @@ int detect_relay_card(char* portname, uint8* num_relays, char* serial, relay_inf
  * Return:   o - success
  *          -1 - fail
  *********************************************************/
-int get_relay(char* portname, uint8 relay, relay_state_t* relay_state, char* serial);
+int get_relay(char* portname, uint8_t relay, relay_state_t* relay_state, char* serial);
 
 /**********************************************************
  * Function set_relay()
@@ -167,7 +169,7 @@ int get_relay(char* portname, uint8 relay, relay_state_t* relay_state, char* ser
  * Return:   o - success
  *          -1 - fail
  *********************************************************/
-int set_relay(char* portname, uint8 relay, relay_state_t relay_state, char* serial);
+int set_relay(char* portname, uint8_t relay, relay_state_t relay_state, char* serial);
 
 /**********************************************************
  * Function get_relay_card_type()

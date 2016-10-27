@@ -27,6 +27,7 @@ CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Winline $(INCLUDE) -pipe -fPIC
 
 SRC	= crelay_cli.c
 LIBS	= -lcrelay
+OPTS	= -DBUILD_LIB
 
 # Include only needed drivers and libraries
 ifeq ($(DRV_CONRAD), y)

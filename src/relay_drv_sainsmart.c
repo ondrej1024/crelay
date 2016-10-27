@@ -68,21 +68,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <unistd.h>
 #include <errno.h>
 #include <ftdi.h>
 #include <libusb-1.0/libusb.h>
 
-#include "data_types.h"
 #include "relay_drv.h"
 
 #define VENDOR_ID 0x0403
 #define DEVICE_ID 0x6001
 
-static struct ftdi_context *ftdi;
-static uint8 g_num_relays=SAINSMART_USB_NUM_RELAYS;
-
+#ifndef BUILD_LIB
+#include "data_types.h"
 extern config_t config;
+#endif
+
+static struct ftdi_context *ftdi;
+static uint8_t g_num_relays=SAINSMART_USB_NUM_RELAYS;
 
 
 /**********************************************************
@@ -222,7 +223,7 @@ static libusb_device_handle* open_device_with_vid_pid_serial(uint16_t vendorid, 
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_sainsmart_4_8chan(char* portname, uint8* num_relays, char* serial, relay_info_t** relay_info)
+int detect_relay_card_sainsmart_4_8chan(char* portname, uint8_t* num_relays, char* serial, relay_info_t** relay_info)
 {
    unsigned int chipid;
    
@@ -267,13 +268,16 @@ int detect_relay_card_sainsmart_4_8chan(char* portname, uint8* num_relays, char*
    
    /* Read out FTDI Chip-ID of R type chips */
    ftdi_read_chipid(ftdi, &chipid);
-   
+
+#ifdef BUILD_LIB
+   g_num_relays = SAINSMART_USB_NUM_RELAYS;
+#else
    if (config.sainsmart_num_relays >= FIRST_RELAY &&
        config.sainsmart_num_relays <= MAX_NUM_RELAYS)
    {
       g_num_relays = config.sainsmart_num_relays;
    }
-   
+#endif   
    /* Return parameters */
    if (num_relays) 
       *num_relays = g_num_relays;
@@ -299,7 +303,7 @@ int detect_relay_card_sainsmart_4_8chan(char* portname, uint8* num_relays, char*
  * Return:    0 - success
  *          < 0 - fail
  *********************************************************/
-int get_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t* relay_state, char* serial)
+int get_relay_sainsmart_4_8chan(char* portname, uint8_t relay, relay_state_t* relay_state, char* serial)
 {
    unsigned char buf[1];
    
@@ -344,7 +348,7 @@ int get_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t* rela
  * Return:    0 - success
  *          < 0 - fail
  *********************************************************/
-int set_relay_sainsmart_4_8chan(char* portname, uint8 relay, relay_state_t relay_state, char* serial)
+int set_relay_sainsmart_4_8chan(char* portname, uint8_t relay, relay_state_t relay_state, char* serial)
 {
    unsigned char buf[1];
    

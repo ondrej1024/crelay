@@ -44,15 +44,13 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
-#include "data_types.h"
 #include "relay_drv.h"
 
 #define VERSION "0.11"
-
-config_t config;
 
 
 /**********************************************************
@@ -104,8 +102,6 @@ int main(int argc, char *argv[])
       exit(EXIT_SUCCESS);
    }
    
-   memset((void*)&config, 0, sizeof(config_t));   
-   
    {
       /*****  Command line mode *****/
       
@@ -113,7 +109,7 @@ int main(int argc, char *argv[])
       char com_port[MAX_COM_PORT_NAME_LEN];
       char cname[MAX_RELAY_CARD_NAME_LEN];
       char* serial=NULL;
-      uint8 num_relays=FIRST_RELAY;
+      uint8_t num_relays=FIRST_RELAY;
       relay_info_t *relay_info;
       int argn = 1;
       int err;

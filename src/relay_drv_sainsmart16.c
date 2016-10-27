@@ -103,9 +103,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <hidapi/hidapi.h>
 
-#include "data_types.h"
 #include "relay_drv.h"
 
 #define VENDOR_ID 0x0416
@@ -119,24 +119,24 @@
 /* USB HID message structure */
 typedef struct
 {
-   uint8  cmd;          // command READ/WRITE  
-   uint8  len;          // message length
-   uint16 bitmap;       // relay state bitmap
-   uint8  reserved[6];  // reserved bytes
-   uint8  signature[4]; // command signature
-   uint16 chksum;       // 16 bit checksum 
+   uint8_t  cmd;          // command READ/WRITE  
+   uint8_t  len;          // message length
+   uint16_t bitmap;       // relay state bitmap
+   uint8_t  reserved[6];  // reserved bytes
+   uint8_t  signature[4]; // command signature
+   uint16_t chksum;       // 16 bit checksum 
 } hid_msg_t;
 
 /* Association between relay number (array index) and bit position */
-static uint8 relay_bit_pos[] = {7 , 8 , 6 , 9 , 5 , 10, 4 , 11, 3 , 12, 2 , 13, 1 , 14, 0 , 15};
+static uint8_t relay_bit_pos[] = {7 , 8 , 6 , 9 , 5 , 10, 4 , 11, 3 , 12, 2 , 13, 1 , 14, 0 , 15};
 
-static uint8 g_num_relays=SAINSMART16_USB_NUM_RELAYS;
+static uint8_t g_num_relays=SAINSMART16_USB_NUM_RELAYS;
 
 
-static void init_hid_msg(hid_msg_t *hid_msg, uint8 cmd, uint16 bitmap)
+static void init_hid_msg(hid_msg_t *hid_msg, uint8_t cmd, uint16_t bitmap)
 {
    int i;
-   uint16 checksum=0;
+   uint16_t checksum=0;
 
    if (cmd==CMD_READ)
      memset(hid_msg, 0x11, sizeof(hid_msg_t));
@@ -147,20 +147,20 @@ static void init_hid_msg(hid_msg_t *hid_msg, uint8 cmd, uint16 bitmap)
    hid_msg->len = sizeof(hid_msg_t) - 2;
    hid_msg->bitmap = bitmap;
    memcpy(hid_msg->signature, CMD_SIGNATURE, 4);
-   for (i=0; i<hid_msg->len; i++) checksum += *(((uint8*)hid_msg)+i);
+   for (i=0; i<hid_msg->len; i++) checksum += *(((uint8_t*)hid_msg)+i);
    hid_msg->chksum = checksum;
    
    /* printf("DBG: msg "); */
-   /* for (i=0; i<sizeof(hid_msg_t); i++) printf("%02X ", *(((uint8*)hid_msg)+i)); */
+   /* for (i=0; i<sizeof(hid_msg_t); i++) printf("%02X ", *(((uint8_t*)hid_msg)+i)); */
    /* printf("\n"); */
 }
 
 
-static int get_mask(hid_device *handle, uint16 *bitmap)
+static int get_mask(hid_device *handle, uint16_t *bitmap)
 {
   int i;
   hid_msg_t  hid_msg;
-  uint16 mask;
+  uint16_t mask;
   
   init_hid_msg(&hid_msg, CMD_READ, 0x1111);
 
@@ -189,7 +189,7 @@ static int get_mask(hid_device *handle, uint16 *bitmap)
 }
 
 
-static int set_mask(hid_device *handle, uint16 bitmap) 
+static int set_mask(hid_device *handle, uint16_t bitmap) 
 {
   hid_msg_t  hid_msg;
 
@@ -216,7 +216,7 @@ static int set_mask(hid_device *handle, uint16 bitmap)
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_sainsmart_16chan(char* portname, uint8* num_relays, char* serial, relay_info_t** relay_info)
+int detect_relay_card_sainsmart_16chan(char* portname, uint8_t* num_relays, char* serial, relay_info_t** relay_info)
 {
    struct hid_device_info *devs;
    
@@ -261,10 +261,10 @@ int detect_relay_card_sainsmart_16chan(char* portname, uint8* num_relays, char* 
  * Return:   0 - success
  *          <0 - fail
  *********************************************************/
-int get_relay_sainsmart_16chan(char* portname, uint8 relay, relay_state_t* relay_state, char* serial)
+int get_relay_sainsmart_16chan(char* portname, uint8_t relay, relay_state_t* relay_state, char* serial)
 {
    hid_device *hid_dev;
-   uint16 bitmap, bit;
+   uint16_t bitmap, bit;
    
    if (relay<FIRST_RELAY || relay>(FIRST_RELAY+g_num_relays-1))
    {  
@@ -310,10 +310,10 @@ int get_relay_sainsmart_16chan(char* portname, uint8 relay, relay_state_t* relay
  * Return:   0 - success
  *          <0 - fail
  *********************************************************/
-int set_relay_sainsmart_16chan(char* portname, uint8 relay, relay_state_t relay_state, char* serial)
+int set_relay_sainsmart_16chan(char* portname, uint8_t relay, relay_state_t relay_state, char* serial)
 { 
    hid_device *hid_dev;
-   uint16     bitmap;
+   uint16_t     bitmap;
    
    if (relay<FIRST_RELAY || relay>(FIRST_RELAY+g_num_relays-1))
    {  

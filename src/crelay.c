@@ -381,7 +381,7 @@ int process_http_request(int sock)
    int  i;
    char com_port[MAX_COM_PORT_NAME_LEN];
    char* serial=NULL;
-   uint8 last_relay=FIRST_RELAY;
+   uint8_t last_relay=FIRST_RELAY;
    relay_state_t rstate[MAX_NUM_RELAYS];
    relay_state_t nstate=INVALID;
    
@@ -745,7 +745,7 @@ int main(int argc, char *argv[])
       char com_port[MAX_COM_PORT_NAME_LEN];
       char cname[MAX_RELAY_CARD_NAME_LEN];
       char* serial=NULL;
-      uint8 num_relays=FIRST_RELAY;
+      uint8_t num_relays=FIRST_RELAY;
       relay_info_t *relay_info;
       int argn = 1;
       int err;

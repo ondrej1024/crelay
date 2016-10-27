@@ -47,7 +47,7 @@
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_conrad_4chan(char* portname, uint8* num_relays, char* serial, relay_info_t** relay_info);
+int detect_relay_card_conrad_4chan(char* portname, uint8_t* num_relays, char* serial, relay_info_t** relay_info);
 
 /**********************************************************
  * Function get_relay_conrad_4chan()
@@ -61,7 +61,7 @@ int detect_relay_card_conrad_4chan(char* portname, uint8* num_relays, char* seri
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int get_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t* relay_state, char* serial);
+int get_relay_conrad_4chan(char* portname, uint8_t relay, relay_state_t* relay_state, char* serial);
 
 /**********************************************************
  * Function set_relay_conrad_4chan()
@@ -75,6 +75,6 @@ int get_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t* relay_sta
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int set_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t relay_state, char* serial);
+int set_relay_conrad_4chan(char* portname, uint8_t relay, relay_state_t relay_state, char* serial);
 
 #endif

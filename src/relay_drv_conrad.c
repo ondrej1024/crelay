@@ -77,13 +77,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <unistd.h>
 #include <errno.h>
-//#include <fcntl.h>
-//#include <sys/ioctl.h>
+#include <stdint.h>
 #include <libusb-1.0/libusb.h>
 
-#include "data_types.h"
 #include "relay_drv.h"
 
 /* USB IDs */
@@ -241,7 +238,7 @@ static libusb_device_handle* open_device_with_vid_pid_serial(uint16_t vendorid, 
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card_conrad_4chan(char* portname, uint8* num_relays, char* serial, relay_info_t** relay_info)
+int detect_relay_card_conrad_4chan(char* portname, uint8_t* num_relays, char* serial, relay_info_t** relay_info)
 {
    struct libusb_device_handle *dev = NULL; 
    char sernum[64];
@@ -286,11 +283,11 @@ int detect_relay_card_conrad_4chan(char* portname, uint8* num_relays, char* seri
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int get_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t* relay_state, char* serial)
+int get_relay_conrad_4chan(char* portname, uint8_t relay, relay_state_t* relay_state, char* serial)
 {
    struct libusb_device_handle *dev = NULL; 
    int r;  
-   uint8 gpio=0;
+   uint8_t gpio=0;
    
    if (relay<FIRST_RELAY || relay>(FIRST_RELAY+CONRAD_4CHANNEL_USB_NUM_RELAYS-1))
    {  
@@ -351,11 +348,11 @@ int get_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t* relay_sta
  * Return:   o - success
  *          -1 - fail
  *********************************************************/
-int set_relay_conrad_4chan(char* portname, uint8 relay, relay_state_t relay_state, char* serial)
+int set_relay_conrad_4chan(char* portname, uint8_t relay, relay_state_t relay_state, char* serial)
 {
    struct libusb_device_handle *dev = NULL; 
    int r;  
-   uint16 gpio=0;
+   uint16_t gpio=0;
    
    if (relay<FIRST_RELAY || relay>(FIRST_RELAY+CONRAD_4CHANNEL_USB_NUM_RELAYS-1))
    {  

@@ -34,8 +34,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
-#include "data_types.h"
 #include "relay_drv.h"
 
 /* Card driver specific include files */
@@ -95,12 +95,14 @@ static relay_data_t relay_data[LAST_RELAY_TYPE] =
       SAINSMART16_USB_NAME
    },
 #endif
+#ifndef BUILD_LIB
    {  // GENERIC_GPIO_RELAY_TYPE
       detect_relay_card_generic_gpio,
       get_relay_generic_gpio,
       set_relay_generic_gpio,
       GENERIC_GPIO_NAME
    }
+#endif
 };
 
 
@@ -156,7 +158,7 @@ int detect_all_relay_cards(relay_info_t** relay_info)
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card(char* portname, uint8* num_relays, char* serial, relay_info_t** my_relay_info)
+int detect_relay_card(char* portname, uint8_t* num_relays, char* serial, relay_info_t** my_relay_info)
 {
    int i;
    
@@ -186,7 +188,7 @@ int detect_relay_card(char* portname, uint8* num_relays, char* serial, relay_inf
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int get_relay(char* portname, uint8 relay, relay_state_t* relay_state, char* serial)
+int get_relay(char* portname, uint8_t relay, relay_state_t* relay_state, char* serial)
 {
    if (relay_type != NO_RELAY_TYPE)
    {
@@ -211,7 +213,7 @@ int get_relay(char* portname, uint8 relay, relay_state_t* relay_state, char* ser
  * Return:   o - success
  *          -1 - fail
  *********************************************************/
-int set_relay(char* portname, uint8 relay, relay_state_t relay_state, char* serial)
+int set_relay(char* portname, uint8_t relay, relay_state_t relay_state, char* serial)
 {
    if (relay_type != NO_RELAY_TYPE)
    {
