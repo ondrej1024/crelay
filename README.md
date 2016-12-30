@@ -64,7 +64,7 @@ The following picture shows a high level view on the modular software architectu
 
 #### Command line interface
     $ crelay 
-    crelay, version 0.10
+    crelay, version 0.11
     
     This utility provides a unified way of controlling different types of relay cards.
     Currently supported relay cards:
@@ -254,6 +254,7 @@ The support for the different relay cards in *crelay* has only been possible tha
 * [Steve Crow](https://github.com/stav09), who discovered the communication protocol of the Sainsmart USB cards
 * [Kevin Hilman](https://github.com/khilman), who implemented and tested the support for the Sainsmart 16-channel control module
 * [Andrew Lunn](https://github.com/lunn), who contributed cleanup patches
+* [Andrey Shevtsov](https://github.com/sqlwristband), who contributed the initial multiple cards implementation
 <br>  
 
 ### Notes

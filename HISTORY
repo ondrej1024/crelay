@@ -51,3 +51,7 @@ Version history
 - Added "-D" option for daemon mode ("-D" sends crelay to backgound, "-d" leaves crelay in foregraound)
 - Modified file stream handling as temporary workaround for web server connection issue on some systems (OpenWRT)
 - Added LDFLAGS parameter to linger command in Makefile (needed by OpenWRT)
+
+0.11: 30/12/2016
+- Added multiple cards support for command line ("-s" option to specify cards serial number)
+- Created C library version of crelay for inclusion in third party applications
