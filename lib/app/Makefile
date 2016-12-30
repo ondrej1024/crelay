@@ -2,14 +2,14 @@
 # Makefile:
 ###############################################################################
 #
-# crelay project makefile
+# crelay example application makefile
 #
 ###############################################################################
 
 DESTDIR=/usr
 PREFIX=/local
 
-BIN=crelay
+BIN=crelay_cli
 
 # By default enable all drivers
 # To exclude a specific driver add DRV_<XYZ>=n to the make command

@@ -17,9 +17,9 @@
  *   sudo make install
  * 
  * Last modified:
- *   25/10/2016
+ *   30/12/2016
  *
- * Copyright 2016, Ondrej Wisniewski 
+ * Copyright 2015-2016, Ondrej Wisniewski 
  * 
  * This file is part of crelay.
  * 
@@ -438,7 +438,7 @@ int process_http_request(int sock)
    fout = fdopen(sock, "w");
    
    /* Check if a relay card is present */
-   if (detect_relay_card(com_port, &last_relay, serial, NULL) == -1)
+   if (crelay_detect_relay_card(com_port, &last_relay, serial, NULL) == -1)
    {
       if (strstr(url, API_URL))
       {
@@ -475,24 +475,24 @@ int process_http_request(int sock)
             if (nstate==PULSE)
             {
                /* Generate pulse on relay switch */
-            get_relay(com_port, relay, &rstate[relay-1], serial);
+               crelay_get_relay(com_port, relay, &rstate[relay-1], serial);
                if (rstate[relay-1] == ON)
                {
-               set_relay(com_port, relay, OFF, serial);
+               crelay_set_relay(com_port, relay, OFF, serial);
                   sleep(1);
-               set_relay(com_port, relay, ON, serial);
+               crelay_set_relay(com_port, relay, ON, serial);
                }
                else
                {
-               set_relay(com_port, relay, ON, serial);
+               crelay_set_relay(com_port, relay, ON, serial);
                   sleep(1);
-               set_relay(com_port, relay, OFF, serial);
+               crelay_set_relay(com_port, relay, OFF, serial);
                }
             }
             else
             {
                /* Switch relay on/off */
-            set_relay(com_port, relay, nstate, serial);
+            crelay_set_relay(com_port, relay, nstate, serial);
             }
          }
       }
@@ -500,7 +500,7 @@ int process_http_request(int sock)
       /* Read current state for all relays */
       for (i=FIRST_RELAY; i<=last_relay; i++)
       {
-      get_relay(com_port, i, &rstate[i-1], serial);
+         crelay_get_relay(com_port, i, &rstate[i-1], serial);
       }
       
       /* Send response to client */
@@ -517,7 +517,7 @@ int process_http_request(int sock)
       {
          /* Web request */
          char cname[MAX_RELAY_CARD_NAME_LEN];
-         get_relay_card_name(get_relay_card_type(), cname);
+         crelay_get_relay_card_name(crelay_get_relay_card_type(), cname);
          
          web_page_header(fout);
          
@@ -571,7 +571,7 @@ void print_usage()
    printf("Supported relay cards:\n");
    for(rtype=NO_RELAY_TYPE+1; rtype<LAST_RELAY_TYPE; rtype++)
    {
-      get_relay_card_name(rtype, cname);
+      crelay_get_relay_card_name(rtype, cname);
       printf("  - %s\n", cname);
    }
    printf("\n");
@@ -754,7 +754,7 @@ int main(int argc, char *argv[])
       if (!strcmp(argv[argn],"-i"))
       {
          /* Detect all cards connected to the system */
-         if (detect_all_relay_cards(&relay_info) == -1)
+         if (crelay_detect_all_relay_cards(&relay_info) == -1)
          {
             printf("No compatible device detected.\n");
             return -1;
@@ -762,7 +762,7 @@ int main(int argc, char *argv[])
          printf("\nDetected relay cards:\n");
          while (relay_info->next != NULL)
          {
-            get_relay_card_name(relay_info->relay_type, cname);
+            crelay_get_relay_card_name(relay_info->relay_type, cname);
             printf("  #%d\t%s (serial %s)\n", i++ ,cname, relay_info->serial);
             relay_info = relay_info->next;
             // TODO: free relay_info list memory
@@ -786,7 +786,7 @@ int main(int argc, char *argv[])
          }
       }
 
-      if (detect_relay_card(com_port, &num_relays, serial, NULL) == -1)
+      if (crelay_detect_relay_card(com_port, &num_relays, serial, NULL) == -1)
       {
          printf("No compatible device detected.\n");
          
@@ -805,7 +805,7 @@ int main(int argc, char *argv[])
          case 2:
          case 4:
             /* GET current relay state */
-            if (get_relay(com_port, atoi(argv[argn]), &rstate, serial) == 0)
+            if (crelay_get_relay(com_port, atoi(argv[argn]), &rstate, serial) == 0)
                printf("Relay %d is %s\n", atoi(argv[argn]), (rstate==ON)?"on":"off");
             else
                exit(EXIT_FAILURE);
@@ -815,9 +815,9 @@ int main(int argc, char *argv[])
          case 5:
             /* SET new relay state */
             if (!strcmp(argv[argn+1],"on") || !strcmp(argv[argn+1],"ON"))
-               err = set_relay(com_port, atoi(argv[argn]), ON, serial);
+               err = crelay_set_relay(com_port, atoi(argv[argn]), ON, serial);
             else if (!strcmp(argv[argn+1],"off") || !strcmp(argv[argn+1],"OFF"))
-               err = set_relay(com_port, atoi(argv[argn]), OFF, serial);
+               err = crelay_set_relay(com_port, atoi(argv[argn]), OFF, serial);
             else 
             {
                print_usage();

@@ -10,9 +10,9 @@
  *   Ondrej Wisniewski (ondrej.wisniewski *at* gmail.com)
  *
  * Last modified:
- *   19/08/2015
+ *   30/12/2016
  *
- * Copyright 2015, Ondrej Wisniewski 
+ * Copyright 2015-2016, Ondrej Wisniewski 
  * 
  * This file is part of crelay.
  * 
@@ -107,7 +107,7 @@ static relay_data_t relay_data[LAST_RELAY_TYPE] =
 
 
 /**********************************************************
- * Function detect_all_relay_cards()
+ * Function crelay_detect_all_relay_cards()
  * 
  * Description: Detect all relay cards
  * 
@@ -117,9 +117,9 @@ static relay_data_t relay_data[LAST_RELAY_TYPE] =
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_all_relay_cards(relay_info_t** relay_info)
+int crelay_detect_all_relay_cards(relay_info_t** relay_info)
 {
-   int i, cards=0;
+   int i;
    relay_info_t* my_relay_info;
    
    /* Create first list element */
@@ -132,21 +132,18 @@ int detect_all_relay_cards(relay_info_t** relay_info)
    for (i=1; i<LAST_RELAY_TYPE; i++)
    {
       /* Create new list element with related info for each detected card */
-      if ((*relay_data[i].detect_relay_card_fun)(NULL, NULL, NULL, &my_relay_info) == 0)
-      {
-         cards++;
-      }
+      (*relay_data[i].detect_relay_card_fun)(NULL, NULL, NULL, &my_relay_info);
    }
    
-   if (cards>0)
-      return 0;
-   else
+   if ((*relay_info)->next == NULL)
       return -1;
+   else
+      return 0;
 }
 
 
 /**********************************************************
- * Function detect_relay_card()
+ * Function crelay_detect_relay_card()
  * 
  * Description: Detect the relay card
  * 
@@ -158,7 +155,7 @@ int detect_all_relay_cards(relay_info_t** relay_info)
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card(char* portname, uint8_t* num_relays, char* serial, relay_info_t** my_relay_info)
+int crelay_detect_relay_card(char* portname, uint8_t* num_relays, char* serial, relay_info_t** my_relay_info)
 {
    int i;
    
@@ -177,7 +174,7 @@ int detect_relay_card(char* portname, uint8_t* num_relays, char* serial, relay_i
 
 
 /**********************************************************
- * Function get_relay()
+ * Function crelay_get_relay()
  * 
  * Description: Get the current relay state
  * 
@@ -188,7 +185,7 @@ int detect_relay_card(char* portname, uint8_t* num_relays, char* serial, relay_i
  * Return:   0 - success
  *          -1 - fail
  *********************************************************/
-int get_relay(char* portname, uint8_t relay, relay_state_t* relay_state, char* serial)
+int crelay_get_relay(char* portname, uint8_t relay, relay_state_t* relay_state, char* serial)
 {
    if (relay_type != NO_RELAY_TYPE)
    {
@@ -202,7 +199,7 @@ int get_relay(char* portname, uint8_t relay, relay_state_t* relay_state, char* s
 
 
 /**********************************************************
- * Function set_relay()
+ * Function crelay_set_relay()
  * 
  * Description: Set new relay state
  * 
@@ -213,7 +210,7 @@ int get_relay(char* portname, uint8_t relay, relay_state_t* relay_state, char* s
  * Return:   o - success
  *          -1 - fail
  *********************************************************/
-int set_relay(char* portname, uint8_t relay, relay_state_t relay_state, char* serial)
+int crelay_set_relay(char* portname, uint8_t relay, relay_state_t relay_state, char* serial)
 {
    if (relay_type != NO_RELAY_TYPE)
    {
@@ -227,7 +224,7 @@ int set_relay(char* portname, uint8_t relay, relay_state_t relay_state, char* se
 
 
 /**********************************************************
- * Function get_relay_card_type()
+ * Function crelay_get_relay_card_type()
  * 
  * Description: Get the detected relay type
  * 
@@ -235,14 +232,14 @@ int set_relay(char* portname, uint8_t relay, relay_state_t relay_state, char* se
  * 
  * Return: relay type
  *********************************************************/
-relay_type_t get_relay_card_type()
+relay_type_t crelay_get_relay_card_type()
 {
    return relay_type;
 }
 
 
 /**********************************************************
- * Function get_relay_card_name()
+ * Function crelay_get_relay_card_name()
  * 
  * Description: Get the relay card name for a relay type
  * 
@@ -254,7 +251,7 @@ relay_type_t get_relay_card_type()
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int get_relay_card_name(relay_type_t rtype, char* card_name)
+int crelay_get_relay_card_name(relay_type_t rtype, char* card_name)
 {
    if (rtype != NO_RELAY_TYPE)
    {

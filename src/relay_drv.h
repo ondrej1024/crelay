@@ -116,7 +116,7 @@ relay_data_t;
 
 
 /**********************************************************
- * Function detect_all_relay_cards()
+ * Function crelay_detect_all_relay_cards()
  * 
  * Description: Detect all relay cards
  * 
@@ -126,10 +126,10 @@ relay_data_t;
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_all_relay_cards(relay_info_t** relay_info);
+int crelay_detect_all_relay_cards(relay_info_t** relay_info);
 
 /**********************************************************
- * Function detect_relay_card()
+ * Function crelay_detect_relay_card()
  * 
  * Description: Detect the relay card
  * 
@@ -141,10 +141,10 @@ int detect_all_relay_cards(relay_info_t** relay_info);
  * Return:  0 - success
  *         -1 - fail, no relay card found
  *********************************************************/
-int detect_relay_card(char* portname, uint8_t* num_relays, char* serial, relay_info_t** relay_info);
+int crelay_detect_relay_card(char* portname, uint8_t* num_relays, char* serial, relay_info_t** relay_info);
 
 /**********************************************************
- * Function get_relay()
+ * Function crelay_get_relay()
  * 
  * Description: Get the current relay state
  * 
@@ -155,10 +155,10 @@ int detect_relay_card(char* portname, uint8_t* num_relays, char* serial, relay_i
  * Return:   o - success
  *          -1 - fail
  *********************************************************/
-int get_relay(char* portname, uint8_t relay, relay_state_t* relay_state, char* serial);
+int crelay_get_relay(char* portname, uint8_t relay, relay_state_t* relay_state, char* serial);
 
 /**********************************************************
- * Function set_relay()
+ * Function crelay_set_relay()
  * 
  * Description: Set new relay state
  * 
@@ -169,10 +169,10 @@ int get_relay(char* portname, uint8_t relay, relay_state_t* relay_state, char* s
  * Return:   o - success
  *          -1 - fail
  *********************************************************/
-int set_relay(char* portname, uint8_t relay, relay_state_t relay_state, char* serial);
+int crelay_set_relay(char* portname, uint8_t relay, relay_state_t relay_state, char* serial);
 
 /**********************************************************
- * Function get_relay_card_type()
+ * Function crelay_get_relay_card_type()
  * 
  * Description: Get the detected relay type
  * 
@@ -180,10 +180,10 @@ int set_relay(char* portname, uint8_t relay, relay_state_t relay_state, char* se
  * 
  * Return: relay type
  *********************************************************/
-relay_type_t get_relay_card_type();
+relay_type_t crelay_get_relay_card_type();
 
 /**********************************************************
- * Function get_relay_card_name()
+ * Function crelay_get_relay_card_name()
  * 
  * Description: Get the detected relay card name
  * 
@@ -191,7 +191,7 @@ relay_type_t get_relay_card_type();
  * 
  * Return: relay card name
  *********************************************************/
-int get_relay_card_name(relay_type_t rtype, char* card_name);
+int crelay_get_relay_card_name(relay_type_t rtype, char* card_name);
 
 #endif
 

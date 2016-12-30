@@ -225,7 +225,7 @@ static libusb_device_handle* open_device_with_vid_pid_serial(uint16_t vendorid, 
  *********************************************************/
 int detect_relay_card_sainsmart_4_8chan(char* portname, uint8_t* num_relays, char* serial, relay_info_t** relay_info)
 {
-   unsigned int chipid;
+    unsigned int chipid;
    
    /* Find all connected devices, if requested */
    if (relay_info)
@@ -234,7 +234,7 @@ int detect_relay_card_sainsmart_4_8chan(char* portname, uint8_t* num_relays, cha
       //printf("open_device_with_vid_pid_serial()\n");
       open_device_with_vid_pid_serial(VENDOR_ID, DEVICE_ID, NULL, relay_info);
       libusb_exit(NULL);
-      return 0;
+      return -1;
    }
 
    if ((ftdi = ftdi_new()) == 0)
