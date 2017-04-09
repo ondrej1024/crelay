@@ -246,6 +246,7 @@ int detect_relay_card_sainsmart_4_8chan(char* portname, uint8_t* num_relays, cha
    /* Try to open FTDI USB device */
    if ((ftdi_usb_open_desc(ftdi, VENDOR_ID, DEVICE_ID, NULL, serial)) < 0)
    {
+      fprintf(stderr, "unable to open FTDI USB device: (%s)\n", ftdi_get_error_string(ftdi));
       ftdi_free(ftdi);
       return -1;
    }
