@@ -79,7 +79,6 @@ config_t config;
 static char rlabels[MAX_NUM_RELAYS][32] = {"My appliance 1", "My appliance 2", "My appliance 3", "My appliance 4",
                                            "My appliance 5", "My appliance 6", "My appliance 7", "My appliance 8"};                                       
 
-
 /**********************************************************
  * Function: config_cb()
  * 
@@ -134,6 +133,10 @@ static int config_cb(void* user, const char* section, const char* name, const ch
    {
       pconfig->relay8_label = strdup(value);
    } 
+   else if (MATCH("HTTP server", "pulse_duration")) 
+   {
+      pconfig->pulse_duration = atoi(value);
+   }
    else if (MATCH("GPIO drv", "num_relays")) 
    {
       pconfig->gpio_num_relays = atoi(value);
@@ -483,13 +486,13 @@ int process_http_request(int sock)
                if (rstate[relay-1] == ON)
                {
                crelay_set_relay(com_port, relay, OFF, serial);
-                  sleep(1);
+                  sleep(config.pulse_duration);
                crelay_set_relay(com_port, relay, ON, serial);
                }
                else
                {
                crelay_set_relay(com_port, relay, ON, serial);
-                  sleep(1);
+                  sleep(config.pulse_duration);
                crelay_set_relay(com_port, relay, OFF, serial);
                }
             }
@@ -668,6 +671,7 @@ int main(int argc, char *argv[])
          if (config.relay6_label != NULL) syslog(LOG_DAEMON | LOG_NOTICE, "relay6_label: %s\n", config.relay6_label);
          if (config.relay7_label != NULL) syslog(LOG_DAEMON | LOG_NOTICE, "relay7_label: %s\n", config.relay7_label);
          if (config.relay8_label != NULL) syslog(LOG_DAEMON | LOG_NOTICE, "relay8_label: %s\n", config.relay8_label);
+         if (config.pulse_duration != 0)  syslog(LOG_DAEMON | LOG_NOTICE, "pulse_duration: %u\n", config.pulse_duration);
          if (config.gpio_num_relays != 0) syslog(LOG_DAEMON | LOG_NOTICE, "gpio_num_relays: %u\n", config.gpio_num_relays);
          if (config.gpio_active_value >= 0) syslog(LOG_DAEMON | LOG_NOTICE, "gpio_active_value: %u\n", config.gpio_active_value);
          if (config.relay1_gpio_pin != 0) syslog(LOG_DAEMON | LOG_NOTICE, "relay1_gpio_pin: %u\n", config.relay1_gpio_pin);
@@ -705,10 +709,17 @@ int main(int argc, char *argv[])
          {
             port = config.server_port;
          }
+
       }
       else
       {
          syslog(LOG_DAEMON | LOG_NOTICE, "Can't load %s, using default parameters\n", CONFIG_FILE);
+      }
+
+      /* Ensure pulse duration is valid **/
+      if (config.pulse_duration == 0)
+      {
+         config.pulse_duration = 1;
       }
       
       /* Parse command line for relay labels (overrides config file)*/
