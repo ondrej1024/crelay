@@ -54,6 +54,7 @@ typedef struct
     
     /* [GPIO drv] */
     uint8_t gpio_num_relays;
+    uint8_t gpio_active_value;
     uint8_t relay1_gpio_pin;
     uint8_t relay2_gpio_pin;
     uint8_t relay3_gpio_pin;

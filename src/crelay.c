@@ -17,9 +17,9 @@
  *   sudo make install
  * 
  * Last modified:
- *   30/12/2016
+ *   14/08/2017
  *
- * Copyright 2015-2016, Ondrej Wisniewski 
+ * Copyright 2015-2017, Ondrej Wisniewski 
  * 
  * This file is part of crelay.
  * 
@@ -57,8 +57,8 @@
 #include "config.h"
 #include "relay_drv.h"
 
-#define VERSION "0.11"
-#define DATE "2016"
+#define VERSION "0.12"
+#define DATE "2017"
 
 /* HTTP server defines */
 #define SERVER "crelay/"VERSION
@@ -137,6 +137,10 @@ static int config_cb(void* user, const char* section, const char* name, const ch
    else if (MATCH("GPIO drv", "num_relays")) 
    {
       pconfig->gpio_num_relays = atoi(value);
+   } 
+   else if (MATCH("GPIO drv", "active_value")) 
+   {
+      pconfig->gpio_active_value = atoi(value);
    } 
    else if (MATCH("GPIO drv", "relay1_gpio_pin")) 
    {
@@ -612,6 +616,16 @@ void print_usage()
  *********************************************************/
 int main(int argc, char *argv[])
 {
+      relay_state_t rstate;
+      char com_port[MAX_COM_PORT_NAME_LEN];
+      char cname[MAX_RELAY_CARD_NAME_LEN];
+      char* serial=NULL;
+      uint8_t num_relays=FIRST_RELAY;
+      relay_info_t *relay_info;
+      int argn = 1;
+      int err;
+      int i = 1;
+
    if (argc==1)
    {
       print_usage();
@@ -655,6 +669,7 @@ int main(int argc, char *argv[])
          if (config.relay7_label != NULL) syslog(LOG_DAEMON | LOG_NOTICE, "relay7_label: %s\n", config.relay7_label);
          if (config.relay8_label != NULL) syslog(LOG_DAEMON | LOG_NOTICE, "relay8_label: %s\n", config.relay8_label);
          if (config.gpio_num_relays != 0) syslog(LOG_DAEMON | LOG_NOTICE, "gpio_num_relays: %u\n", config.gpio_num_relays);
+         if (config.gpio_active_value >= 0) syslog(LOG_DAEMON | LOG_NOTICE, "gpio_active_value: %u\n", config.gpio_active_value);
          if (config.relay1_gpio_pin != 0) syslog(LOG_DAEMON | LOG_NOTICE, "relay1_gpio_pin: %u\n", config.relay1_gpio_pin);
          if (config.relay2_gpio_pin != 0) syslog(LOG_DAEMON | LOG_NOTICE, "relay2_gpio_pin: %u\n", config.relay2_gpio_pin);
          if (config.relay3_gpio_pin != 0) syslog(LOG_DAEMON | LOG_NOTICE, "relay3_gpio_pin: %u\n", config.relay3_gpio_pin);
@@ -722,6 +737,9 @@ int main(int argc, char *argv[])
          syslog(LOG_DAEMON | LOG_NOTICE, "Program is now running as system daemon");
       }
 
+      /* Init GPIO pins in case they have been configured */
+      crelay_detect_relay_card(com_port, &num_relays, NULL, NULL);
+      
       while (1)
       {
          int s;
@@ -741,16 +759,6 @@ int main(int argc, char *argv[])
    {
       /*****  Command line mode *****/
       
-      relay_state_t rstate;
-      char com_port[MAX_COM_PORT_NAME_LEN];
-      char cname[MAX_RELAY_CARD_NAME_LEN];
-      char* serial=NULL;
-      uint8_t num_relays=FIRST_RELAY;
-      relay_info_t *relay_info;
-      int argn = 1;
-      int err;
-      int i = 1;
-
       if (!strcmp(argv[argn],"-i"))
       {
          /* Detect all cards connected to the system */

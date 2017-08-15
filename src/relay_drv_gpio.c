@@ -67,9 +67,11 @@ static uint8_t pins[] =
 };
 
 static uint8_t g_num_relays=GENERIC_GPIO_NUM_RELAYS;
+static uint8_t g_active_value=1;
 
 extern config_t config;
 
+int set_relay_generic_gpio(char* portname, uint8_t relay, relay_state_t relay_state, char* serial);
 
 /**********************************************************
  * Internal function do_export()
@@ -81,6 +83,7 @@ extern config_t config;
  * 
  * Return:  0 - success
  *         -1 - fail
+ *         -2 - already exported
  *********************************************************/
 static int do_export(uint8_t pin)
 {
@@ -96,6 +99,7 @@ static int do_export(uint8_t pin)
    {
     /* sysfs directory for pin exists, export already done */
     closedir(dir);
+    return -2;
    }
    else 
    {
@@ -205,6 +209,9 @@ int detect_relay_card_generic_gpio(char* portname, uint8_t* num_relays, char* se
       g_num_relays = config.gpio_num_relays;
    }
    
+   /* Get active pin value from config */
+   g_active_value = config.gpio_active_value;
+   
    /* Get pin numbers from config */
    pins[1] = config.relay1_gpio_pin;
    pins[2] = config.relay2_gpio_pin;
@@ -219,6 +226,13 @@ int detect_relay_card_generic_gpio(char* portname, uint8_t* num_relays, char* se
    for (i=1; i<=g_num_relays; i++)
    {
       if (pins[i]==0) return -1;
+   }
+   
+   /* Init GPIO pins */
+   for (i=1; i<=g_num_relays; i++)
+   {
+      if (do_export(pins[i]) == 0)
+         set_relay_generic_gpio(NULL, i, OFF, NULL);
    }
    
    /* Return parameters */
@@ -258,10 +272,6 @@ int get_relay_generic_gpio(char* portname, uint8_t relay, relay_state_t* relay_s
    /* Get pin number */
    pin=pins[relay];
    
-   /* Export pin to user space */
-   if (do_export(pin) != 0) 
-      return -1;
-
    /* Get current gpio value */
    snprintf(b, sizeof(b), "%s%d/value", GPIO_BASE_FILE, pin);
    fd = open(b, O_RDWR);
@@ -278,16 +288,20 @@ int get_relay_generic_gpio(char* portname, uint8_t relay, relay_state_t* relay_s
    }
    close(fd);
    
-   /* Free GPIO pin */
-   /* Note: unexport resets the GPIO pin to "0" and "input" 
-    * in Kernel 3.18.9 so we can't do this anymore because the 
-    * pin state needs to be preserved.
-    */
-   //if (do_unexport(pin) != 0) 
-   //   return -1;
-
    /* Return current relay state */
-   *relay_state = (d[0] == '0') ? OFF : ON;
+   switch (g_active_value)
+   {
+      case 0: // active low relay
+         *relay_state = (d[0] == '0') ? ON : OFF;
+         break;
+      case 1: // active high relay
+         *relay_state = (d[0] == '1') ? ON : OFF;
+         break;
+      default:
+         fprintf(stderr, "ERROR: Invalid active pin value configured: %d\n",
+                         g_active_value);
+         return -1;
+   }
    
    return 0;
 }
@@ -321,10 +335,6 @@ int set_relay_generic_gpio(char* portname, uint8_t relay, relay_state_t relay_st
    /* Get pin number */
    pin=pins[relay];
    
-   /* Export pin to user space */
-   if (do_export(pin) != 0)
-      return -1;
-
    /* Set new gpio value */
    snprintf(b, sizeof(b), "%s%d/value", GPIO_BASE_FILE, pin);
    fd = open(b, O_RDWR);
@@ -333,7 +343,21 @@ int set_relay_generic_gpio(char* portname, uint8_t relay, relay_state_t relay_st
       fprintf(stderr, "ERROR: Open %s: %s\n", b, strerror(errno));
       return -1;
    }
-   d[0] = (relay_state == OFF ? '0' : '1');
+   
+   switch (g_active_value)
+   {
+      case 0: // active low relay
+         d[0] = (relay_state == OFF ? '1' : '0');
+         break;
+      case 1: // active high relay
+         d[0] = (relay_state == ON ? '1' : '0');
+         break;
+      default:
+         fprintf(stderr, "ERROR: Invalid active pin value configured: %d\n",
+                         g_active_value);
+         return -1;
+   }
+      
    if (pwrite(fd, d, 1, 0) != 1) 
    {
       fprintf(stderr, "ERROR: Unable to pwrite %c to gpio value: %s\n",
@@ -342,13 +366,5 @@ int set_relay_generic_gpio(char* portname, uint8_t relay, relay_state_t relay_st
    }
    close(fd);
    
-   /* Free GPIO pin */
-   /* Note: unexport resets the GPIO pin to "0" and "input" 
-    * in Kernel 3.18.9 so we can't do this anymore because the 
-    * pin state needs to be preserved.
-    */
-   //if (do_unexport(pin) != 0) 
-   //   return -1;
-
    return 0;
 }
