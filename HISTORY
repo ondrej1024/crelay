@@ -55,3 +55,6 @@ Version history
 0.11: 30/12/2016
 - Added multiple cards support for command line ("-s" option to specify cards serial number)
 - Created C library version of crelay for inclusion in third party applications
+
+0.12: 03/11/2017
+- Handle GPIO relays with inverse logic (active low)
