@@ -17,7 +17,7 @@
  *   sudo make install
  * 
  * Last modified:
- *   14/08/2017
+ *   29/04/2018
  *
  * Copyright 2015-2017, Ondrej Wisniewski 
  * 
@@ -57,8 +57,8 @@
 #include "config.h"
 #include "relay_drv.h"
 
-#define VERSION "0.12"
-#define DATE "2017"
+#define VERSION "0.12.1"
+#define DATE "2018"
 
 /* HTTP server defines */
 #define SERVER "crelay/"VERSION
@@ -733,8 +733,17 @@ int main(int argc, char *argv[])
       sin.sin_family = AF_INET;
       sin.sin_addr.s_addr = iface.s_addr;
       sin.sin_port = htons(port);
-      bind(sock, (struct sockaddr *) &sin, sizeof(sin));      
-      listen(sock, 5);
+      if (bind(sock, (struct sockaddr *) &sin, sizeof(sin)) != 0)
+      {
+         syslog(LOG_DAEMON | LOG_ERR, "Failed to bind socket to port %d : %s", port, strerror(errno));
+         exit(EXIT_FAILURE);         
+      }
+      if (listen(sock, 5) != 0)
+      {
+         syslog(LOG_DAEMON | LOG_ERR, "Failed to listen to port %d : %s", port, strerror(errno));
+         exit(EXIT_FAILURE);         
+      }
+      
       syslog(LOG_DAEMON | LOG_NOTICE, "HTTP server listening on %s:%d\n", inet_ntoa(iface), port);      
 
       if (!strcmp(argv[1],"-D"))
