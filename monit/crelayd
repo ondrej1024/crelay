@@ -1,0 +1,5 @@
+# Crelay daemon 
+check process crelayd with pidfile /var/run/crelay.pid
+    start program = "/etc/init.d/crelayd start" with timeout 20 seconds
+    stop program  = "/etc/init.d/crelayd stop"
+ 
