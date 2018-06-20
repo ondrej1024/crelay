@@ -133,8 +133,15 @@ Relay 4:[0|1]
 The installation procedure is usually perfomed directly on the target system. Therefore a C compiler and friends should already be installed. Otherwise a cross compilation environment needs to be setup on a PC (this is not described here).  
 
 * Install dependencies (package names may vary depending on your distribution):
+
+If you have a Debian, Ubuntu or derivative distribution:
 <pre>
     apt-get install libftdi1 libftdi-dev libhidapi-libusb0 libhidapi-dev libusb-1.0-0 libusb-1.0-0-dev
+</pre>
+
+If you have OpenSUSE or a derivative distribution:
+<pre>
+    zypper install libftdi1-devel libftdi0-devel libhidapi-libusb0 libhidapi-devel libusb-1_0-devel libusb-1_0-0 libftdi1 libftdi1-2
 </pre>
 
 * Build dependencies from source (optional):  
