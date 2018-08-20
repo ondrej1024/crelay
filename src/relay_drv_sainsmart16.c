@@ -218,14 +218,9 @@ static int set_mask(hid_device *handle, uint16_t bitmap)
  *********************************************************/
 int detect_relay_card_sainsmart_16chan(char* portname, uint8_t* num_relays, char* serial, relay_info_t** relay_info)
 {
-   struct hid_device_info *devs;
-   
-   /* Find all connected devices, if requested */
-   if (relay_info)
-   { 
-      // TODO: add multiple cards support
-      ;
-   }
+   struct hid_device_info *devs, *nextdev;
+   uint8_t found=0;
+   relay_info_t* rinfo;
    
    if ((devs = hid_enumerate(VENDOR_ID, DEVICE_ID)) == NULL)
    {
@@ -238,12 +233,44 @@ int detect_relay_card_sainsmart_16chan(char* portname, uint8_t* num_relays, char
       return -1;
    }
    
+   /* Find controller with matching serial number if it's specified */
+   nextdev = devs;
+   while (nextdev)
+   {
+      if (relay_info != NULL)
+      {
+         // Save serial number and type in current relay info struct
+         (*relay_info)->relay_type = SAINSMART16_USB_RELAY_TYPE;
+         strcpy((*relay_info)->serial, nextdev->path);
+         // Allocate new struct
+         rinfo = malloc(sizeof(relay_info_t));
+         rinfo->next = NULL;
+         // Link current to new struct
+         (*relay_info)->next = rinfo;
+         // Move pointer to new struct
+         *relay_info = rinfo;
+      }
+      else if (serial == NULL || !strcmp(serial, nextdev->path))
+      {
+         found = 1;
+         break;
+      }
+      nextdev = nextdev->next;
+   }
+
+   if (found == 0)
+   {
+      return -5;
+   }
+
+   //printf("DBG: card %ls found\n", devs->product_string);
+
    /* Return parameters */
    if (num_relays!=NULL) *num_relays = g_num_relays;
-   sprintf(portname, "%s", devs->path);
-  
+   if (portname != NULL) sprintf(portname, "%s", nextdev->path);
+
    /* printf("DBG: card %ls found, portname=%s\n", devs->product_string, portname); */
-   
+
    hid_free_enumeration(devs);   
    return 0;
 }
