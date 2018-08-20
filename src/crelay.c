@@ -70,6 +70,7 @@
 /* HTML tag definitions */
 #define RELAY_TAG "pin"
 #define STATE_TAG "status"
+#define SERIAL_TAG "serial"
 
 #define CONFIG_FILE "/etc/crelay.conf"
 
@@ -320,6 +321,7 @@ int read_httppost_data(FILE* f, char* data, size_t datalen)
     * Therefore we skip the header and then read the form
     * data into the buffer.
     */
+   *data = 0;
    while (fgets(buf, sizeof(buf), f) != NULL)
    {
       //printf("%s", buf);
@@ -457,7 +459,33 @@ int process_http_request(int sock)
      fprintf(fout, "ERROR: Invalid Input. \r\n");
      goto done;
    }
-   
+
+   /* Get values from form data */
+   if (formdatalen > 0) {
+     int found=0;
+     //printf("DBG: Found data: ");
+      datastr = strstr(formdata, RELAY_TAG);
+      if (datastr) {
+	 relay = atoi(datastr+strlen(RELAY_TAG)+1);
+	 //printf("relay=%d", relay);
+	 found++;
+      }
+      datastr = strstr(formdata, STATE_TAG);
+      if (datastr) {
+	 nstate = atoi(datastr+strlen(STATE_TAG)+1);
+	 //printf("%sstate=%d", found ? ", " : "", nstate);
+      }
+      datastr = strstr(formdata, SERIAL_TAG);
+      if (datastr) {
+	 serial = datastr+strlen(SERIAL_TAG)+1;
+	 datastr = strstr(serial, "&");
+	 if (datastr)
+	   *datastr = 0;
+	 //printf("%sserial=%s", found ? ", " : "", serial);
+      }
+      //printf("\n\n");
+   }
+
    /* Check if a relay card is present */
    if (crelay_detect_relay_card(com_port, &last_relay, serial, NULL) == -1)
    {
@@ -478,18 +506,8 @@ int process_http_request(int sock)
    else
    {  
       /* Process form data */
-      if (strlen(formdata)>0)
+      if (formdatalen > 0)
       {
-         /* Get values from form data */
-         datastr = strstr(formdata, RELAY_TAG);
-         if (datastr)
-            relay = atoi(datastr+strlen(RELAY_TAG)+1);
-         datastr = strstr(formdata, STATE_TAG);
-         if (datastr)
-            nstate = atoi(datastr+strlen(STATE_TAG)+1);
-         
-         //printf("DBG: Found data: relay=%d, state=%d\n\n", relay, nstate);
-         
          if ((relay != 0) && (nstate != INVALID))
          {
             /* Perform the requested action here */
