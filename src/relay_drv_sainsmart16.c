@@ -313,7 +313,7 @@ int get_relay_sainsmart_16chan(char* portname, uint8_t relay, relay_state_t* rel
       return -3;
    }
    
-   bit = 1 << relay;
+   bit = 1 << (relay-1);
    if (bitmap & bit)
      *relay_state = ON;
    else
