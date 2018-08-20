@@ -58,3 +58,9 @@ Version history
 
 0.12: 03/11/2017
 - Handle GPIO relays with inverse logic (active low)
+
+0.13: 20/08/2018
+- Added error handling for web socket operations
+- Added monit script for crelay process supervision in daemon mode
+- Added build dependencies for OpenSUSE to readme 
+- Added support for multiple SainSmart 16-channel HID relay cards

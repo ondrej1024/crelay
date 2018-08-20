@@ -40,7 +40,7 @@ The following picture shows a high level view on the modular software architectu
 - Setting of new relay states
 - Single pulse generation on relay contact
 - HTTP API for external clients (e.g. Smartphone/tablet apps)
-- Multiple relay card type support  
+- Multiple relay card type support
 - Support for configuration file with custom parameters
 - Multiple cards support (command line interface only)
 <br>
@@ -48,7 +48,7 @@ The following picture shows a high level view on the modular software architectu
 ### Nice to have (wishlist)
 - Integrated MQTT client
 - [ThingSpeak Talkback App](https://thingspeak.com/docs/talkback)
-- Multiple cards support (Web UI)
+- Multiple cards support (Web UI / REST API)
 - Access control for Web GUI and HTTP API
 - Programmable timers for relay actions  
 <br>
@@ -64,7 +64,7 @@ The following picture shows a high level view on the modular software architectu
 
 #### Command line interface
     $ crelay 
-    crelay, version 0.11
+    crelay, version 0.13
     
     This utility provides a unified way of controlling different types of relay cards.
     Currently supported relay cards:
@@ -231,6 +231,7 @@ relay8_label = Device 8   # label for relay 8
 ################################################
 [GPIO drv]
 #num_relays = 8    # Number of GPIOs connected to relays (1 to 8)
+#active_value = 1       # 1: active high, 0 active low
 #relay1_gpio_pin = 17   # GPIO pin for relay 1 (17 for RPi GPIO0)
 #relay2_gpio_pin = 18   # GPIO pin for relay 2 (18 for RPi GPIO1)
 #relay3_gpio_pin = 27   # GPIO pin for relay 3 (27 for RPi GPIO2)
@@ -262,6 +263,8 @@ The support for the different relay cards in *crelay* has only been possible tha
 * [Kevin Hilman](https://github.com/khilman), who implemented and tested the support for the Sainsmart 16-channel control module
 * [Andrew Lunn](https://github.com/lunn), who contributed cleanup patches
 * [Andrey Shevtsov](https://github.com/sqlwristband), who contributed the initial multiple cards implementation
+* [Alberto Bursi](https://github.com/bobafetthotmail), who contributed documentation for OpenSUSE build support
+* [Derek Atkins](https://github.com/derekatkins), who contributed multiple cards handling for the Sainsmart 16 Channel HID controller
 <br>  
 
 ### Notes
