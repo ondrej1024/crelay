@@ -311,7 +311,7 @@ void web_page_error(FILE *f)
  * Parameters:
  * 
  *********************************************************/
-int read_httppost_data(FILE* f, char* data)
+int read_httppost_data(FILE* f, char* data, size_t datalen)
 {
    char buf[256];
    int data_len=0;
@@ -333,7 +333,11 @@ int read_httppost_data(FILE* f, char* data)
       /* Find end of header (empty line) */
       if (!strcmp(buf, "\r\n")) break;
    }
-   
+
+   /* Make sure we're not trying to overwrite the buffer */
+   if (data_len >= datalen)
+     return -1;
+
    /* Get form data string */
    if (!fgets(data, data_len+1, f)) return -1;
    *(data+data_len) = 0;
@@ -350,18 +354,20 @@ int read_httppost_data(FILE* f, char* data)
  * Parameters:
  * 
  *********************************************************/
-int read_httpget_data(char* buf, char* data)
+int read_httpget_data(char* buf, char* data, size_t datalen)
 {
    char *datastr;
          
    /* GET request: data (if any) is provided in the first line
     * of the page header. Therefore we first check if there is
     * any data. If so we read the data into a buffer.
+    *
+    * Note that we may truncate the input if it's too long.
     */
    *data = 0;
    if ((datastr=strchr(buf, '?')) != NULL)
    {
-      strcpy(data, datastr+1);
+       strncpy(data, datastr+1, datalen);
    }
    
    return strlen(data);
@@ -386,6 +392,7 @@ int process_http_request(int sock)
    char *datastr;
    int  relay=0;
    int  i;
+   int  formdatalen;
    char com_port[MAX_COM_PORT_NAME_LEN];
    char* serial=NULL;
    uint8_t last_relay=FIRST_RELAY;
@@ -427,11 +434,11 @@ int process_http_request(int sock)
    /* Check the request method we are dealing with */
    if (strcasecmp(method, "POST") == 0)
    {
-      read_httppost_data(fin, formdata);
+      formdatalen = read_httppost_data(fin, formdata, sizeof(formdata));
    }
    else if (strcasecmp(method, "GET") == 0)
    {
-      read_httpget_data(url, formdata);         
+      formdatalen = read_httpget_data(url, formdata, sizeof(formdata));
    }
    else
    {
@@ -443,6 +450,13 @@ int process_http_request(int sock)
    
    /* Open file for output */
    fout = fdopen(sock, "w");
+
+   /* Send an error if we failed to read the form data properly */
+   if (formdatalen < 0) {
+     send_headers(fout, 500, "Internal Error", NULL, "text/html", -1, -1);
+     fprintf(fout, "ERROR: Invalid Input. \r\n");
+     goto done;
+   }
    
    /* Check if a relay card is present */
    if (crelay_detect_relay_card(com_port, &last_relay, serial, NULL) == -1)
@@ -552,7 +566,8 @@ int process_http_request(int sock)
          web_page_footer(fout);
       }
    }
-   
+
+ done:
    fclose(fout);
    fclose(fin);
 
