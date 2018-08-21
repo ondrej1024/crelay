@@ -2,7 +2,7 @@
 #### Controlling different relay cards for home automation with a Linux software
 
 ### About  
-Ever bougth a cute little USB relay card and wanted to use it on a Linux based device or computer? Chances are that your were out of luck because the Linux software support for the card provided by the manufacturer was non existent. Conrad, Sainsmart, Denkovi and friends are still ignoring the existence of this operating system. That's why I started this project.  
+Ever bought a cute little USB relay card and wanted to use it on a Linux based device or computer? Chances are that your were out of luck because the Linux software support for the card provided by the manufacturer was non existent. Conrad, Sainsmart, Denkovi and friends are still ignoring the existence of this operating system. That's why I started this project.  
 
 This software is intended to run on Linux systems to control USB relay cards from different manufacturers in a unified way. It provides several interfaces for controlling the relays locally or remotely via the network. The relays can be controlled by a human being via a device like smartphone or web browser, or directly by an intelligent device as used in the Internet of Things.  
 The software was designed with the following requirements in mind:  
@@ -100,6 +100,10 @@ The following picture shows a high level view on the modular software architectu
     
            To use the HTTP API send a POST or GET request from the client to this URL:
            http://<my-ip-address>:8000/gpio
+    
+           To use the HTTP API and receive a JSON formatted response, send a POST or GET 
+           request from the client to this URL:
+           http://<my-ip-address>:8000/json
 <br>  
 
 ### HTTP API
@@ -126,6 +130,27 @@ Relay 1:[0|1]
 Relay 2:[0|1]
 Relay 3:[0|1]
 Relay 4:[0|1]
+</pre>  
+<br>
+
+### JSON Response
+An HTTP JSON API is provided to read server state from external clients. This API is compatible with OpenHab's JSONPATH transform.  
+
+- API url:  
+<pre><i>ip_address[:port]</i>/json</pre>  
+
+- Method:  
+<pre>POST or GET</pre>  
+
+- Reading relay states  
+Required Parameter: none  
+
+- Setting relay state
+Required Parameter: none  
+
+- Response from server:
+<pre>
+{"Relay1":"[OFF|ON]","Relay2":"[OFF|ON]","Relay3":"[OFF|ON]","Relay4":"[OFF|ON]"}  
 </pre>  
 <br>
 

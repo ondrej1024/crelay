@@ -65,6 +65,7 @@
 #define PROTOCOL "HTTP/1.0"
 #define RFC1123FMT "%a, %d %b %Y %H:%M:%S GMT"
 #define API_URL "gpio"
+#define JSON_URL "json"
 #define DEFAULT_SERVER_PORT 8000
 
 /* HTML tag definitions */
@@ -519,6 +520,29 @@ int process_http_request(int sock)
          {
             fprintf(fout, "Relay %d:%d<br>", i, rstate[i-1]);
          }
+      }
+      else if (strstr(url, JSON_URL))
+      {
+         /* Send regular text wrapped in HTML headers that is suitable for OpenHab
+          * For example: JSONPATH($.Relay1)
+          * as in the following line:
+          * Switch sprinklerValve1 { http=">[ON:GET:http://192.168.10.142:8000/gpio?pin=1?status=1] >[OFF:GET:http://192.168.10.142:8000/gpio?pin=1?status=0] <[sprinklerCache:5000:JSONPATH($.Relay1)]" }
+          * */
+         send_headers(fout, 200, "OK", NULL, "text/html", -1, -1);
+         printf(fout, "{");
+         for (i=FIRST_RELAY; i<=last_relay; i++)
+         {
+        	 fprintf(fout, "\"Relay%d\":", i);
+        	 if (rstate[i-1] == 0){
+        		 fprint(fout, "\"OFF\"");
+        	 } else {
+        		 fprint(fout, "\"ON\"");
+        	 }
+        	 if (i<last_relay) {
+        		 fprintf(fout, ",");
+        	 }
+         }
+         printf(fout, "}");
       }
       else
       {
