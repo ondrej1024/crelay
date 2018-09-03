@@ -2,7 +2,7 @@
 #### Controlling different relay cards for home automation with a Linux software
 
 ### About  
-Ever bougth a cute little USB relay card and wanted to use it on a Linux based device or computer? Chances are that your were out of luck because the Linux software support for the card provided by the manufacturer was non existent. Conrad, Sainsmart, Denkovi and friends are still ignoring the existence of this operating system. That's why I started this project.  
+Ever bought a cute little USB relay card and wanted to use it on a Linux based device or computer? Chances are that your were out of luck because the Linux software support for the card provided by the manufacturer was non existent. Conrad, Sainsmart, Denkovi and friends are still completely ignoring the existence of this operating system. That's why I started this project.  
 
 This software is intended to run on Linux systems to control USB relay cards from different manufacturers in a unified way. It provides several interfaces for controlling the relays locally or remotely via the network. The relays can be controlled by a human being via a device like smartphone or web browser, or directly by an intelligent device as used in the Internet of Things.  
 The software was designed with the following requirements in mind:  
@@ -21,7 +21,7 @@ Currently the following relay cards are supported:
 - [Sainsmart USB 4/8-channel relay card](http://www.sainsmart.com/sainsmart-4-channel-5v-usb-relay-board-module-controller-for-automation-robotics.html), 
   see [*Note 2*](https://github.com/ondrej1024/crelay#note-2-sainsmart-usb-48-channel-relay-card) below
 - [HID API compatible relay cards (1/2/4/8 channel)](http://www.ebay.com/itm/For-Smart-Home-5V-USB-Relay-2-Channel-Programmable-Computer-Control-/190950124351)
-- [Sainsmart USB 16-channel relay control module](http://www.sainsmart.com/arduino/sainsmart-16-channel-controller-usb-hid-programmable-control-relay-module.html)
+- [Sainsmart USB 16-channel relay control module](https://www.sainsmart.com/products/16-channel-usb-hid-programmable-control-relay-module)
 - Generic GPIO controlled relays, 
   see [*Note 3*](https://github.com/ondrej1024/crelay#note-3-gpio-controlled-relays) below  
 
@@ -103,10 +103,9 @@ The following picture shows a high level view on the modular software architectu
 <br>  
 
 ### HTTP API
-An HTTP API is provided to access the server from external clients. This API is compatible with the PiRelay Android app. Therefore the app can be used on your Android phone to control *crelay* remotely.  
+An HTTP API is provided to access the server from external clients. This API is compatible with the [PiRelay Android app](https://play.google.com/store/apps/details?id=com.jasonfindlay.pirelaypro). Therefore the app can be used on your Android phone to control *crelay* remotely.  
    
-Note: *the author of this app seems to have removed the free version of the app from the Google Play Store (leaving only the PRO version).
-For this reason and the fact that PiRelay is not open source I am considering to develop a dedicated crelay Android app. This will use a more universal Json format based API. Any volunteers who want to contribute to this app are very welcome.*
+*For the fact that PiRelay is not open source I am considering to develop a dedicated crelay Android app. This will use a more universal Json format based API. Any volunteer who wants to contribute to this app are very welcome.*
 
 - API url:  
 <pre><i>ip_address[:port]</i>/gpio</pre>  
@@ -118,7 +117,8 @@ For this reason and the fact that PiRelay is not open source I am considering to
 Required Parameter: none  
 
 - Setting relay state  
-Required Parameter: <pre>pin=[1|2|3|4], status=[0|1|2] where 0=off 1=on 2=pulse</pre>  
+Required Parameter: <pre>pin=[1|2|3|4], status=[0|1|2] where 0=off 1=on 2=pulse</pre>
+Optional Parameter: <pre>serial=*serial_number*</pre>
 
 - Response from server:  
 <pre>
