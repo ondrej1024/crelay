@@ -17,9 +17,9 @@
  *   sudo make install
  * 
  * Last modified:
- *   20/08/2018
+ *   04/01/2019
  *
- * Copyright 2015-2018, Ondrej Wisniewski 
+ * Copyright 2015-2019, Ondrej Wisniewski 
  * 
  * This file is part of crelay.
  * 
@@ -57,8 +57,8 @@
 #include "config.h"
 #include "relay_drv.h"
 
-#define VERSION "0.13"
-#define DATE "2018"
+#define VERSION "0.14"
+#define DATE "2019"
 
 /* HTTP server defines */
 #define SERVER "crelay/"VERSION
@@ -238,6 +238,87 @@ void send_headers(FILE *f, int status, char *title, char *extra, char *mime,
    fprintf(f, "\r\n");
 }
 
+/**********************************************************
+ * Function java_script_src()
+ * 
+ * Description:
+ * 
+ * Parameters:
+ * 
+ *********************************************************/
+void java_script_src(FILE *f)
+{
+   fprintf(f, "<script type='text/javascript'>\r\n");
+   fprintf(f, "function switch_relay(checkboxElem){\r\n");
+   fprintf(f, "   var xmlHttp = new XMLHttpRequest();\r\n");
+   fprintf(f, "   var theUrl;\r\n");
+   fprintf(f, "   var status = checkboxElem.checked ? 1 : 0;\r\n");
+   fprintf(f, "   var pin = checkboxElem.id;\r\n");
+   fprintf(f, "   theUrl = '/gpio?pin='+pin+'&status='+status;\r\n");
+   fprintf(f, "   xmlHttp.open( 'GET', theUrl, false );\r\n");
+   fprintf(f, "   xmlHttp.send( null );\r\n");
+   fprintf(f, "}\r\n");
+   fprintf(f, "</script>\r\n");
+}
+
+/**********************************************************
+ * Function style_sheet()
+ * 
+ * Description:
+ * 
+ * Parameters:
+ * 
+ *********************************************************/
+void style_sheet(FILE *f)
+{
+   fprintf(f, "<style>\r\n");
+   fprintf(f, ".switch {\r\n");
+   fprintf(f, "  position: relative;\r\n");
+   fprintf(f, "  display: inline-block;\r\n");
+   fprintf(f, "  width: 60px;\r\n");
+   fprintf(f, "  height: 34px;\r\n");
+   fprintf(f, "}\r\n");
+   fprintf(f, ".switch input {\r\n"); 
+   fprintf(f, "  opacity: 0;\r\n");
+   fprintf(f, "  width: 0;\r\n");
+   fprintf(f, "  height: 0;\r\n");
+   fprintf(f, "}\r\n");
+   fprintf(f, ".slider {\r\n");
+   fprintf(f, "  position: absolute;\r\n");
+   fprintf(f, "  cursor: pointer;\r\n");
+   fprintf(f, "  top: 0;\r\n");
+   fprintf(f, "  left: 0;\r\n");
+   fprintf(f, "  right: 0;\r\n");
+   fprintf(f, "  bottom: 0;\r\n");
+   fprintf(f, "  background-color: #ccc;\r\n");
+   fprintf(f, "  -webkit-transition: .4s;\r\n");
+   fprintf(f, "  transition: .4s;\r\n");
+   fprintf(f, "}\r\n");
+   fprintf(f, ".slider:before {\r\n");
+   fprintf(f, "  position: absolute;\r\n");
+   fprintf(f, "  content: \"\";\r\n");
+   fprintf(f, "  height: 26px;\r\n");
+   fprintf(f, "  width: 26px;\r\n");
+   fprintf(f, "  left: 4px;\r\n");
+   fprintf(f, "  bottom: 4px;\r\n");
+   fprintf(f, "  background-color: white;\r\n");
+   fprintf(f, "  -webkit-transition: .4s;\r\n");
+   fprintf(f, "  transition: .4s;\r\n");
+   fprintf(f, "}\r\n");
+   fprintf(f, "input:checked + .slider {\r\n");
+   fprintf(f, "  background-color: #2196F3;\r\n");
+   fprintf(f, "}\r\n");
+   fprintf(f, "input:focus + .slider {\r\n");
+   fprintf(f, "  box-shadow: 0 0 1px #2196F3;\r\n");
+   fprintf(f, "}\r\n");
+   fprintf(f, "input:checked + .slider:before {\r\n");
+   fprintf(f, "  -webkit-transform: translateX(26px);\r\n");
+   fprintf(f, "  -ms-transform: translateX(26px);\r\n");
+   fprintf(f, "  transform: translateX(26px);\r\n");
+   fprintf(f, "}\r\n");
+   fprintf(f, "</style>\r\n");   
+}
+
 
 /**********************************************************
  * Function web_page_header()
@@ -250,16 +331,19 @@ void send_headers(FILE *f, int status, char *title, char *extra, char *mime,
 void web_page_header(FILE *f)
 {
    /* Send http header */
-   send_headers(f, 200, "OK", NULL, "text/html", -1, -1);
+   send_headers(f, 200, "OK", NULL, "text/html", -1, -1);   
+   fprintf(f, "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\r\n");
+   fprintf(f, "<html><head><title>Relay Card Control interface</title>\r\n");
+   style_sheet(f);
+   java_script_src(f);
+   fprintf(f, "</head>\r\n");
    
    /* Display web page heading */
-   fprintf(f, "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\r\n");
-   fprintf(f, "<html><head><title>Relay Card Control interface</title></head><body>\r\n");
-   fprintf(f, "<table style=\"text-align: left; width: 600px; background-color: rgb(0, 0, 153); font-family: Helvetica,Arial,sans-serif; font-weight: bold; color: white;\" border=\"0\" cellpadding=\"2\" cellspacing=\"2\">\r\n");
+   fprintf(f, "<body><table style=\"text-align: left; width: 460px; background-color: #2196F3; font-family: Helvetica,Arial,sans-serif; font-weight: bold; color: white;\" border=\"0\" cellpadding=\"2\" cellspacing=\"2\">\r\n");
    fprintf(f, "<tbody><tr><td>\r\n");
    fprintf(f, "<span style=\"vertical-align: top; font-size: 48px;\">Relay Card Control</span><br>\r\n");
-   fprintf(f, "<span style=\"font-size: 16px; color: rgb(204, 255, 255);\">Remote relay card controlling <span style=\"font-style: italic; color: white;\">made easy</span></span>\r\n");
-   fprintf(f, "</td></tr></tbody></table>\r\n");  
+   fprintf(f, "<span style=\"font-size: 16px; color: rgb(204, 255, 255);\">Remote relay card control <span style=\"font-style: italic; color: white;\">made easy</span></span>\r\n");
+   fprintf(f, "</td></tr></tbody></table><br>\r\n");  
 }
 
 
@@ -274,8 +358,8 @@ void web_page_header(FILE *f)
 void web_page_footer(FILE *f)
 {
    /* Display web page footer */
-   fprintf(f, "<table style=\"text-align: left; width: 600px; background-color: rgb(0, 0, 153);\" border=\"0\" cellpadding=\"2\" cellspacing=\"2\"><tbody>\r\n");
-   fprintf(f, "<tr><td style=\"vertical-align: top; text-align: center;\"><span style=\"font-family: Helvetica,Arial,sans-serif; color: white;\">crelay | version %s | %s</span></td></tr>\r\n",
+   fprintf(f, "<table style=\"text-align: left; width: 460px; background-color: #2196F3;\" border=\"0\" cellpadding=\"2\" cellspacing=\"2\"><tbody>\r\n");
+   fprintf(f, "<tr><td style=\"vertical-align: top; text-align: center;\"><span style=\"font-family: Helvetica,Arial,sans-serif; color: white;\"><a style=\"text-decoration:none; color: white;\" href=http://ondrej1024.github.io/crelay>crelay</a> | version %s | %s</span></td></tr>\r\n",
            VERSION, DATE);
    fprintf(f, "</tbody></table></body></html>\r\n");
 }   
@@ -292,7 +376,7 @@ void web_page_footer(FILE *f)
 void web_page_error(FILE *f)
 {    
    /* No relay card detected, display error message on web page */
-   fprintf(f, "<br><table style=\"text-align: left; width: 600px; background-color: yellow; font-family: Helvetica,Arial,sans-serif; font-weight: bold; color: black;\" border=\"0\" cellpadding=\"2\" cellspacing=\"2\">\r\n");
+   fprintf(f, "<br><table style=\"text-align: left; width: 460px; background-color: yellow; font-family: Helvetica,Arial,sans-serif; font-weight: bold; color: black;\" border=\"0\" cellpadding=\"2\" cellspacing=\"2\">\r\n");
    fprintf(f, "<tbody><tr style=\"font-size: 20px; font-weight: bold;\">\r\n");
    fprintf(f, "<td>No compatible relay card detected !<br>\r\n");
    fprintf(f, "<span style=\"font-size: 14px; color: grey;  font-weight: normal;\">This can be due to the following reasons:\r\n");
@@ -561,8 +645,7 @@ int process_http_request(int sock)
          web_page_header(fout);
          
          /* Display relay status and controls on web page */
-         fprintf(fout, "<img style=\"width: 250px; height: 250px;\" alt=\"Card image\" src=\"http://www.conrad.de/medias/global/ce/1000_1999/1900/1920/1928/192846_LB_00_FB.EPS_1000.jpg\">\r\n");
-         fprintf(fout, "<table style=\"text-align: left; width: 600px; background-color: white; font-family: Helvetica,Arial,sans-serif; font-weight: bold; font-size: 20px;\" border=\"0\" cellpadding=\"2\" cellspacing=\"3\"><tbody>\r\n");
+         fprintf(fout, "<table style=\"text-align: left; width: 460px; background-color: white; font-family: Helvetica,Arial,sans-serif; font-weight: bold; font-size: 20px;\" border=\"0\" cellpadding=\"2\" cellspacing=\"3\"><tbody>\r\n");
          fprintf(fout, "<tr style=\"font-size: 14px; background-color: lightgrey\">\r\n");
          fprintf(fout, "<td style=\"width: 200px;\">%s<br><span style=\"font-style: italic; font-size: 12px; color: grey; font-weight: normal;\">on %s</span></td>\r\n", 
                  cname, com_port);
@@ -572,12 +655,8 @@ int process_http_request(int sock)
             fprintf(fout, "<tr style=\"vertical-align: top; background-color: rgb(230, 230, 255);\">\r\n");
             fprintf(fout, "<td style=\"width: 300px;\">Relay %d<br><span style=\"font-style: italic; font-size: 16px; color: grey;\">%s</span></td>\r\n", 
                     i, rlabels[i-1]);
-            fprintf(fout, "<td style=\"text-align: center; vertical-align: middle; width: 100px; background-color: %s;\">%s</td>\r\n", 
-                    rstate[i-1]==ON?"red":"lightgrey", rstate[i-1]==ON?"ON":"OFF");
-            fprintf(fout, "<td style=\"text-align: center; vertical-align: middle; width: 100px;\"><form action='/' method='post'><input type='hidden' name='%s' value='%d' /><input type='hidden' name='%s' value='%d' /><input type='submit' title='Toggle relay' value='%s'></form></td>\r\n", 
-                    RELAY_TAG, i, STATE_TAG, rstate[i-1]==ON?0:1, rstate[i-1]==ON?"off":"on");
-            fprintf(fout, "<td style=\"text-align: center; vertical-align: middle; width: 100px;\"><form action='/' method='post'><input type='hidden' name='%s' value='%d' /><input type='hidden' name='%s' value='2' /><input type='submit' title='Generate pulse' value='pulse'></form></td></tr>\r\n", 
-                    RELAY_TAG, i, STATE_TAG);
+            fprintf(fout, "<td style=\"text-align: center; vertical-align: middle; width: 100px; background-color: white;\"><label class=\"switch\"><input type=\"checkbox\" %s id=%d onchange=\"switch_relay(this)\"><span class=\"slider\"></span></label></td>\r\n", 
+                    rstate[i-1]==ON?"checked":"",i);
          }
          fprintf(fout, "</tbody></table><br>\r\n");
          
