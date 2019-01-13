@@ -62,7 +62,7 @@
 
 /* HTTP server defines */
 #define SERVER "crelay/"VERSION
-#define PROTOCOL "HTTP/1.0"
+#define PROTOCOL "HTTP/1.1"
 #define RFC1123FMT "%a, %d %b %Y %H:%M:%S GMT"
 #define API_URL "gpio"
 #define DEFAULT_SERVER_PORT 8000
@@ -223,11 +223,12 @@ void send_headers(FILE *f, int status, char *title, char *extra, char *mime,
    
    fprintf(f, "%s %d %s\r\n", PROTOCOL, status, title);
    fprintf(f, "Server: %s\r\n", SERVER);
+   //fprintf(f, "Access-Control-Allow-Origin: *\r\n"); // TEST For test only
    now = time(NULL);
    strftime(timebuf, sizeof(timebuf), RFC1123FMT, gmtime(&now));
    fprintf(f, "Date: %s\r\n", timebuf);
    if (extra) fprintf(f, "%s\r\n", extra);
-   if (mime) fprintf(f, "Content-Type: %s\r\n", mime);
+   if (mime) fprintf(f, "Content-Type: %s; charset=utf-8\r\n", mime);
    if (length >= 0) fprintf(f, "Content-Length: %d\r\n", length);
    if (date != -1)
    {
@@ -250,16 +251,24 @@ void java_script_src(FILE *f)
 {
    fprintf(f, "<script type='text/javascript'>\r\n");
    fprintf(f, "function switch_relay(checkboxElem){\r\n");
-   fprintf(f, "   var xmlHttp = new XMLHttpRequest();\r\n");
-   fprintf(f, "   var theUrl;\r\n");
    fprintf(f, "   var status = checkboxElem.checked ? 1 : 0;\r\n");
    fprintf(f, "   var pin = checkboxElem.id;\r\n");
-   fprintf(f, "   theUrl = '/gpio?pin='+pin+'&status='+status;\r\n");
+   fprintf(f, "   var theUrl = '/gpio?pin='+pin+'&status='+status;\r\n");
+   fprintf(f, "   var xmlHttp = new XMLHttpRequest();\r\n");
+   fprintf(f, "   xmlHttp.onreadystatechange = function () {\r\n");
+   fprintf(f, "      if (this.readyState < 4)\r\n");
+   fprintf(f, "         document.getElementById('status').innerHTML = '';\r\n");
+   fprintf(f, "      else if (this.readyState == 4) {\r\n"); 
+   fprintf(f, "         if (this.status != 200)\r\n");
+   fprintf(f, "            document.getElementById('status').innerHTML = this.statusText;\r\n");
+   fprintf(f, "         }\r\n");
+   fprintf(f, "      }\r\n");
    fprintf(f, "   xmlHttp.open( 'GET', theUrl, false );\r\n");
    fprintf(f, "   xmlHttp.send( null );\r\n");
    fprintf(f, "}\r\n");
    fprintf(f, "</script>\r\n");
 }
+
 
 /**********************************************************
  * Function style_sheet()
@@ -576,8 +585,8 @@ int process_http_request(int sock)
       if (strstr(url, API_URL))
       {
          /* HTTP API request, send response */
-         send_headers(fout, 200, "OK", NULL, "text/html", -1, -1);
-         fprintf(fout, "ERROR: No compatible device detected !\r\n");
+         send_headers(fout, 503, "No compatible device detected", NULL, "text/plain", -1, -1);
+         fprintf(fout, "ERROR: No compatible device detected !");
       }
       else
       {  
@@ -630,7 +639,7 @@ int process_http_request(int sock)
       if (strstr(url, API_URL))
       {
          /* HTTP API request, send response */
-         send_headers(fout, 200, "OK", NULL, "text/html", -1, -1);
+         send_headers(fout, 200, "OK", NULL, "text/plain", -1, -1);
          for (i=FIRST_RELAY; i<=last_relay; i++)
          {
             fprintf(fout, "Relay %d:%d<br>", i, rstate[i-1]);
@@ -659,6 +668,7 @@ int process_http_request(int sock)
                     rstate[i-1]==ON?"checked":"",i);
          }
          fprintf(fout, "</tbody></table><br>\r\n");
+         fprintf(fout, "<span id=\"status\" style=\"font-size: 16px; color: red; font-family: Helvetica,Arial,sans-serif;\"></span><br><br>\r\n");
          
          web_page_footer(fout);
       }
