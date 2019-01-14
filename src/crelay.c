@@ -17,7 +17,7 @@
  *   sudo make install
  * 
  * Last modified:
- *   04/01/2019
+ *   14/01/2019
  *
  * Copyright 2015-2019, Ondrej Wisniewski 
  * 
@@ -239,6 +239,7 @@ void send_headers(FILE *f, int status, char *title, char *extra, char *mime,
    fprintf(f, "\r\n");
 }
 
+
 /**********************************************************
  * Function java_script_src()
  * 
@@ -253,7 +254,7 @@ void java_script_src(FILE *f)
    fprintf(f, "function switch_relay(checkboxElem){\r\n");
    fprintf(f, "   var status = checkboxElem.checked ? 1 : 0;\r\n");
    fprintf(f, "   var pin = checkboxElem.id;\r\n");
-   fprintf(f, "   var theUrl = '/gpio?pin='+pin+'&status='+status;\r\n");
+   fprintf(f, "   var url = '/gpio?pin='+pin+'&status='+status;\r\n");
    fprintf(f, "   var xmlHttp = new XMLHttpRequest();\r\n");
    fprintf(f, "   xmlHttp.onreadystatechange = function () {\r\n");
    fprintf(f, "      if (this.readyState < 4)\r\n");
@@ -263,7 +264,7 @@ void java_script_src(FILE *f)
    fprintf(f, "            document.getElementById('status').innerHTML = this.statusText;\r\n");
    fprintf(f, "         }\r\n");
    fprintf(f, "      }\r\n");
-   fprintf(f, "   xmlHttp.open( 'GET', theUrl, false );\r\n");
+   fprintf(f, "   xmlHttp.open( 'GET', url, true );\r\n");
    fprintf(f, "   xmlHttp.send( null );\r\n");
    fprintf(f, "}\r\n");
    fprintf(f, "</script>\r\n");
@@ -342,7 +343,7 @@ void web_page_header(FILE *f)
    /* Send http header */
    send_headers(f, 200, "OK", NULL, "text/html", -1, -1);   
    fprintf(f, "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\r\n");
-   fprintf(f, "<html><head><title>Relay Card Control interface</title>\r\n");
+   fprintf(f, "<html><head><title>Relay Card Control</title>\r\n");
    style_sheet(f);
    java_script_src(f);
    fprintf(f, "</head>\r\n");
@@ -554,31 +555,32 @@ int process_http_request(int sock)
    }
 
    /* Get values from form data */
-   if (formdatalen > 0) {
-     int found=0;
-     //printf("DBG: Found data: ");
+   if (formdatalen > 0) 
+   {
+      int found=0;
+      //printf("DBG: Found data: ");
       datastr = strstr(formdata, RELAY_TAG);
       if (datastr) {
-	 relay = atoi(datastr+strlen(RELAY_TAG)+1);
-	 //printf("relay=%d", relay);
-	 found++;
+         relay = atoi(datastr+strlen(RELAY_TAG)+1);
+         //printf("relay=%d", relay);
+         found++;
       }
       datastr = strstr(formdata, STATE_TAG);
       if (datastr) {
-	 nstate = atoi(datastr+strlen(STATE_TAG)+1);
-	 //printf("%sstate=%d", found ? ", " : "", nstate);
+         nstate = atoi(datastr+strlen(STATE_TAG)+1);
+         //printf("%sstate=%d", found ? ", " : "", nstate);
       }
       datastr = strstr(formdata, SERIAL_TAG);
       if (datastr) {
-	 serial = datastr+strlen(SERIAL_TAG)+1;
-	 datastr = strstr(serial, "&");
-	 if (datastr)
-	   *datastr = 0;
-	 //printf("%sserial=%s", found ? ", " : "", serial);
+         serial = datastr+strlen(SERIAL_TAG)+1;
+         datastr = strstr(serial, "&");
+         if (datastr)
+            *datastr = 0;
+         //printf("%sserial=%s", found ? ", " : "", serial);
       }
       //printf("\n\n");
    }
-
+   
    /* Check if a relay card is present */
    if (crelay_detect_relay_card(com_port, &last_relay, serial, NULL) == -1)
    {
@@ -586,7 +588,7 @@ int process_http_request(int sock)
       {
          /* HTTP API request, send response */
          send_headers(fout, 503, "No compatible device detected", NULL, "text/plain", -1, -1);
-         fprintf(fout, "ERROR: No compatible device detected !");
+         fprintf(fout, "ERROR: No compatible device detected");
       }
       else
       {  
@@ -610,21 +612,21 @@ int process_http_request(int sock)
                crelay_get_relay(com_port, relay, &rstate[relay-1], serial);
                if (rstate[relay-1] == ON)
                {
-               crelay_set_relay(com_port, relay, OFF, serial);
+                  crelay_set_relay(com_port, relay, OFF, serial);
                   sleep(config.pulse_duration);
-               crelay_set_relay(com_port, relay, ON, serial);
+                  crelay_set_relay(com_port, relay, ON, serial);
                }
                else
                {
-               crelay_set_relay(com_port, relay, ON, serial);
+                  crelay_set_relay(com_port, relay, ON, serial);
                   sleep(config.pulse_duration);
-               crelay_set_relay(com_port, relay, OFF, serial);
+                  crelay_set_relay(com_port, relay, OFF, serial);
                }
             }
             else
             {
                /* Switch relay on/off */
-            crelay_set_relay(com_port, relay, nstate, serial);
+               crelay_set_relay(com_port, relay, nstate, serial);
             }
          }
       }
