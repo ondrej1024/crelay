@@ -260,10 +260,17 @@ void java_script_src(FILE *f)
    fprintf(f, "      if (this.readyState < 4)\r\n");
    fprintf(f, "         document.getElementById('status').innerHTML = '';\r\n");
    fprintf(f, "      else if (this.readyState == 4) {\r\n"); 
-   fprintf(f, "         if (this.status != 200)\r\n");
-   fprintf(f, "            document.getElementById('status').innerHTML = this.statusText;\r\n");
+   fprintf(f, "         if (this.status == 0) {\r\n");
+   fprintf(f, "            document.getElementById('status').innerHTML = \"Network error\";\r\n");
+   fprintf(f, "            checkboxElem.checked = (status==0);\r\n");
    fprintf(f, "         }\r\n");
+   fprintf(f, "         else if (this.status != 200) {\r\n");
+   fprintf(f, "            document.getElementById('status').innerHTML = this.statusText;\r\n");
+   fprintf(f, "            checkboxElem.checked = (status==0);\r\n");
+   fprintf(f, "         }\r\n");
+   // TODO: add update of all relays status here (according to API response in xmlHttp.responseText) 
    fprintf(f, "      }\r\n");
+   fprintf(f, "   }\r\n");
    fprintf(f, "   xmlHttp.open( 'GET', url, true );\r\n");
    fprintf(f, "   xmlHttp.send( null );\r\n");
    fprintf(f, "}\r\n");
