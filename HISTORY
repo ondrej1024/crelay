@@ -64,3 +64,7 @@ Version history
 - Added monit script for crelay process supervision in daemon mode
 - Added build dependencies for OpenSUSE to readme 
 - Added support for multiple SainSmart 16-channel HID relay cards
+
+0.14: 13/01/2019
+- Added multiple cards support to HTTP API (new "serial" parameter)
+- Reworked WebGUI (replaced submit buttons with Javascript toggle switches)

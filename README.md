@@ -42,13 +42,12 @@ The following picture shows a high level view on the modular software architectu
 - HTTP API for external clients (e.g. Smartphone/tablet apps)
 - Multiple relay card type support
 - Support for configuration file with custom parameters
-- Multiple cards support (command line interface only)
+- Multiple cards support (command line interface and HTTP API)
 <br>
 
 ### Nice to have (wishlist)
 - Integrated MQTT client
-- [ThingSpeak Talkback App](https://thingspeak.com/docs/talkback)
-- Multiple cards support (Web UI / REST API)
+- Multiple cards support (Web UI)
 - Access control for Web GUI and HTTP API
 - Programmable timers for relay actions  
 <br>
@@ -56,6 +55,8 @@ The following picture shows a high level view on the modular software architectu
 ### Screenshots
 
 #### Web GUI
+This is the Web GUI provided by the integrated web server. The web page dynamically adapts to the detected relay card as shown.
+
 ![Screenshot](screenshots/crelay-screenshot1.png "Web GUI with Conrad card connected")
 <br>
 ----------
@@ -117,7 +118,7 @@ An HTTP API is provided to access the server from external clients. This API is 
 Required Parameter: none  
 
 - Setting relay state  
-Required Parameter: <pre>pin=[1|2|3|4], status=[0|1|2] where 0=off 1=on 2=pulse</pre>
+Required Parameter: <pre>pin=[1|2|3 ...], status=[0|1|2] where 0=off 1=on 2=pulse</pre>
 Optional Parameter: <pre>serial=*serial_number*</pre>
 
 - Response from server:  
@@ -264,7 +265,7 @@ The support for the different relay cards in *crelay* has only been possible tha
 * [Andrew Lunn](https://github.com/lunn), who contributed cleanup patches
 * [Andrey Shevtsov](https://github.com/sqlwristband), who contributed the initial multiple cards implementation
 * [Alberto Bursi](https://github.com/bobafetthotmail), who contributed documentation for OpenSUSE build support
-* [Derek Atkins](https://github.com/derekatkins), who contributed multiple cards handling for the Sainsmart 16 Channel HID controller
+* [Derek Atkins](https://github.com/derekatkins), who contributed multiple cards handling for the Sainsmart 16 Channel HID controller and HTTP API
 <br>  
 
 ### Notes
