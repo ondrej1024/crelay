@@ -1,0 +1,8 @@
+title: CRELAY
+description: Controlling relay cards for home automation with a Linux software
+google_analytics: UA-48477283-1
+show_downloads: true
+theme: jekyll-theme-cayman
+
+gems:
+  - jekyll-mentions
