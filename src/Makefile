@@ -30,6 +30,10 @@ CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Winline $(INCLUDE) -pipe -fPIC
 SRC	= $(BIN).c
 SRC	+= relay_drv.c
 SRC	+= config.c
+SRC	+= http.c
+SRC	+= mqtt.c
+
+LIBS	+= -lmosquitto
 
 # Relay card specific driver source files
 #########################################
