@@ -4,7 +4,7 @@
 ### About  
 Ever bought a cute little USB relay card and wanted to use it on a Linux based device or computer? Chances are that your were out of luck because the Linux software support for the card provided by the manufacturer was non existent. Conrad, Sainsmart, Denkovi and friends are still completely ignoring the existence of this operating system. That's why I started this project.  
 
-This software is intended to run on Linux systems to control USB relay cards from different manufacturers in a unified way. It provides several interfaces for controlling the relays locally or remotely via the network. The relays can be controlled by a human being via a device like smartphone or web browser, or directly by an intelligent device as used in the Internet of Things.  
+This software is intended to run on Linux systems to control USB relay cards from different manufacturers in a unified way. It provides several interfaces for controlling the relays locally or remotely via the network. The relays can be controlled by a human being via a device like smartphone or web browser, via IFTTT, or directly by an intelligent device as used in the Internet of Things.  
 The software was designed with the following requirements in mind:  
 
  - simple, intuitive usage and interface
@@ -35,6 +35,7 @@ The following picture shows a high level view on the modular software architectu
 
 ### Features
 - Command line mode and daemon mode with Web GUI
+- IFTTT support (tutorial at the bottom)
 - Automatic detection of relay card
 - Reading of current relay states
 - Setting of new relay states
@@ -294,3 +295,36 @@ Both 4 and 8 channel versions are supported. However, there seems to be no way t
 
 ##### <i>Note 3 (GPIO controlled relays)</i>:
 Since GPIO pin configuration is strictly device specific, the generic GPIO mode is disabled by default and can only be used in daemon mode. In order to enable it, the specific GPIO pins used as relay control lines have to be specified in the configuration file, `[GPIO drv]` section.  
+
+### IFTTT
+#### How to use with IFTTT
+
+1. Setup your crelay, and make sure it's working correctly.
+
+2. Forward the crelay port (By default it's 8000, though i recommend changing it, if you have shared your IP with anyone.) through your router. ([This guide can be helpful](https://www.noip.com/support/knowledgebase/general-port-forwarding-guide/))
+
+3. Find your public IP, eventually by using [WhatIsMyIPAddress](https://whatismyipaddress.com/), and looking under IPv4. 
+
+4. Go to [IFTTT](https://ifttt.com/), and create an account.
+
+5. Create a new applet, by going under "[My Applets](https://ifttt.com/my_applets)", and then pressing the "[New Applet](https://ifttt.com/create)" button.
+
+6. Press the "+this", and choose a service, which in this case, will be Google Assistant.
+
+7. Then choose a trigger, (I chose the one called "Say a simple phrase".) and set it up to your likings.
+
+8. When you have set up your trigger, press the "+that", and choose the service called "Webhooks", then the action called "Make a web request".
+
+9. Under "URL" you have to put in "https://**_YourPublicIP_**:**_YourcrelayPort_**/gpio?pin=**_RelayNumber_**&status=**_Status_**", with **_YourPublicIP_** being the IP you got from [WhatIsMyIPAddress](https://whatismyipaddress.com/), and **_YourcrelayPort_** being the port you use for crelay, and **_RelayNumber_** being the relay that you wan't to turn on, and **_Status_** being "1" for "On" and "0" for "Off".
+
+10. The method should be "GET", and the Content Type should be "text/plain", and the Body should be left empty.
+
+11. Now press "Create action"
+
+12. Now press "Finish" (And disable notifications)
+
+13. Now repeat the steps from 5 to 12, only with the "1" in "&status=1" being a "0"
+
+
+#### Video guide:
+[![Click to play on YouTube](https://img.youtube.com/vi/XGrBK9Yh1T4/0.jpg)](https://www.youtube.com/watch?v=XGrBK9Yh1T4)
