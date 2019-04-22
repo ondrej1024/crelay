@@ -297,7 +297,7 @@ Both 4 and 8 channel versions are supported. However, there seems to be no way t
 Since GPIO pin configuration is strictly device specific, the generic GPIO mode is disabled by default and can only be used in daemon mode. In order to enable it, the specific GPIO pins used as relay control lines have to be specified in the configuration file, `[GPIO drv]` section.  
 
 ### IFTTT
-#### ! Please note, that forwarding your crelay port is a big security risk.  [Read more here](https://github.com/ondrej1024/crelay/ifttt-warning.md/) !
+#### ! Please note, that forwarding your crelay port is a big security risk.  [Read more here](/ifttt-warning.md/) !
 #### How to use with IFTTT
 
 1. Setup your crelay, and make sure it's working correctly.
