@@ -4,7 +4,7 @@
 ### About  
 Ever bought a cute little USB relay card and wanted to use it on a Linux based device or computer? Chances are that your were out of luck because the Linux software support for the card provided by the manufacturer was non existent. Conrad, Sainsmart, Denkovi and friends are still completely ignoring the existence of this operating system. That's why I started this project.  
 
-This software is intended to run on Linux systems to control USB relay cards from different manufacturers in a unified way. It provides several interfaces for controlling the relays locally or remotely via the network. The relays can be controlled by a human being via a device like smartphone or web browser, or directly by an intelligent device as used in the Internet of Things.  
+This software is intended to run on Linux systems to control USB relay cards from different manufacturers in a unified way. It provides several interfaces for controlling the relays locally or remotely via the network. The relays can be controlled by a human being via a device like smartphone or web browser, via a cloud service (e.g. IFTTT), or directly by an intelligent device as used in the Internet of Things.  
 The software was designed with the following requirements in mind:  
 
  - simple, intuitive usage and interface
@@ -43,6 +43,7 @@ The following picture shows a high level view on the modular software architectu
 - Multiple relay card type support
 - Support for configuration file with custom parameters
 - Multiple cards support (command line interface and HTTP API)
+- IFTTT support (see [tutorial](tutorial_ifttt.md))
 <br>
 
 ### Nice to have (wishlist)
@@ -294,3 +295,4 @@ Both 4 and 8 channel versions are supported. However, there seems to be no way t
 
 ##### <i>Note 3 (GPIO controlled relays)</i>:
 Since GPIO pin configuration is strictly device specific, the generic GPIO mode is disabled by default and can only be used in daemon mode. In order to enable it, the specific GPIO pins used as relay control lines have to be specified in the configuration file, `[GPIO drv]` section.  
+
