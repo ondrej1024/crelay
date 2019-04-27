@@ -130,6 +130,21 @@ Relay 4:[0|1]
 </pre>  
 <br>
 
+### MQTT client
+
+An integrated MQTT client is provided to control crelay via an MQTT broker. After successful connection to the specified broker, crelay will subscribe to the following topic:
+
+    /crelay/ctrl
+
+Remote clients publish their request to this topic. The request format is the same as in the HTTP request. An empty request will trigger a status update to be published.
+
+Status updates will be published on this topic:
+
+    /crelay/status
+
+A status update will be published after each request. The format is the same as in the HTTP API response.   
+<br>
+
 ### Installation from source
 The installation procedure is usually perfomed directly on the target system. Therefore a C compiler and friends should already be installed. Otherwise a cross compilation environment needs to be setup on a PC (this is not described here).  
 
