@@ -132,7 +132,9 @@ Relay 4:[0|1]
 
 ### MQTT client
 
-An integrated MQTT client is provided to control crelay via an MQTT broker. After successful connection to the specified broker, crelay will subscribe to the following topic:
+An integrated MQTT client is provided to control crelay via an MQTT broker. The client is disabled by default. To enable it define the MQTT broker settings in the related section of `crelay.conf`   
+
+After successful connection to the specified broker, crelay will subscribe to the following topic:
 
     /crelay/ctrl
 
@@ -243,6 +245,12 @@ relay6_label = Device 6   # label for relay 6
 relay7_label = Device 7   # label for relay 7
 relay8_label = Device 8   # label for relay 8
     
+# MQTT broker parameters
+################################################
+[MQTT broker]
+#mqtt_host = test.mosquitto.org # MQTT broker address
+#mqtt_port = 1883               # MQTT broker port
+
 # GPIO driver parameters
 ################################################
 [GPIO drv]

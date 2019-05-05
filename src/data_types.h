@@ -1,24 +1,24 @@
 /******************************************************************************
- * 
+ *
  * Relay card control utility: Generic type definitions
- * 
+ *
  * Description:
  *   This software is used to controls different type of relays cards.
  *   There are 3 ways to control the relais:
  *    1. via command line
  *    2. via web interface using a browser
  *    3. via HTTP API using a client application
- * 
+ *
  * Author:
  *   Ondrej Wisniewski (ondrej.wisniewski *at* gmail.com)
  *
  * Last modified:
  *   19/08/2015
  *
- * Copyright 2015, Ondrej Wisniewski 
- * 
+ * Copyright 2015, Ondrej Wisniewski
+ *
  * This file is part of crelay.
- * 
+ *
  * crelay is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -31,9 +31,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with crelay.  If not, see <http://www.gnu.org/licenses/>.
- * 
- *****************************************************************************/ 
- 
+ *
+ *****************************************************************************/
+
 #ifndef data_types_h
 #define data_types_h
 
@@ -52,6 +52,11 @@ typedef struct
     const char* relay7_label;
     const char* relay8_label;
     uint8_t pulse_duration;
+
+    /* [MQTT client] */
+    const char*  mqtt_host;
+    uint16_t mqtt_port;
+    const char* crelay_custom_id;
     
     /* [GPIO drv] */
     uint8_t gpio_num_relays;
@@ -64,10 +69,10 @@ typedef struct
     uint8_t relay6_gpio_pin;
     uint8_t relay7_gpio_pin;
     uint8_t relay8_gpio_pin;
-    
+
     /* [Sainsmart drv] */
     uint8_t sainsmart_num_relays;
-    
+
 } config_t;
 
 #endif

@@ -33,7 +33,7 @@ SRC	+= config.c
 SRC	+= http.c
 SRC	+= mqtt.c
 
-LIBS	+= -lmosquitto
+LIBS	+= -lmosquitto -luuid
 
 # Relay card specific driver source files
 #########################################
