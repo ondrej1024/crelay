@@ -40,13 +40,13 @@ The following picture shows a high level view on the modular software architectu
 - Setting of new relay states
 - Single pulse generation on relay contact
 - HTTP API for external clients (e.g. Smartphone/tablet apps)
+- Integrated MQTT client
 - Multiple relay card type support
 - Support for configuration file with custom parameters
 - Multiple cards support (command line interface and HTTP API)
 <br>
 
 ### Nice to have (wishlist)
-- Integrated MQTT client
 - Multiple cards support (Web UI)
 - Access control for Web GUI and HTTP API
 - Programmable timers for relay actions  
@@ -132,19 +132,23 @@ Relay 4:[0|1]
 
 ### MQTT client
 
-An integrated MQTT client is provided to control crelay via an MQTT broker. The client is disabled by default. To enable it define the MQTT broker settings in the related section of `crelay.conf`   
+An integrated MQTT client is provided to control crelay via an MQTT broker. The client is disabled by default. To enable it define the MQTT broker settings in the related section of `crelay.conf`.   
+*Note: Apart from testing, never use a public MQTT broker, as this will enable **anyone** on the Internet to control your relay cards.*   
 
 After successful connection to the specified broker, crelay will subscribe to the following topic:
 
-    /crelay/ctrl
+    /crelay/<crelay_custom_id>/ctrl
 
-Remote clients publish their request to this topic. The request format is the same as in the HTTP request. An empty request will trigger a status update to be published.
+Remote clients publish their request to this topic. The request format is the same as in the HTTP request. An empty or invalid request will trigger a status update to be published.
 
 Status updates will be published on this topic:
 
-    /crelay/status
+    /crelay/<crelay_custom_id>/status
 
 A status update will be published after each request. The format is the same as in the HTTP API response.   
+
+The `<crelay_custom_id>` part of the topics is a custom ID of your crelay instance which is needed to distinguish it from other instances if they are connected to the same broker. It must be specified in `crelay.conf`.   
+
 <br>
 
 ### Installation from source
@@ -155,6 +159,12 @@ The installation procedure is usually perfomed directly on the target system. Th
 If you have a Debian, Ubuntu or derivative distribution:
 <pre>
     apt-get install libftdi1 libftdi-dev libhidapi-libusb0 libhidapi-dev libusb-1.0-0 libusb-1.0-0-dev
+</pre>
+
+For MQTT support:
+
+<pre>
+    apt-get install libmosquitto1 libmosquitto-dev libuuid1 uuid-dev
 </pre>
 
 If you have OpenSUSE or a derivative distribution:
@@ -250,6 +260,7 @@ relay8_label = Device 8   # label for relay 8
 [MQTT broker]
 #mqtt_host = test.mosquitto.org # MQTT broker address
 #mqtt_port = 1883               # MQTT broker port
+#crelay_custom_id = change me   # custom ID for MQTT topics
 
 # GPIO driver parameters
 ################################################
