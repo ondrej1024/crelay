@@ -83,7 +83,7 @@ char* uuidgen(void)
     uuid_t binuuid;
     char *uuid = malloc(UUID_LEN+1);
 
-    uuid_generate_random(binuuid);
+    uuid_generate(binuuid);
     uuid_unparse(binuuid, uuid);
 
     return uuid;

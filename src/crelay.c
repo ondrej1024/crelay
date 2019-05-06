@@ -376,16 +376,8 @@ int main(int argc, char *argv[])
       }
 
       /* Init GPIO pins in case they have been configured */
-      crelay_detect_relay_card(com_port, &num_relays, NULL, NULL);
-
-      /* Init http communication */
-      if (init_http(iface, port) != 0)
-         exit(EXIT_FAILURE);
-
-      /* Init mqtt communication (if configured) */
-      if (config.mqtt_host != NULL)
-         if (init_mqtt(config.mqtt_host, config.mqtt_port, config.crelay_custom_id) != 0)
-            exit(EXIT_FAILURE);
+      // FIXME: this creates an additional thread, why?
+      //crelay_detect_relay_card(com_port, &num_relays, NULL, NULL);
 
       if (!strcmp(argv[1],"-D"))
       {
@@ -397,6 +389,17 @@ int main(int argc, char *argv[])
          }
          syslog(LOG_DAEMON | LOG_NOTICE, "Program is now running as system daemon");
       }
+
+      /* Init http communication */
+      /* Creates a child thread */
+      if (init_http(iface, port) != 0)
+         exit(EXIT_FAILURE);
+
+      /* Init mqtt communication (if configured) */
+      /* Creates a child thread */
+      if (config.mqtt_host != NULL)
+         if (init_mqtt(config.mqtt_host, config.mqtt_port, config.crelay_custom_id) != 0)
+            exit(EXIT_FAILURE);
 
       /* Endless loop (wait for requests) */
       while (1) sleep(1);

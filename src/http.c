@@ -8,7 +8,7 @@
  *   Ondrej Wisniewski (ondrej.wisniewski *at* gmail.com)
  *
  * Last modified:
- *   22/02/2019
+ *   06/05/2019
  *
  * Copyright 2015-2019, Ondrej Wisniewski
  *
@@ -43,6 +43,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <time.h>
+#include <pthread.h>
 #include "relay_drv.h"
 
 /* HTTP server defines */
@@ -551,8 +552,10 @@ int process_http_request(int sock)
  * Parameters:
  *
  *********************************************************/
-static int http_loop(int sock)
+static void* http_loop(void* arg)
 {
+   int sock = *((int*)arg);
+
    while (1)
    {
       int s;
@@ -584,7 +587,7 @@ int init_http(struct in_addr iface, int p)
    int sock;
    int port = (p==0)?DEFAULT_SERVER_PORT:p;
    struct sockaddr_in sin;
-   pid_t pid;
+   pthread_t tid;
 
    /* Start build-in web server */
    sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -594,30 +597,21 @@ int init_http(struct in_addr iface, int p)
    if (bind(sock, (struct sockaddr *) &sin, sizeof(sin)) != 0)
    {
       syslog(LOG_DAEMON | LOG_ERR, "Failed to bind socket to port %d : %s", port, strerror(errno));
-      //exit(EXIT_FAILURE);
       return -1;
    }
    if (listen(sock, 5) != 0)
    {
       syslog(LOG_DAEMON | LOG_ERR, "Failed to listen to port %d : %s", port, strerror(errno));
-      //exit(EXIT_FAILURE);
       return -2;
    }
 
-   syslog(LOG_DAEMON | LOG_NOTICE, "HTTP server listening on %s:%d\n", inet_ntoa(iface), port);
+   syslog(LOG_DAEMON | LOG_NOTICE, "HTTP server listening on %s:%d", inet_ntoa(iface), port);
 
-   /* Create child */
-   pid=fork();
-
-   if (pid == -1)
+   /* Create child thread */
+   if (pthread_create(&tid, NULL, &http_loop, (void*)&sock) != 0)
    {
+      syslog(LOG_DAEMON | LOG_ERR, "Failed to create HTTP server thread");
       return -3;
-   }
-
-   if (pid == 0)
-   {
-      /* This is the child process */
-      http_loop(sock);
    }
 
    return 0;
