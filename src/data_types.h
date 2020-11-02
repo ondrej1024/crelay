@@ -56,14 +56,14 @@ typedef struct
     /* [GPIO drv] */
     uint8_t gpio_num_relays;
     uint8_t gpio_active_value;
-    uint8_t relay1_gpio_pin;
-    uint8_t relay2_gpio_pin;
-    uint8_t relay3_gpio_pin;
-    uint8_t relay4_gpio_pin;
-    uint8_t relay5_gpio_pin;
-    uint8_t relay6_gpio_pin;
-    uint8_t relay7_gpio_pin;
-    uint8_t relay8_gpio_pin;
+    uint16_t relay1_gpio_pin;
+    uint16_t relay2_gpio_pin;
+    uint16_t relay3_gpio_pin;
+    uint16_t relay4_gpio_pin;
+    uint16_t relay5_gpio_pin;
+    uint16_t relay6_gpio_pin;
+    uint16_t relay7_gpio_pin;
+    uint16_t relay8_gpio_pin;
     
     /* [Sainsmart drv] */
     uint8_t sainsmart_num_relays;
