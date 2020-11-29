@@ -53,7 +53,7 @@
 #define GPIO_BASE_FILE GPIO_BASE_DIR"gpio"
 
 
-static uint8_t pins[] =
+static uint16_t pins[] =
 {
   0, // dummy
   0, // pin 1
@@ -85,7 +85,7 @@ int set_relay_generic_gpio(char* portname, uint8_t relay, relay_state_t relay_st
  *         -1 - fail
  *         -2 - already exported
  *********************************************************/
-static int do_export(uint8_t pin)
+static int do_export(uint16_t pin)
 {
    int fd;
    char b[64];
@@ -151,7 +151,7 @@ static int do_export(uint8_t pin)
  * Return:  0 - success
  *         -1 - fail
  *********************************************************/
-static int do_unexport(uint8_t pin)
+static int do_unexport(uint16_t pin)
 {
    int fd;
    char b[64];
@@ -261,7 +261,7 @@ int get_relay_generic_gpio(char* portname, uint8_t relay, relay_state_t* relay_s
    int fd;
    char b[64];
    char d[1];
-   uint8_t pin;
+   uint16_t pin;
 
    if (relay<FIRST_RELAY || relay>(FIRST_RELAY+g_num_relays-1))
    {
@@ -324,7 +324,7 @@ int set_relay_generic_gpio(char* portname, uint8_t relay, relay_state_t relay_st
    int fd;
    char b[64];
    char d[1];
-   uint8_t pin;
+   uint16_t pin;
    
    if (relay<FIRST_RELAY || relay>(FIRST_RELAY+g_num_relays-1))
    {
