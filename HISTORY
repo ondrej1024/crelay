@@ -68,3 +68,7 @@ Version history
 0.14: 13/01/2019
 - Added multiple cards support to HTTP API (new "serial" parameter)
 - Reworked WebGUI (replaced submit buttons with Javascript toggle switches)
+
+0.14.1: 13/12/2021
+- Fixed segfault caused by Sainsmart driver
+- Add systemd service file
