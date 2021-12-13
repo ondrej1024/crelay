@@ -1,0 +1,12 @@
+[Unit]
+Description=Crelay daemon
+After=syslog.target network.target
+
+[Service]
+ExecStart=/usr/local/bin/crelay -d
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
+ 
