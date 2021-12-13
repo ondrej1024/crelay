@@ -20,9 +20,9 @@
  *   gcc -c relay_drv_sainsmart.c
  * 
  * Last modified:
- *   19/08/2015
+ *   13/12/2021
  *
- * Copyright 2015, Ondrej Wisniewski 
+ * Copyright 2015-2021, Ondrej Wisniewski 
  * 
  * This file is part of crelay.
  * 
@@ -316,8 +316,7 @@ int get_relay_sainsmart_4_8chan(char* portname, uint8_t relay, relay_state_t* re
    /* Open FTDI USB device */
    if ((ftdi_usb_open_desc(ftdi, VENDOR_ID, DEVICE_ID, NULL, serial)) < 0)
    {
-      fprintf(stderr, "unable to open ftdi device: (%s)\n", ftdi_get_error_string(ftdi));
-      ftdi_free(ftdi);
+      fprintf(stderr, "unable to open ftdi device (get): (%s)\n", ftdi_get_error_string(ftdi));
       return -2;
    }
    
@@ -361,8 +360,7 @@ int set_relay_sainsmart_4_8chan(char* portname, uint8_t relay, relay_state_t rel
    /* Open FTDI USB device */
    if ((ftdi_usb_open_desc(ftdi, VENDOR_ID, DEVICE_ID, NULL, serial)) < 0)
    {
-      fprintf(stderr, "unable to open ftdi device: (%s)\n", ftdi_get_error_string(ftdi));
-      ftdi_free(ftdi);
+      fprintf(stderr, "unable to open ftdi device (set): (%s)\n", ftdi_get_error_string(ftdi));
       return -2;
    }
 
