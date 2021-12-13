@@ -17,9 +17,9 @@
  *   sudo make install
  * 
  * Last modified:
- *   14/01/2019
+ *   13/12/2021
  *
- * Copyright 2015-2019, Ondrej Wisniewski 
+ * Copyright 2015-2021, Ondrej Wisniewski 
  * 
  * This file is part of crelay.
  * 
@@ -57,8 +57,8 @@
 #include "config.h"
 #include "relay_drv.h"
 
-#define VERSION "0.14"
-#define DATE "2019"
+#define VERSION "0.14.1"
+#define DATE "2021"
 
 /* HTTP server defines */
 #define SERVER "crelay/"VERSION
@@ -496,10 +496,11 @@ int process_http_request(int sock)
    int  relay=0;
    int  i;
    int  formdatalen;
+   int  rc=0;
    char com_port[MAX_COM_PORT_NAME_LEN];
    char* serial=NULL;
    uint8_t last_relay=FIRST_RELAY;
-   relay_state_t rstate[MAX_NUM_RELAYS];
+   relay_state_t rstate[MAX_NUM_RELAYS]={0};
    relay_state_t nstate=INVALID;
    
    formdata[0]=0;  
@@ -616,32 +617,41 @@ int process_http_request(int sock)
             if (nstate==PULSE)
             {
                /* Generate pulse on relay switch */
-               crelay_get_relay(com_port, relay, &rstate[relay-1], serial);
-               if (rstate[relay-1] == ON)
+               rc = crelay_get_relay(com_port, relay, &rstate[relay-1], serial);
+               if (rc==0 && rstate[relay-1] == ON)
                {
-                  crelay_set_relay(com_port, relay, OFF, serial);
-                  sleep(config.pulse_duration);
-                  crelay_set_relay(com_port, relay, ON, serial);
+                  rc = crelay_set_relay(com_port, relay, OFF, serial);
+                  if (rc == 0)
+                  {
+                     sleep(config.pulse_duration);
+                     rc = crelay_set_relay(com_port, relay, ON, serial);
+                  }
                }
-               else
+               else if (rc==0 && rstate[relay-1] == OFF)
                {
-                  crelay_set_relay(com_port, relay, ON, serial);
-                  sleep(config.pulse_duration);
-                  crelay_set_relay(com_port, relay, OFF, serial);
+                  rc = crelay_set_relay(com_port, relay, ON, serial);
+                  if (rc == 0)
+                  {
+                     sleep(config.pulse_duration);
+                     rc = crelay_set_relay(com_port, relay, OFF, serial);
+                  }
                }
             }
             else
             {
                /* Switch relay on/off */
-               crelay_set_relay(com_port, relay, nstate, serial);
+               rc = crelay_set_relay(com_port, relay, nstate, serial);
             }
          }
       }
       
       /* Read current state for all relays */
-      for (i=FIRST_RELAY; i<=last_relay; i++)
+      if (rc == 0)
       {
-         crelay_get_relay(com_port, i, &rstate[i-1], serial);
+         for (i=FIRST_RELAY; i<=last_relay; i++)
+         {
+            rc = crelay_get_relay(com_port, i, &rstate[i-1], serial);
+         }
       }
       
       /* Send response to client */
