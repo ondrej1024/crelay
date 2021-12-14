@@ -47,8 +47,9 @@ The following picture shows a high level view on the modular software architectu
 <br>
 
 ### Nice to have (wishlist)
-- Integrated MQTT client
-- Multiple cards support (Web UI)
+- Integrated MQTT client (work in progress)
+- Multiple cards support for Web GUI
+- JSON format HTTP API
 - Access control for Web GUI and HTTP API
 - Programmable timers for relay actions  
 <br>
@@ -66,7 +67,7 @@ This is the Web GUI provided by the integrated web server. The web page dynamica
 
 #### Command line interface
     $ crelay 
-    crelay, version 0.13
+    crelay, version 0.14
     
     This utility provides a unified way of controlling different types of relay cards.
     Currently supported relay cards:
@@ -79,16 +80,16 @@ This is the Web GUI provided by the integrated web server. The web page dynamica
     
     The program can be run in interactive (command line) mode or in daemon mode with
     built-in web server.
-
+    
     Interactive mode:
         crelay [-s <serial number>] -i | [<relay number>] [ON|OFF]
-
+    
            The state of any relay can be read or it can be changed to a new state.
            If only the relay number is provided then the current state is returned,
            otherwise the relays state is set to the new value provided as second parameter.
            The USB communication port is auto detected. The first compatible device
            found will be used, unless -s switch and a serial number is passed.
-
+    
     Daemon mode:
         crelay -d [<relay1_label> [<relay2_label> [<relay3_label> [<relay4_label>]]]] 
     
@@ -106,8 +107,8 @@ This is the Web GUI provided by the integrated web server. The web page dynamica
 
 ### HTTP API
 An HTTP API is provided to access the server from external clients. This API is compatible with the [PiRelay Android app](https://play.google.com/store/apps/details?id=com.jasonfindlay.pirelaypro). Therefore the app can be used on your Android phone to control *crelay* remotely.  
-   
-*For the fact that PiRelay is not open source I am considering to develop a dedicated crelay Android app. This will use a more universal Json format based API. Any volunteer who wants to contribute to this app are very welcome.*
+
+*Additionally to the existing API a universal Json format based API should be imlpemented. This would make it easier for third party clients to send API requests and parse the response. Any volunteer who wants to contribute is very welcome.*
 
 - API url:  
 <pre><i>ip_address[:port]</i>/gpio</pre>  
@@ -189,7 +190,6 @@ The binaries can be downloaded from the [Latest release page](https://github.com
 <pre>
     apt-get install libftdi1 libhidapi-libusb0 libusb-1.0-0
 </pre>  
-
 <br>
 
 ### Distribution specific packages
@@ -250,24 +250,57 @@ num_relays = 4   # Number of relays on the Sainsmart card (4 or 8)
 </pre>
 
 <br>
-  
+
 ### Adding new relay card drivers
 The modular architecture of *crelay* makes it possible to easily add new relay card drivers.  
 See example files `relay_drv_sample.c` and `relay_drv_sample.h` in the src directory for details on how to write your own low level driver functions.  
-<br>  
+<br>
+
+### Service autostart  
+
+In order to start `crelay` as daemon automatically on system boot it can be configured as `systemd` service. The service file is provided here:
+
+`systemd/crelay.service`
+
+To enable the service, run the following commands:
+
+```
+cp systemd/crelay.service /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable crelay.service
+```
+
+Start/stop the service manually with these commands:
+
+```
+systemctl start crelay.service
+systemctl stop crelay.service
+```
+
+
 
 ### Credits
 The support for the different relay cards in *crelay* has only been possible thanks to the valuable contributions of the following people who reverse engineered the communication protocols of the cards and provided the protocol specifications.
 
 * [Dominic Sacré](https://github.com/dsacre) who discovered the communication protocol of the Conrad USB card
+
 * [Darryl Bond](https://github.com/darrylb123), who discovered the communication protocol of the HID API cards
+
 * [Steve Crow](https://github.com/stav09), who discovered the communication protocol of the Sainsmart USB cards
+
 * [Kevin Hilman](https://github.com/khilman), who implemented and tested the support for the Sainsmart 16-channel control module
+
 * [Andrew Lunn](https://github.com/lunn), who contributed cleanup patches
+
 * [Andrey Shevtsov](https://github.com/sqlwristband), who contributed the initial multiple cards implementation
+
 * [Alberto Bursi](https://github.com/bobafetthotmail), who contributed documentation for OpenSUSE build support
+
 * [Derek Atkins](https://github.com/derekatkins), who contributed multiple cards handling for the Sainsmart 16 Channel HID controller and HTTP API
-<br>  
+
+* [Paweł Dembicki](https://github.com/CHKDSK88), who contributed to the GPIO driver
+
+  <br>  
 
 ### Notes
 
