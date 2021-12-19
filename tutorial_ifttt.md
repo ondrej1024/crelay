@@ -6,6 +6,8 @@ This tutorial explains how crelay can be controlled via the IFTTT cloud service,
 
 1. Setup your crelay, and make sure it's working correctly.
 
+###### Once again, this can be a major security hazard, if you do not secure your connection properly. Please do *not* use this method unless you know what you are doing.
+
 2. Forward the crelay port (By default it's 8000, though i recommend changing it, if you have shared your IP with anyone.) through your router. ([This guide can be helpful](https://www.noip.com/support/knowledgebase/general-port-forwarding-guide/))
 
 3. Find your public IP, eventually by using [WhatIsMyIPAddress](https://whatismyipaddress.com/), and looking under IPv4. 
@@ -41,6 +43,6 @@ By forwarding the crelay API port from the public Internet you agree with the fo
 
 You alone are responsible for securing your connection, at least by changing the default port.
 
-Neither the author of crelay [ondrej1024](https://github.com/ondrej1024/) nor the author of this tutorial [MajorLOLGaming](https://github.com/MajorLOLGaming) are responsible for any security hazards which may occur with opening your crelay port to the public Internet.
+Neither the author of crelay [ondrej1024](https://github.com/ondrej1024/) nor the author of this tutorial [plsMajor](https://github.com/plsMajor) are responsible for any security hazards which may occur with opening your crelay port to the public Internet.
 
 Opening the port for your crelay can be a major security hazard if you don't know how to protect your things correctly.
