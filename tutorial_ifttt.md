@@ -32,10 +32,6 @@ This tutorial explains how crelay can be controlled via the IFTTT cloud service,
 
 13. Now repeat the steps from 5 to 12, only with the "1" in "&status=1" being a "0"
 
-
-## Video guide:
-[![Click to play on YouTube](https://img.youtube.com/vi/XGrBK9Yh1T4/0.jpg)](https://www.youtube.com/watch?v=XGrBK9Yh1T4)  
-
 ## Disclaimer
 ### The risk of forwarding your crelay port.
 
@@ -43,6 +39,6 @@ By forwarding the crelay API port from the public Internet you agree with the fo
 
 You alone are responsible for securing your connection, at least by changing the default port.
 
-Neither the author of crelay [ondrej1024](https://github.com/ondrej1024/) nor the author of this tutorial [plsMajor](https://github.com/plsMajor) are responsible for any security hazards which may occur with opening your crelay port to the public Internet.
+Neither the author of crelay [ondrej1024](https://github.com/ondrej1024/) nor the author of this tutorial [Luna](https://github.com/ImLunaUwU) are responsible for any security hazards which may occur with opening your crelay port to the public Internet.
 
 Opening the port for your crelay can be a major security hazard if you don't know how to protect your things correctly.
