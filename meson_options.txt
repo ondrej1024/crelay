@@ -1,0 +1,16 @@
+option('hidapi', type: 'feature',
+  description: 'Enable HIDAPI driver',
+)
+
+option('sainsmart', type: 'feature',
+  description: 'Enable SAINSMART driver',
+)
+
+option('conrad', type: 'feature',
+  description: 'Enable CONRAD driver',
+)
+
+option('lib', type: 'boolean',
+  value: false,
+  description: 'Enable CONRAD driver',
+)
